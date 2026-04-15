@@ -905,7 +905,6 @@ function AIHelper:validateAndCleanData(data)
     data.author_bio = ensureString(data.author_bio or data.AuthorBio or data.bio, "")
     data.author_birth = ensureString(data.author_birth, "---")
     data.author_death = ensureString(data.author_death, "---")
-    data.summary = data.summary or data.book_summary or ""
 
     -- 2. CHARACTERS
     local chars = data.characters or data.Characters or {}

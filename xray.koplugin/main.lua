@@ -140,6 +140,19 @@ function XRayPlugin:getMenuCounts()
     }
 end
 
+-- tricky hack: make our menu be the first under tools menu
+local reader_menu_order = require("ui/elements/reader_menu_order")
+if reader_menu_order and reader_menu_order.tools then
+    -- Check if it's already there to avoid duplicate entries on reloads
+    local found = false
+    for _, v in ipairs(reader_menu_order.tools) do
+        if v == "xray" then found = true; break end
+    end
+    if not found then
+        table.insert(reader_menu_order.tools, 1, "xray")
+    end
+end
+
 function XRayPlugin:addToMainMenu(menu_items)
     logger.info("XRayPlugin: addToMainMenu called")
     
@@ -197,20 +210,6 @@ function XRayPlugin:addToMainMenu(menu_items)
                 keep_menu_open = true,
                 callback = function()
                     self:showAuthorInfo()
-                end,
-            },
-            {
-                text = self.loc:t("menu_summary"),
-                keep_menu_open = true,
-                callback = function()
-                    self:showSummary()
-                end,
-            },
-            {
-                text = self.loc:t("menu_themes") .. (counts.themes > 0 and " (" .. counts.themes .. ")" or ""),
-                keep_menu_open = true,
-                callback = function()
-                    self:showThemes()
                 end,
                 separator = true,
             },
@@ -655,7 +654,7 @@ function XRayPlugin:showLocations()
     end
     local items = {}
     for _, loc in ipairs(self.locations) do
-        table.insert(items, { text = "(loc) " .. (loc.name or "???"), callback = function() 
+        table.insert(items, { text = (loc.name or "???"), callback = function() 
             UIManager:show(InfoMessage:new{ text = (loc.name or "") .. "\n\n" .. (loc.description or "") .. "\n\nImportance: " .. (loc.importance or ""), timeout = 10 })
         end })
     end
@@ -687,7 +686,9 @@ function XRayPlugin:showAuthorInfo()
 end
 
 function XRayPlugin:showAbout()
-    UIManager:show(InfoMessage:new{ text = "X-Ray Plugin v2.0.0\nAI-powered book analysis.", timeout = 10 })
+    local meta = dofile(self.path .. "/_meta.lua")
+    local text = (meta.fullname or "X-Ray") .. " v" .. (meta.version or "?.?.?") .. "\n\n" .. (meta.description or "")
+    UIManager:show(InfoMessage:new{ text = text, timeout = 15 })
 end
 
 function XRayPlugin:clearCache()
@@ -727,7 +728,7 @@ function XRayPlugin:showHistoricalFigures()
     end
     local items = {}
     for _, fig in ipairs(self.historical_figures) do
-        table.insert(items, { text = "(hist) " .. (fig.name or "???"), callback = function()
+        table.insert(items, { text = (fig.name or "???"), callback = function()
             UIManager:show(InfoMessage:new{ text = (fig.name or "") .. "\n\n" .. (fig.biography or ""), timeout = 15 })
         end })
     end

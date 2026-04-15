@@ -4,46 +4,44 @@ return {
     
     -- Main prompt (Full book analysis)
     main = [[Book: "%s" - Author: %s
-Create exhaustive X-Ray data for this book. Fill the JSON format COMPLETELY.
+Create exhaustive X-Ray data for this book.
 
 CORE RULES:
 1. TARGET BOOK: Only include data from THIS book.
 2. CHARACTERS: List 15-25 most important characters.
 3. LOCATIONS: List 5-10 significant locations.
 4. HISTORICAL FIGURES: Identify 3-7 real-world historical figures.
-5. TIMELINE: 1 key highlight for EVERY chapter.
-6. EXTREME BREVITY: Descriptions MUST be MAX 100-120 characters (1 short sentence). Timeline events MUST be MAX 80 characters.
-7. COMPRESSION: Prioritize fitting within the 8,192 token limit. If space is tight, stop earlier.
+5. TIMELINE: 1 key highlight for EVERY narrative chapter. IGNORE Frontmatter, Table of Contents, "Also by", or Appendices.
+6. CHARACTER DEPTH: Descriptions MUST be 250-300 characters. Provide a comprehensive analysis of the character's history and role throughout the entire book.
+7. CONCISENESS: Other descriptions (locations/historical) MUST be MAX 150 characters.
 
 REQUIRED JSON FORMAT:
 {
   "book_title": "Full Book Title",
   "author": "Author Name",
-  "summary": "Concise summary (max 250 chars).",
   "characters": [
     {
       "name": "Full Name",
       "role": "Role",
       "gender": "Gender",
       "occupation": "Job",
-      "description": "Short bio (MAX 120 chars)."
+      "description": "Comprehensive analysis (250-300 characters). Encompass their full history in the book."
     }
   ],
   "historical_figures": [
     {
       "name": "Name",
       "role": "Role",
-      "biography": "Short bio (MAX 120 chars)",
+      "biography": "Short bio (MAX 150 chars)",
       "importance_in_book": "Significance",
       "context_in_book": "Context"
     }
   ],
   "locations": [
-    {"name": "Place", "description": "Short desc (MAX 100 chars)", "importance": "Significance"}
+    {"name": "Place", "description": "Short desc (MAX 150 chars)", "importance": "Significance"}
   ],
-  "themes": ["Theme 1", "Theme 2", "Theme 3"],
   "timeline": [
-    {"event": "Key Event (MAX 80 chars)", "chapter": "Chapter", "importance": "High/Low"}
+    {"event": "Key narrative event (MAX 120 chars)", "chapter": "Chapter Name/Number", "importance": "High/Low"}
   ]
 }]],
 
@@ -53,8 +51,8 @@ CRITICAL: The reader has only read %d%% of this book.
 
 STRICT RULES:
 1. NO SPOILERS: No info from after the %d%% mark.
-2. TIMELINE: 1 key highlight for EVERY chapter up to %d%%.
-3. EXTREME BREVITY: ALL descriptions/events MUST be MAX 100 characters.
+2. TIMELINE: 1 key highlight for EVERY narrative chapter up to %d%%. IGNORE ToC/Frontmatter.
+3. CHARACTER DEPTH: Descriptions MUST be 250-300 characters. Encompass their full history up to %d%%.
 4. COMPRESSION: Fit within 8,192 token limit.
 
 ITEM COUNT REQUIREMENTS:
@@ -65,31 +63,29 @@ REQUIRED JSON FORMAT:
 {
   "book_title": "Book Title",
   "author": "Author Name",
-  "summary": "Summary up to %d%% (max 250 chars).",
   "characters": [
     {
       "name": "Name",
       "role": "Role at %d%%",
       "gender": "Gender",
       "occupation": "Job",
-      "description": "Status at %d%% (MAX 100 chars)."
+      "description": "Comprehensive history/status at %d%% (250-300 chars). NO SPOILERS."
     }
   ],
   "historical_figures": [
     {
       "name": "Name",
       "role": "Role",
-      "biography": "Short bio (MAX 100 chars)",
+      "biography": "Short bio (MAX 150 chars)",
       "importance_in_book": "Significance at %d%%",
       "context_in_book": "Context"
     }
   ],
   "locations": [
-    {"name": "Name", "description": "Desc at %d%% (MAX 100 chars).", "importance": "Significance"}
+    {"name": "Name", "description": "Desc at %d%% (MAX 150 chars).", "importance": "Significance"}
   ],
-  "themes": ["Themes at %d%%"],
   "timeline": [
-    {"event": "Key Event (MAX 80 chars)", "chapter": "Chapter", "importance": "High/Low"}
+    {"event": "Key narrative event (MAX 120 chars)", "chapter": "Chapter", "importance": "High/Low"}
   ]
 }]],
 
