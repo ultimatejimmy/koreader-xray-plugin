@@ -1,4 +1,4 @@
-# ==============================
+﻿# ==============================
 # MENU ITEMS
 # ==============================
 
@@ -33,7 +33,10 @@ msgid "menu_themes"
 msgstr "Temas"
 
 msgid "menu_fetch_ai"
-msgstr "Obtener datos de IA"
+msgstr "Obtener datos de X-Ray"
+
+msgid "menu_fetch_xray"
+msgstr "Obtener datos de X-Ray"
 
 msgid "menu_ai_settings"
 msgstr "Configuración de IA"
@@ -271,7 +274,7 @@ msgstr "¡Error al obtener datos desde la IA!\n\nPosibles razones:\n• Clave de
 
 msgid "ai_fetch_complete"
 msgstr ""
-"✅ “¡Datos obtenidos exitosamente desde %s!\n"
+" “¡Datos obtenidos exitosamente desde %s!\n"
 "\n"
 "%s\n"
 "Autor: %s\n"
@@ -282,6 +285,9 @@ msgstr ""
 "%d eventos\n"
 "%d personajes históricos\n"
 "\n"
+"%s\n"
+"\n"
+"RESUMEN:\n"
 "%s"
 
 # ==============================
@@ -434,6 +440,9 @@ msgstr "Configure primero la clave API"
 # ==============================
 # EXTRA TITLES
 # ==============================
+
+msgid "fetch_successful"
+msgstr "Éxito"
 
 msgid "summary_title"
 msgstr "Resumen del libro"
@@ -603,31 +612,31 @@ msgid "ok"
 msgstr "OK"
 
 msgid "menu_fetch_full"
-msgstr "📚 Obtener datos de IA (Libro Completo)"
+msgstr "� Obtener datos de IA (Libro Completo)"
 
 msgid "menu_fetch_progress"
-msgstr "📖 Hasta la página actual (sin spoilers)"
+msgstr " Hasta la página actual (sin spoilers)"
 
 msgid "progress_warning_low"
-msgstr "📖 Aún no ha avanzado mucho (%%%d)\n\n¿Desea continuar de todos modos?"
+msgstr " Aún no ha avanzado mucho (%%%d)\n\n¿Desea continuar de todos modos?"
 
 msgid "progress_error"
-msgstr "⚠️ ¡No se pudo obtener el progreso de lectura!\n\n¿Desea analizar el libro completo en su lugar?"
+msgstr " ¡No se pudo obtener el progreso de lectura!\n\n¿Desea analizar el libro completo en su lugar?"
 
 msgid "error_info"
-msgstr "❌ ¡Ha ocurrido un error!"
+msgstr " ¡Ha ocurrido un error!"
 
 msgid "error_no_network"
-msgstr "📡 ¡Sin conexión a Internet!\n\nPor favor, verifique su conexión Wi‑Fi."
+msgstr " ¡Sin conexión a Internet!\n\nPor favor, verifique su conexión Wi‑Fi."
 
 msgid "error_network_timeout"
-msgstr "⏱️ ¡La conexión ha caducado!\n\nVerifique su conexión a Internet y vuelva a intentarlo."
+msgstr " ¡La conexión ha caducado!\n\nVerifique su conexión a Internet y vuelva a intentarlo."
 
 msgid "error_invalid_api_key"
-msgstr "🔑 ¡Clave de API inválida!\n\nPor favor, verifique su clave de API."
+msgstr " ¡Clave de API inválida!\n\nPor favor, verifique su clave de API."
 
 msgid "error_unknown"
-msgstr "❌ ¡Error desconocido!\n\nPor favor, inténtelo de nuevo."
+msgstr " ¡Error desconocido!\n\nPor favor, inténtelo de nuevo."
 
 msgid "error_filtered"
 msgstr "Contenido filtrado."
@@ -636,13 +645,13 @@ msgid "spoiler_preference_title"
 msgstr "Preferencia de spoilers"
 
 msgid "spoiler_free_option"
-msgstr "🔒 Modo sin spoilers (hasta %%%d del libro)"
+msgstr " Modo sin spoilers (hasta %%%d del libro)"
 
 msgid "full_book_option"
-msgstr "📖 Libro completo (todo el contenido)"
+msgstr " Libro completo (todo el contenido)"
 
 msgid "spoiler_free_mode"
-msgstr "🔒 Modo sin spoilers: %%%d"
+msgstr " Modo sin spoilers: %%%d"
 
 msgid "full_book_mode_active"
-msgstr "📖 Modo libro completo"
+msgstr " Modo libro completo"

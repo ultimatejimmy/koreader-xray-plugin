@@ -2,8 +2,14 @@
 local http = require("socket.http")
 local https = require("ssl.https")
 local ltn12 = require("ltn12")
-local json = require("json")
+local socket = require("socket")
+local socketutil = require("socketutil")
 local logger = require("logger")
+local Trapper = require("ui/trapper")
+
+-- Optimization: Use rapidjson if available (much faster for large context)
+local rapidjson_ok, rapidjson = pcall(require, "rapidjson")
+local json = rapidjson_ok and rapidjson or require("json")
 
 local AIHelper = {}
 
@@ -13,7 +19,7 @@ AIHelper.providers = {
         name = "Google Gemini",
         enabled = true,
         api_key = nil,
-        model = "gemini-2.5-flash", -- Default model
+        model = "gemini-2.5-flash", -- User's preferred model
     },
     chatgpt = {
         name = "ChatGPT",
@@ -25,6 +31,110 @@ AIHelper.providers = {
 }
 
 AIHelper.model_override = nil
+AIHelper.trap_widget = nil
+
+function AIHelper:setTrapWidget(trap_widget)
+    self.trap_widget = trap_widget
+end
+
+function AIHelper:resetTrapWidget()
+    self.trap_widget = nil
+end
+
+--- Make a request with optional Trapper support
+function AIHelper:makeRequest(url, headers, request_body, timeout, maxtime)
+    -- Further increased defaults for slow Kindle connections with large context
+    timeout = timeout or 300 -- Connection/Inactivity timeout (5 minutes)
+    maxtime = maxtime or 900 -- Total transfer timeout (15 minutes)
+    
+    local function performRequest()
+        -- CRITICAL: Re-require modules inside the subprocess!
+        local socket = require("socket")
+        local http = require("socket.http")
+        local https = require("ssl.https")
+        local ltn12 = require("ltn12")
+        local socketutil = require("socketutil")
+        local logger = require("logger")
+        
+        -- Optimization: Disable SSL certificate verification for speed on Kindles
+        https.cert_verify = false
+        
+        -- Use socketutil for more robust timeout management
+        socketutil:set_timeout(timeout, maxtime)
+        
+        local response_body = {}
+        -- Use socket.http for the request (it handles https if ssl.https is loaded in KOReader)
+        local request = {
+            url = url,
+            method = "POST",
+            headers = headers or {},
+            source = ltn12.source.string(request_body or ""),
+            -- Use socketutil.table_sink to properly manage maxtime/total duration
+            sink = socketutil.table_sink(response_body),
+        }
+        
+        logger.info("AIHelper: Starting network request to", url, "Size:", #request_body)
+        
+        -- Use direct call and pcall to catch any unexpected crashes
+        local ok, code, response_headers, status
+        local pcall_ok, pcall_err = pcall(function()
+            ok, code, response_headers, status = http.request(request)
+        end)
+        
+        if not pcall_ok then
+            logger.warn("AIHelper: Subprocess request crashed: " .. tostring(pcall_err))
+            return nil, "error_crash", tostring(pcall_err)
+        end
+        
+        socketutil:reset_timeout()
+        
+        local response_text = table.concat(response_body)
+        logger.info("AIHelper: Request finished. Status code:", code, "Response length:", #response_text)
+        
+        -- Validate Content-Length to detect truncated downloads
+        if response_headers and response_headers["content-length"] then
+            local clen = tonumber(response_headers["content-length"])
+            if clen and #response_text < clen then
+                logger.warn("AIHelper: Incomplete response received (" .. #response_text .. "/" .. clen .. ")")
+                return nil, "error_incomplete", "Incomplete response from server"
+            end
+        end
+
+        -- Check for timeouts in socketutil or luasocket
+        if ok == nil and (code == socketutil.TIMEOUT_CODE or code == socketutil.SSL_HANDSHAKE_CODE or code == socketutil.SINK_TIMEOUT_CODE or code == "timeout") then
+            logger.warn("AIHelper: Request timed out (code: " .. tostring(code) .. ")")
+            return nil, "error_timeout", "Connection timed out"
+        end
+        
+        -- If http.request failed with nil/nil
+        if ok == nil and code == nil then
+            return nil, "error_unknown_network", "Network request failed without error message"
+        end
+
+        -- Return multiple values to be captured by Trapper
+        return ok, code, response_text, status
+    end
+
+    if self.trap_widget then
+        -- Capture multiple return values directly to avoid table construction issues with nils
+        -- Trapper:dismissableRunInSubprocess returns: completed (bool), ... (results of func)
+        local completed, ok, code, response_text, status = Trapper:dismissableRunInSubprocess(performRequest, self.trap_widget)
+        
+        if not completed then
+            return nil, "USER_CANCELLED", "Request cancelled by user"
+        end
+        
+        -- If subprocess failed silently (common on some Windows/KOReader versions)
+        if ok == nil and code == nil then
+            logger.warn("AIHelper: Subprocess returned nil values, falling back to main thread")
+            return performRequest()
+        end
+        
+        return ok, code, response_text, status
+    else
+        return performRequest()
+    end
+end
 
 -- Set Gemini model
 function AIHelper:setGeminiModel(model_name)
@@ -241,14 +351,56 @@ function AIHelper:saveAPIKeyToFile(provider, api_key)
     return false
 end
 
--- Get book data from AI
+-- Get author data from AI
+function AIHelper:getAuthorData(title, author, provider_name)
+    local prompt = self:createAuthorPrompt(title, author)
+    local provider = provider_name or self.default_provider or "gemini"
+    local config = self.providers[provider]
+
+    if not config or not config.api_key then
+        return nil, "error_no_api_key", "AI API Key not set."
+    end
+
+    local author_data, error_code, error_msg
+    if provider == "gemini" then
+        author_data, error_code, error_msg = self:callGemini(prompt, config)
+    else
+        author_data, error_code, error_msg = self:callChatGPT(prompt, config)
+    end
+
+    if author_data then
+        return author_data
+    end
+
+    return nil, error_code, error_msg
+end
+
+function AIHelper:createAuthorPrompt(title, author)
+    local lang = self.current_language or "en"
+    local prompt_file = self.path .. "/prompts/" .. lang .. ".lua"
+    local success, prompts = pcall(dofile, prompt_file)
+    
+    if not success then
+        prompt_file = self.path .. "/prompts/en.lua"
+        success, prompts = pcall(dofile, prompt_file)
+    end
+    
+    prompts = prompts or {}
+    local template = prompts.author_only or prompts.main
+    
+    local enhanced_title = title or "Unknown"
+    local enhanced_author = author or "Unknown"
+    
+    return string.format(template, enhanced_title, enhanced_author)
+end
+
 function AIHelper:getBookData(title, author, provider_name, context)
     self:loadModelFromFile() -- Refresh model
     local provider = provider_name or "gemini"
     local provider_config = self.providers[provider]
     
     if not provider_config or not provider_config.api_key then
-        return nil, "error_no_api_key"
+        return nil, "error_no_api_key", "AI API Key not set. Please set it in the settings."
     end
     
     -- Create prompts with context.
@@ -264,20 +416,7 @@ function AIHelper:getBookData(title, author, provider_name, context)
     elseif provider == "chatgpt" then
         return self:callChatGPT(prompt, provider_config)
     end
-    return nil, "error_unknown_provider"
-end
-
--- Check network
-function AIHelper:checkNetworkConnectivity()
-    local socket = require("socket")
-    local success, err = pcall(function()
-        local tcp = socket.tcp()
-        tcp:settimeout(3)
-        local result = tcp:connect("8.8.8.8", 53)
-        tcp:close()
-        return result
-    end)
-    return success
+    return nil, "error_unknown_provider", "Unsupported AI provider: " .. tostring(provider)
 end
 
 -- Load language
@@ -336,6 +475,13 @@ function AIHelper:createPrompt(title, author, context)
                             context.book_text .. 
                             "\n--- END OF TEXT ---\n"
         end
+
+        if context.chapter_samples and #context.chapter_samples > 0 then
+            extra_context = extra_context .. "\n\nCHAPTER SAMPLES (Snapshots from previous chapters for timeline building):\n" ..
+                            "--- START OF SAMPLES ---\n" ..
+                            context.chapter_samples ..
+                            "\n--- END OF SAMPLES ---\n"
+        end
         
         if context.annotations and #context.annotations > 0 then
             extra_context = extra_context .. "\n\nUSER HIGHLIGHTS & NOTES (Crucial for character focus):\n" ..
@@ -375,26 +521,26 @@ function AIHelper:getFallbackStrings()
     return self.prompts.fallback or {}
 end
 
---- Call Google Gemini API (FIXED VERSION)
+--- Call Google Gemini API
 function AIHelper:callGemini(prompt, config)
     logger.info("AIHelper: Calling Google Gemini API")
     
-    if not self:checkNetworkConnectivity() then
-        return nil, "error_no_network", "No internet connection."
-    end
-    
-    local model = config.model or "gemini-1.5-flash"
-    local url = "https://generativelanguage.googleapis.com/v1beta/models/" .. model .. ":generateContent?key=" .. config.api_key
+    local model = config.model or "gemini-2.5-flash"
+    local url = "https://generativelanguage.googleapis.com/v1beta/models/" .. model .. ":generateContent"
     
     -- Load the system instruction
-    local system_instruction = self.prompts and self.prompts.system_instruction or "You are an expert literary critic. Respond ONLY with valid JSON format."
+    local system_instruction_text = self.prompts and self.prompts.system_instruction or "You are an expert literary critic. Respond ONLY with valid JSON format."
 
-    -- Bulletproof prompt format: prepend system instruction to bypass finicky schema requirements
-    local combined_prompt = system_instruction .. "\n\n" .. prompt
-
-    -- Stripped down to the bare minimum required fields to prevent 400 schema validation errors
+    -- Modern Gemini API: Use system_instruction field and safetySettings
     local request_body = json.encode({
-        contents = {{ parts = {{ text = combined_prompt }} }},
+        contents = {{ role = "user", parts = {{ text = prompt }} }},
+        system_instruction = { parts = {{ text = system_instruction_text }} },
+        safetySettings = {
+            { category = "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold = "BLOCK_NONE" },
+            { category = "HARM_CATEGORY_HATE_SPEECH", threshold = "BLOCK_NONE" },
+            { category = "HARM_CATEGORY_HARASSMENT", threshold = "BLOCK_NONE" },
+            { category = "HARM_CATEGORY_DANGEROUS_CONTENT", threshold = "BLOCK_NONE" }
+        },
         generationConfig = {
             temperature = 0.4,
             maxOutputTokens = 8192,
@@ -410,25 +556,16 @@ function AIHelper:callGemini(prompt, config)
              socket.sleep(3) 
         end
 
-        local response_body = {}
-        local res, code, headers, status = https.request{
-            url = url,
-            method = "POST",
-            headers = {
-                ["Content-Type"] = "application/json",
-                ["Content-Length"] = tostring(#request_body),
-            },
-            source = ltn12.source.string(request_body),
-            sink = ltn12.sink.table(response_body),
-            timeout = 120
-        }
+        local res, code, response_text, status = self:makeRequest(url, {
+            ["Content-Type"] = "application/json",
+            ["x-goog-api-key"] = config.api_key, -- Modern header auth
+            ["Content-Length"] = tostring(#request_body),
+        }, request_body, 300, 900) -- Connect timeout 300s, Total 900s
         
-        local response_text = table.concat(response_body)
         local code_num = tonumber(code)
-        
-        logger.info("AIHelper: API Code:", code_num, "Length:", #response_text)
+        logger.info("AIHelper: API Code:", code_num, "Length:", response_text and #response_text or 0)
 
-        if code_num == 200 then
+        if code_num == 200 and response_text then
             local success, data = pcall(json.decode, response_text)
             if not success then return nil, "error_json_parse", "Failed to parse JSON" end
             
@@ -438,26 +575,47 @@ function AIHelper:callGemini(prompt, config)
                 if candidate.finishReason == "SAFETY" then
                      return nil, "error_safety", "Blocked by Google Safety Filter."
                 end
+                
+                local truncated_warning = ""
+                if candidate.finishReason == "MAX_TOKENS" then
+                    truncated_warning = "\n\nWARNING: Response was truncated due to output length limits. Some data may be missing."
+                    logger.warn("AIHelper: Gemini response truncated (MAX_TOKENS)")
+                end
 
                 if candidate.content and candidate.content.parts and candidate.content.parts[1] then
-                    return self:parseAIResponse(candidate.content.parts[1].text)
+                    local result, err = self:parseAIResponse(candidate.content.parts[1].text)
+                    if result then
+                        if #truncated_warning > 0 then
+                            -- We can't easily append to the data table, but we can log it
+                            logger.warn("AIHelper: Returning partial data due to truncation.")
+                        end
+                        return result
+                    else
+                        return nil, "error_parse", (err or "Failed to parse AI response.") .. truncated_warning
+                    end
                 else
-                    return nil, "error_api", "API returned an empty response."
+                    return nil, "error_api", "API returned an empty response." .. truncated_warning
                 end
             else
                 return nil, "error_api", "Invalid response format from Google."
             end
+        elseif code == "USER_CANCELLED" then
+            return nil, "USER_CANCELLED", "Request cancelled"
+        elseif code == "error_timeout" then
+            return nil, "error_timeout", "Connection timed out"
         elseif code_num == 503 then
              logger.warn("AIHelper: 503 Service Unavailable")
         else
-             -- EXTRACT THE EXACT ERROR MESSAGE FROM GOOGLE SO YOU CAN SEE IT!
-             local error_detail = "HTTP " .. tostring(code_num)
-             local success, err_data = pcall(json.decode, response_text)
-             if success and err_data and err_data.error then
-                 error_detail = err_data.error.message or error_detail
+             -- EXTRACT THE EXACT ERROR MESSAGE FROM GOOGLE
+             local error_detail = "HTTP " .. tostring(code_num or code or "Unknown")
+             if response_text then
+                 local success, err_data = pcall(json.decode, response_text)
+                 if success and err_data and err_data.error then
+                     error_detail = err_data.error.message or error_detail
+                 end
+                 logger.warn("AIHelper: API Error Details: " .. response_text)
              end
-             logger.warn("AIHelper: API Error Details: " .. response_text)
-             return nil, "error_" .. tostring(code_num), "API Error: " .. error_detail
+             return nil, "error_" .. tostring(code_num or code), "API Error: " .. error_detail
         end
     end
     
@@ -467,10 +625,6 @@ end
 -- Call ChatGPT API (COMPLETE IMPLEMENTATION)
 function AIHelper:callChatGPT(prompt, config)
     logger.info("AIHelper: Calling ChatGPT API")
-    
-    if not self:checkNetworkConnectivity() then
-        return nil, "error_no_network", "No internet."
-    end
     
     local model = config.model or "gpt-4o-mini"
     local url = config.endpoint or "https://api.openai.com/v1/chat/completions"
@@ -508,26 +662,16 @@ function AIHelper:callChatGPT(prompt, config)
              logger.info("AIHelper: Retrying ChatGPT request (attempt " .. attempt .. ")")
         end
 
-        local response_body = {}
-        local res, code, headers, status = https.request{
-            url = url,
-            method = "POST",
-            headers = {
-                ["Content-Type"] = "application/json",
-                ["Authorization"] = "Bearer " .. config.api_key,
-                ["Content-Length"] = tostring(#request_body),
-            },
-            source = ltn12.source.string(request_body),
-            sink = ltn12.sink.table(response_body),
-            timeout = 120
-        }
+        local res, code, response_text, status = self:makeRequest(url, {
+            ["Content-Type"] = "application/json",
+            ["Authorization"] = "Bearer " .. config.api_key,
+            ["Content-Length"] = tostring(#request_body),
+        }, request_body, 300, 900) -- Connect timeout 300s, Total 900s
         
-        local response_text = table.concat(response_body)
         local code_num = tonumber(code)
-        
-        logger.info("AIHelper: ChatGPT API Code:", code_num, "Length:", #response_text)
+        logger.info("AIHelper: ChatGPT API Code:", code_num, "Length:", response_text and #response_text or 0)
 
-        if code_num == 200 then
+        if code_num == 200 and response_text then
             local success, data = pcall(json.decode, response_text)
             if not success then 
                 logger.warn("AIHelper: JSON parse error")
@@ -547,7 +691,12 @@ function AIHelper:callChatGPT(prompt, config)
                 if choice.message and choice.message.content then
                     local content = choice.message.content
                     logger.info("AIHelper: ChatGPT response received, parsing...")
-                    return self:parseAIResponse(content)
+                    local result, err = self:parseAIResponse(content)
+                    if result then
+                        return result
+                    else
+                        return nil, "error_parse", err or "Failed to parse ChatGPT response."
+                    end
                 else
                     logger.warn("AIHelper: No content in ChatGPT response")
                     return nil, "error_api", "API returned empty response."
@@ -560,6 +709,10 @@ function AIHelper:callChatGPT(prompt, config)
                 end
                 return nil, "error_api", "Invalid response format"
             end
+        elseif code == "USER_CANCELLED" then
+            return nil, "USER_CANCELLED", "Request cancelled"
+        elseif code == "error_timeout" then
+            return nil, "error_timeout", "Connection timed out"
         elseif code_num == 429 then
             logger.warn("AIHelper: 429 Rate Limit (Retrying...)")
             -- Wait longer for rate limit
@@ -572,38 +725,170 @@ function AIHelper:callChatGPT(prompt, config)
         elseif code_num == 401 then
             return nil, "error_401", "Invalid API key"
         else
-            logger.warn("AIHelper: Unexpected error code:", code_num)
-            return nil, "error_" .. tostring(code_num), "Error Code: " .. tostring(code_num)
+            logger.warn("AIHelper: Unexpected error code:", code_num or code)
+            return nil, "error_" .. tostring(code_num or code), "Error Code: " .. tostring(code_num or code)
         end
     end
     
     return nil, "error_timeout", "Timeout"
 end
 
-function AIHelper:parseAIResponse(text)
-    -- Cleaning
-    local json_text = text:gsub("```json", ""):gsub("```", ""):gsub("^%s+", ""):gsub("%s+$", "")
+-- Helper to fix truncated JSON by closing open structures and removing partial entries
+local function fixTruncatedJSON(s)
+    if not s or #s == 0 then return s end
+
+    local stack = {}
+    local in_string = false
+    local escaped = false
+
+    -- 1. Identify nesting and strings
+    for i = 1, #s do
+        local c = s:sub(i,i)
+        if escaped then
+            escaped = false
+        elseif c == "\\" then
+            escaped = true
+        elseif c == '"' then
+            in_string = not in_string
+        elseif not in_string then
+            if c == "{" or c == "[" then
+                table.insert(stack, c)
+            elseif c == "}" then
+                if #stack > 0 and stack[#stack] == "{" then table.remove(stack) end
+            elseif c == "]" then
+                if #stack > 0 and stack[#stack] == "[" then table.remove(stack) end
+            end
+        end
+    end
+
+    local res = s
     
-    -- Parse
+    -- 2. Handle the tail
+    if in_string then 
+        -- Truncated inside a string value OR key
+        res = res .. '"' 
+    end
+
+    -- Remove trailing garbage that isn't a complete value
+    res = res:gsub("%s+$", "")
+    
+    -- Loop to strip partial trailing items (keys without values, trailing commas)
+    local changed = true
+    while changed do
+        changed = false
+        -- Remove trailing comma (invalid before closing brace/bracket)
+        local n
+        res, n = res:gsub(",%s*$", "")
+        if n > 0 then changed = true end
+        
+        -- Remove trailing colon and its key (e.g., "key":)
+        if res:match('"%s*:%s*$') then
+            res = res:gsub('"%s*:[^"]*"%s*$', "") -- remove "key":
+            res = res:gsub('"%s*:%s*$', "")       -- or just : if key was already closed
+            changed = true
+        end
+
+        -- Remove a trailing key that was just closed by our quote fix above
+        -- (e.g., ... , "partial_key" ) -> if it's inside an object { }
+        if #stack > 0 and stack[#stack] == "{" and res:match('"%s*$') then
+            -- If the last non-space char before this string is a comma or brace, 
+            -- and there is no colon AFTER it, it's a partial key.
+            -- Since we are at the end, if it's a string not followed by a colon, it's garbage.
+            local before_string = res:gsub('"[^"]*"%s*$', "")
+            if before_string:match("[,{]%s*$") then
+                res = before_string
+                changed = true
+            end
+        end
+    end
+
+    -- 3. Close all open structures in reverse order
+    for i = #stack, 1, -1 do
+        if stack[i] == "{" then
+            res = res .. "}"
+        elseif stack[i] == "[" then
+            res = res .. "]"
+        end
+    end
+    
+    return res
+end
+
+function AIHelper:parseAIResponse(text)
+    if not text or #text == 0 then
+        return nil, "AI returned an empty response."
+    end
+
+    -- 1. Initial Cleaning (Remove ANY markdown blocks)
+    local json_text = text:gsub("```%w*", ""):gsub("```", ""):gsub("^%s+", ""):gsub("%s+$", "")
+    
+    -- 2. Try direct parse
     local success, data = pcall(json.decode, json_text)
     
-    -- If failed, try to find text between {}
+    -- 3. If failed, extract ONLY the JSON part (from first {/[ to last }/])
     if not success then
-        local first = json_text:find("{")
-        local last_brace = nil
-        for i = #json_text, 1, -1 do
-            if json_text:sub(i,i) == "}" then last_brace = i; break end
+        local first_brace = json_text:find("{", 1, true)
+        local first_bracket = json_text:find("[", 1, true)
+        local first = nil
+        
+        if first_brace and first_bracket then
+            first = math.min(first_brace, first_bracket)
+        else
+            first = first_brace or first_bracket
         end
-        if first and last_brace then
-             json_text = json_text:sub(first, last_brace)
-             success, data = pcall(json.decode, json_text)
+
+        if first then
+             -- Find the last possible closing character
+             local last_brace = json_text:reverse():find("}", 1, true)
+             if last_brace then last_brace = #json_text - last_brace + 1 end
+             
+             local last_bracket = json_text:reverse():find("]", 1, true)
+             if last_bracket then last_bracket = #json_text - last_bracket + 1 end
+             
+             local last = nil
+             if last_brace and last_bracket then
+                 last = math.max(last_brace, last_bracket)
+             else
+                 last = last_brace or last_bracket
+             end
+
+             local extracted = json_text:sub(first, last or #json_text)
+             
+             -- 4. If still invalid (truncated), try to fix it
+             local fixed = fixTruncatedJSON(extracted)
+             
+             -- Try parsing with current json decoder
+             success, data = pcall(json.decode, fixed)
+             
+             -- FALLBACK: If current decoder fails (likely rapidjson), try the standard Lua one
+             if not success and rapidjson_ok then
+                 local standard_json = require("json")
+                 if standard_json and standard_json ~= json then
+                     success, data = pcall(standard_json.decode, fixed)
+                     if success then
+                         logger.warn("AIHelper: JSON Parse succeeded using fallback decoder after repair.")
+                     end
+                 end
+             end
+             
+             if success then
+                 logger.warn("AIHelper: JSON Repair Succeeded. Data is partially recovered.")
+             else
+                 -- LOG ERROR FOR DEBUGGING - Show the last 500 chars of what we tried to fix
+                 local fixed_snippet = fixed:sub(-500)
+                 logger.warn("AIHelper: JSON Repair Failed. Last 500 chars of attempted fix: " .. fixed_snippet)
+             end
         end
     end
 
     if success and data then
         return self:validateAndCleanData(data)
     end
-    return nil
+    
+    -- LOG ERROR FOR DEBUGGING
+    local raw_snippet = text:sub(1, 1000)
+    logger.warn("AIHelper: JSON Parse Failed. Raw start snippet: " .. raw_snippet)
+    return nil, "Failed to parse AI response as JSON. The response may be invalid or truncated.\n\nCheck KOReader logs for 'AIHelper' to see technical details."
 end
 
 function AIHelper:validateAndCleanData(data)
@@ -617,7 +902,9 @@ function AIHelper:validateAndCleanData(data)
     -- 1. AUTHOR & BOOK (Smart Match)
     data.book_title = data.book_title or data.title or strings.unknown_book
     data.author = data.author or data.book_author or strings.unknown_author
-    data.author_bio = data.author_bio or data.AuthorBio or data.bio or ""
+    data.author_bio = ensureString(data.author_bio or data.AuthorBio or data.bio, "")
+    data.author_birth = ensureString(data.author_birth, "---")
+    data.author_death = ensureString(data.author_death, "---")
     data.summary = data.summary or data.book_summary or ""
 
     -- 2. CHARACTERS
@@ -678,10 +965,6 @@ function AIHelper:testAPIKey(provider)
     
     if not provider_config.api_key or #provider_config.api_key == 0 then
         return false, "AI API Key not set"
-    end
-    
-    if not self:checkNetworkConnectivity() then
-        return false, "No internet connection!"
     end
     
     logger.info("AIHelper: Testing", provider, "API key")

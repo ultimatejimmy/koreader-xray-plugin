@@ -2,6 +2,7 @@
 
 local UIManager = require("ui/uimanager")
 local InfoMessage = require("ui/widget/infomessage")
+local ConfirmBox = require("ui/widget/confirmbox")
 local Menu = require("ui/widget/menu")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local logger = require("logger")
@@ -171,20 +172,12 @@ function XRayPlugin:addToMainMenu(menu_items)
                 end,
             },
             {
-                text = self.loc:t("menu_character_notes"),
-                keep_menu_open = true,
-                callback = function()
-                    self:showCharacterNotes()
-                end,
-            },
-            {
                 text = self.loc:t("menu_timeline") .. (counts.timeline > 0 and " (" .. counts.timeline .. " " .. self.loc:t("events") .. ")" or ""),
                 keep_menu_open = true,
                 callback = function()
                     self:showTimeline()
                 end,
             },
-            { separator = true,},
             {
                 text = self.loc:t("menu_historical_figures") .. (counts.historical_figures > 0 and " (" .. counts.historical_figures .. ")" or ""),
                 keep_menu_open = true,
@@ -219,14 +212,22 @@ function XRayPlugin:addToMainMenu(menu_items)
                 callback = function()
                     self:showThemes()
                 end,
+                separator = true,
             },
-            { separator = true },
             {
-                text = self.loc:t("menu_fetch_ai"),
+                text = self.loc:t("menu_fetch_xray") or "Fetch X-Ray Data",
                 keep_menu_open = true,
                 callback = function()
                     self:fetchFromAI()
                 end,
+            },
+            {
+                text = self.loc:t("menu_fetch_author") or "Fetch Author Info (AI)",
+                keep_menu_open = true,
+                callback = function()
+                    self:fetchAuthorInfo()
+                end,
+                separator = true,
             },
             {
                 text = self.loc:t("menu_ai_settings"),
@@ -238,8 +239,8 @@ function XRayPlugin:addToMainMenu(menu_items)
                         callback = function()
                             self:selectAIProvider()
                         end,
+                        separator = true,
                     },
-                    { separator = true },
                     {
                         text = self.loc:t("menu_gemini_key") .. " (" .. (self.ai_helper.providers.gemini.api_key and "SET" or "NOT SET") .. ")", 
                         keep_menu_open = true,
@@ -253,8 +254,8 @@ function XRayPlugin:addToMainMenu(menu_items)
                         callback = function()
                             self:selectGeminiModel()
                         end,
+                        separator = true,
                     },
-                    { separator = true },
                     {
                         text = self.loc:t("menu_chatgpt_key") .. " (" .. (self.ai_helper.providers.chatgpt.api_key and "SET" or "NOT SET") .. ")", 
                         keep_menu_open = true,
@@ -268,8 +269,8 @@ function XRayPlugin:addToMainMenu(menu_items)
                         callback = function()
                             self:selectChatGPTModel()
                         end,
+                        separator = true,
                     },
-                    { separator = true },
                     {
                         text = "View All Config Values", 
                         keep_menu_open = true,
@@ -279,13 +280,13 @@ function XRayPlugin:addToMainMenu(menu_items)
                     },
                 }
             },
-            {separator = true,},
             {
                 text = self.loc:t("menu_clear_cache"),
                 keep_menu_open = true,
                 callback = function()
                     self:clearCache()
                 end,
+                separator = true,
             },
             {
                 text = self.loc:t("menu_xray_mode") .. " " .. (self.xray_mode_enabled and self.loc:t("xray_mode_active") or self.loc:t("xray_mode_inactive")),
@@ -300,8 +301,8 @@ function XRayPlugin:addToMainMenu(menu_items)
                 callback = function()
                     self:showLanguageSelection()
                 end,
+                separator = true,
             },
-            { separator = true },
             {
                 text = self.loc:t("menu_about"),
                 keep_menu_open = true,
@@ -321,16 +322,16 @@ function XRayPlugin:showLanguageSelection()
         UIManager:close(self.ldlg)
         self.loc:setLanguage(lang_code)
         UIManager:show(InfoMessage:new{
-            text = "✅ " .. self.loc:t("language_changed") .. "\n\n" .. self.loc:t("please_restart"),
+            text = "[OK] " .. self.loc:t("language_changed") .. "\n\n" .. self.loc:t("please_restart"),
             timeout = 4 
         })
     end
     
     local buttons = {
-        {{ text = "English" .. (current_lang == "en" and " ✓" or ""), callback = function() changeLang("en") end }},
-        {{ text = "Türkçe" .. (current_lang == "tr" and " ✓" or ""), callback = function() changeLang("tr") end }},
-        {{ text = "Português" .. (current_lang == "pt_br" and " ✓" or ""), callback = function() changeLang("pt_br") end }},
-        {{ text = "Español" .. (current_lang == "es" and " ✓" or ""), callback = function() changeLang("es") end }},
+        {{ text = "English" .. (current_lang == "en" and " [OK]" or ""), callback = function() changeLang("en") end }},
+        {{ text = "Türkçe" .. (current_lang == "tr" and " [OK]" or ""), callback = function() changeLang("tr") end }},
+        {{ text = "Português" .. (current_lang == "pt_br" and " [OK]" or ""), callback = function() changeLang("pt_br") end }},
+        {{ text = "Español" .. (current_lang == "es" and " [OK]" or ""), callback = function() changeLang("es") end }},
     }
     
     self.ldlg = ButtonDialog:new{title = "Language Selection", buttons = buttons}
@@ -344,14 +345,18 @@ function XRayPlugin:showCharacters()
     end
     
     local items = {
-        { text = "🔍 " .. self.loc:t("search_character"), callback = function() self:showCharacterSearch() end }
+        { 
+            text = "[Search] " .. self.loc:t("search_character"), 
+            callback = function() self:showCharacterSearch() end 
+        }
     }
     
     for _, char in ipairs(self.characters) do
         local name = char.name or "Unknown"
-        local text = "│ " .. name
+        -- Bold the name in the menu
+        local text = "• " .. name
         if char.description and #char.description > 0 then
-            text = text .. "\n   " .. char.description
+            text = text .. "\n  " .. char.description:sub(1, 80) .. ( #char.description > 80 and "..." or "")
         end
         table.insert(items, {
             text = text,
@@ -369,14 +374,16 @@ function XRayPlugin:showCharacters()
 end
 
 function XRayPlugin:showCharacterDetails(character)
-    local text = string.format("%s: %s\n\n%s\n%s\n\n%s: %s\n%s: %s\n%s: %s",
-        self.loc:t("character_name"), character.name or "???",
-        self.loc:t("description"), character.description or "---",
-        self.loc:t("role"), character.role or "---",
-        self.loc:t("gender"), character.gender or "---",
-        self.loc:t("occupation"), character.occupation or "---")
-    
-    UIManager:show(InfoMessage:new{ text = text, width = Screen:getWidth() * 0.9 })
+    local lines = {
+        "NAME: " .. (character.name or "???"),
+        "ROLE: " .. (character.role or "---"),
+        "GENDER: " .. (character.gender or "---"),
+        "OCCUPATION: " .. (character.occupation or "---"),
+        "",
+        "DESCRIPTION:",
+        character.description or "---"
+    }
+    UIManager:show(InfoMessage:new{ text = table.concat(lines, "\n"), width = Screen:getWidth() * 0.9 })
 end
 
 function XRayPlugin:selectGeminiModel()
@@ -389,11 +396,11 @@ function XRayPlugin:selectGeminiModel()
     local current_model = self.ai_helper.providers.gemini.model or "gemini-2.5-flash"
     local ButtonDialog = require("ui/widget/buttondialog")
     local buttons = {
-        {{ text = "Gemini 2.5 Flash" .. (current_model == "gemini-2.5-flash" and " ✓" or ""), 
+        {{ text = "Gemini 2.5 Flash" .. (current_model == "gemini-2.5-flash" and " [OK]" or ""), 
            callback = function() self.ai_helper:setGeminiModel("gemini-2.5-flash"); UIManager:close(self.dlg) end }},
-        {{ text = "Gemini 2.5 Pro" .. (current_model == "gemini-2.5-pro" and " ✓" or ""), 
+        {{ text = "Gemini 2.5 Pro" .. (current_model == "gemini-2.5-pro" and " [OK]" or ""), 
            callback = function() self.ai_helper:setGeminiModel("gemini-2.5-pro"); UIManager:close(self.dlg) end }},
-        {{ text = "Gemini 3 Pro Preview" .. (current_model == "gemini-3-pro-preview" and " ✓" or ""), 
+        {{ text = "Gemini 3 Pro Preview" .. (current_model == "gemini-3-pro-preview" and " [OK]" or ""), 
            callback = function() self.ai_helper:setGeminiModel("gemini-3-pro-preview"); UIManager:close(self.dlg) end }},
         {{ text = "Manual Input...", 
            callback = function() 
@@ -425,17 +432,9 @@ end
 
 function XRayPlugin:fetchFromAI()
     local NetworkMgr = require("ui/network/manager")
-    if not NetworkMgr:isOnline() then
-        local ConfirmBox = require("ui/widget/confirmbox")
-        UIManager:show(ConfirmBox:new{
-            text = self.loc:t("network_offline_prompt"),
-            ok_text = self.loc:t("turn_on_wifi"),
-            cancel_text = self.loc:t("cancel"),
-            ok_callback = function() NetworkMgr:turnOnWifi(function() self:askSpoilerPreference() end) end,
-        })
-        return
-    end
-    self:askSpoilerPreference()
+    NetworkMgr:runWhenOnline(function()
+        self:askSpoilerPreference()
+    end)
 end
 
 function XRayPlugin:askSpoilerPreference()
@@ -446,7 +445,7 @@ function XRayPlugin:askSpoilerPreference()
     local spoiler_menu = Menu:new{
         title = self.loc:t("spoiler_preference_title"),
         item_table = {
-            { text = string.format(self.loc:t("spoiler_free_option"), reading_percent),
+            { text = self.loc:t("spoiler_free_option", reading_percent),
               callback = function() UIManager:close(spoiler_menu); self:continueWithFetch(reading_percent) end },
             { text = self.loc:t("full_book_option"),
               callback = function() UIManager:close(spoiler_menu); self:continueWithFetch(100) end },
@@ -466,23 +465,55 @@ function XRayPlugin:continueWithFetch(reading_percent)
         self.ai_helper:init(self.path)
     end
     
+    local ButtonDialog = require("ui/widget/buttondialog")
+    local current_page = self.ui:getCurrentPage()
     local props = self.ui.document:getProps() or {}
     local title = props.title or "Unknown"
     local author = props.authors or "Unknown"
     local series = props.series or props.Series
     local series_index = props.series_index or props.SeriesIndex
     
-    local wait_msg = InfoMessage:new{ text = self.loc:t("fetching_ai") .. "\n" .. title .. "\n\n" .. self.loc:t("fetching_wait"), timeout = 60 }
+    -- Show a persistent ButtonDialog instead of InfoMessage
+    local wait_msg
+    local is_cancelled = false
+    wait_msg = ButtonDialog:new{ 
+        title = self.loc:t("fetching_ai", self.ai_provider or "AI"),
+        text = title .. "\n\n" .. self.loc:t("fetching_wait") .. "\n\n" .. (self.loc:t("dont_touch") or "Do not touch the screen."), 
+        buttons = {
+            {{ text = self.loc:t("cancel"), id = "close", callback = function() 
+                is_cancelled = true
+                UIManager:close(wait_msg) 
+            end }}
+        },
+        close_on_touch_outside = false,
+    }
     UIManager:show(wait_msg)
     
-    UIManager:scheduleIn(1.0, function()
+    -- Use a 0.5-second delay to ENSURE the Dialog renders before the blocking work starts
+    UIManager:scheduleIn(0.5, function()
+        -- CRITICAL: Check if user already cancelled during the 0.5s window
+        if is_cancelled then return end
+
         if not self.chapter_analyzer then 
             self.chapter_analyzer = require("chapteranalyzer"):new() 
         end
         
-        -- Extract book text for context (increased to 100k to match assistant.koplugin)
-        local book_text = self.chapter_analyzer:getTextForAnalysis(self.ui, 100000)
+        -- Step 1: Extract book text and chapter samples
+        -- Pass current_page to optimize extraction (avoids slow pagination)
+        local book_text = self.chapter_analyzer:getTextForAnalysis(self.ui, 100000, function(progress)
+            logger.info("XRayPlugin: Extraction progress:", math.floor(progress * 100), "%")
+        end, current_page)
+        
+        local chapter_samples = self.chapter_analyzer:getDetailedChapterSamples(self.ui)
+        
+        if (not book_text or #book_text < 10) and not chapter_samples then
+            if wait_msg then UIManager:close(wait_msg) end
+            UIManager:show(InfoMessage:new{ text = "Error: Could not extract book text.", timeout = 5 })
+            return
+        end
+
         local annotations = self.chapter_analyzer:getAnnotationsForAnalysis(self.ui)
+        logger.info("XRayPlugin: Sending context to AI. Text length:", #book_text or 0, "Chapter samples:", chapter_samples and #chapter_samples or 0)
         
         local filename = self.ui.document.file:match("([^/\\]+)$")
         local context = { 
@@ -492,18 +523,40 @@ function XRayPlugin:continueWithFetch(reading_percent)
             series = series,
             series_index = series_index,
             book_text = book_text,
+            chapter_samples = chapter_samples,
             annotations = annotations
         }
         
+        -- Step 2: Make the AI request (using non-blocking Trapper subprocess)
+        self.ai_helper:setTrapWidget(wait_msg)
         local book_data, error_code, error_msg = self.ai_helper:getBookData(title, author, self.ai_provider or "gemini", context)
         
+        -- Step 3: Cleanup
+        self.ai_helper:resetTrapWidget()
         if wait_msg then UIManager:close(wait_msg) end
         
-        if not book_data then
-            UIManager:show(InfoMessage:new{ text = (error_msg or "AI Fetch Failed"), timeout = 5 })
+        if error_code == "USER_CANCELLED" then
+            logger.info("XRayPlugin: AI Fetch cancelled by user")
             return
         end
         
+        if not book_data then
+            -- Check for subprocess error
+            if error_code == "error_subprocess" then
+                UIManager:show(InfoMessage:new{
+                    text = "AI Subprocess Error: Please check logs.",
+                    timeout = 99999999, -- Effectively permanent until replaced
+                })
+            else
+                UIManager:show(InfoMessage:new{
+                    text = (error_msg or "AI Fetch Failed"),
+                    timeout = 99999999, -- Effectively permanent until replaced
+                })
+            end
+            return
+        end
+        
+        -- Process results
         self.characters = book_data.characters or {}
         self.locations = book_data.locations or {}
         self.themes = book_data.themes or {}
@@ -514,23 +567,84 @@ function XRayPlugin:continueWithFetch(reading_percent)
         if not self.cache_manager then self.cache_manager = require("cachemanager"):new() end
         local cache_saved = self.cache_manager:saveCache(self.ui.document.file, book_data)
         
-        local cache_msg = cache_saved and self.loc:t("cache_saved") or self.loc:t("cache_save_failed")
-        local provider_name = self.ai_provider or "gemini"
+        local provider_name = self.ai_provider or "AI" -- Fallback to AI if provider name is not set
+        local summary_text = self.summary or "No summary provided by AI."
+        if summary_text == "" then summary_text = "No summary provided by AI." end
         
         local success_message = self.loc:t(
             "ai_fetch_complete",
-            provider_name,
-            book_data.book_title or title,
-            book_data.author or author,
-            #self.characters,
-            #self.locations,
-            #self.themes,
-            #self.timeline,
-            #self.historical_figures,
-            cache_msg
+            provider_name,                       -- 1. %s
+            book_data.book_title or title,      -- 2. %s
+            book_data.author or author,         -- 3. %s
+            #self.characters,                    -- 4. %d
+            #self.locations,                     -- 5. %d
+            #self.themes,                        -- 6. %d
+            #self.timeline,                      -- 7. %d
+            #self.historical_figures,            -- 8. %d
+            cache_saved and self.loc:t("cache_saved") or self.loc:t("cache_save_failed"), -- 9. %s
+            summary_text                         -- 10. %s
         )
         
-        UIManager:show(InfoMessage:new{ text = success_message, timeout = 10 })
+        -- Show success dialog with summary
+        local success_dialog
+        success_dialog = ButtonDialog:new{
+            title = self.loc:t("fetch_successful") or "Fetch successful",
+            text = success_message,
+            buttons = {
+                {
+                    {
+                        text = self.loc:t("ok"),
+                        callback = function() UIManager:close(success_dialog) end,
+                    }
+                }
+            }
+        }
+        UIManager:show(success_dialog)
+    end)
+end
+
+function XRayPlugin:fetchAuthorInfo()
+    local ButtonDialog = require("ui/widget/buttondialog")
+    local props = self.ui.document:getProps() or {}
+    local title = props.title or "Unknown"
+    local author = props.authors or "Unknown"
+    
+    local wait_msg = ButtonDialog:new{
+        title = self.loc:t("fetching_author", self.ai_provider or "AI"),
+        text = title .. " - " .. author .. "\n\n" .. self.loc:t("fetching_wait"),
+        buttons = {
+            {{ text = self.loc:t("cancel"), callback = function() UIManager:close(wait_msg) end }}
+        }
+    }
+    UIManager:show(wait_msg)
+    
+    UIManager:scheduleIn(0.5, function()
+        local author_data, error_code, error_msg = self.ai_helper:getAuthorData(title, author, self.ai_provider)
+        UIManager:close(wait_msg)
+        
+        if not author_data then
+            UIManager:show(InfoMessage:new{ text = error_msg or "Failed to fetch author info.", timeout = 5 })
+            return
+        end
+        
+        self.author_info = {
+            name = author_data.author or author,
+            description = author_data.author_bio or "No biography available.",
+            birthDate = author_data.author_birth or "---",
+            deathDate = author_data.author_death or "---"
+        }
+        
+        -- Merge with existing cache if possible
+        if not self.cache_manager then self.cache_manager = require("cachemanager"):new() end
+        local existing_cache = self.cache_manager:loadCache(self.ui.document.file) or {}
+        existing_cache.author = self.author_info.name
+        existing_cache.author_bio = self.author_info.description
+        existing_cache.author_birth = self.author_info.birthDate
+        existing_cache.author_death = self.author_info.deathDate
+        
+        self.cache_manager:saveCache(self.ui.document.file, existing_cache)
+        
+        self:showAuthorInfo()
     end)
 end
 
@@ -541,7 +655,7 @@ function XRayPlugin:showLocations()
     end
     local items = {}
     for _, loc in ipairs(self.locations) do
-        table.insert(items, { text = "📍 " .. (loc.name or "???"), callback = function() 
+        table.insert(items, { text = "(loc) " .. (loc.name or "???"), callback = function() 
             UIManager:show(InfoMessage:new{ text = (loc.name or "") .. "\n\n" .. (loc.description or "") .. "\n\nImportance: " .. (loc.importance or ""), timeout = 10 })
         end })
     end
@@ -549,11 +663,27 @@ function XRayPlugin:showLocations()
 end
 
 function XRayPlugin:showAuthorInfo()
-    local text = "No Author Info"
-    if self.author_info then
-        text = (self.author_info.name or "Unknown") .. "\n\n" .. (self.author_info.description or "")
+    if not self.author_info or not self.author_info.description or self.author_info.description == "" or self.author_info.description == "No biography available." then
+        UIManager:show(ConfirmBox:new{
+            text = self.loc:t("no_author_data_fetch"),
+            ok_text = self.loc:t("fetch_button") or "Fetch",
+            cancel_text = self.loc:t("cancel"),
+            callback = function()
+                self:fetchAuthorInfo()
+            end
+        })
+        return
     end
-    UIManager:show(InfoMessage:new{ text = text, timeout = 15 })
+    
+    local lines = {
+        "NAME: " .. (self.author_info.name or "Unknown"),
+        "BORN: " .. (self.author_info.birthDate or self.author_info.birth or "---"),
+        "DIED: " .. (self.author_info.deathDate or self.author_info.death or "---"),
+        "",
+        "BIOGRAPHY:",
+        (self.author_info.description or self.author_info.bio or "No biography available.")
+    }
+    UIManager:show(InfoMessage:new{ text = table.concat(lines, "\n"), timeout = 15, width = Screen:getWidth() * 0.9 })
 end
 
 function XRayPlugin:showAbout()
@@ -574,12 +704,6 @@ function XRayPlugin:toggleXRayMode()
     self.xray_mode_enabled = not self.xray_mode_enabled
     local status = self.xray_mode_enabled and self.loc:t("xray_mode_active") or self.loc:t("xray_mode_inactive")
     UIManager:show(InfoMessage:new{ text = self.loc:t("menu_xray_mode") .. " " .. status, timeout = 3 })
-end
-
-function XRayPlugin:showCharacterNotes()
-    if not self.notes_manager then self.notes_manager = require("characternotes"):new() end
-    local notes = self.notes_manager:loadNotes(self.ui.document.file)
-    UIManager:show(InfoMessage:new{ text = "Notes feature restored. Total notes: " .. self.notes_manager:countNotes(notes), timeout = 5 })
 end
 
 function XRayPlugin:showTimeline()
@@ -603,7 +727,7 @@ function XRayPlugin:showHistoricalFigures()
     end
     local items = {}
     for _, fig in ipairs(self.historical_figures) do
-        table.insert(items, { text = "📜 " .. (fig.name or "???"), callback = function()
+        table.insert(items, { text = "(hist) " .. (fig.name or "???"), callback = function()
             UIManager:show(InfoMessage:new{ text = (fig.name or "") .. "\n\n" .. (fig.biography or ""), timeout = 15 })
         end })
     end
@@ -620,7 +744,7 @@ function XRayPlugin:showThemes()
         return
     end
     local text = table.concat(self.themes, "\n• ")
-    UIManager:show(InfoMessage:new{ text = "🎨 " .. self.loc:t("themes_title") .. ":\n\n• " .. text, timeout = 15 })
+    UIManager:show(InfoMessage:new{ text = "(theme) " .. self.loc:t("themes_title") .. ":\n\n• " .. text, timeout = 15 })
 end
 
 function XRayPlugin:showChapterCharacters()
@@ -642,7 +766,7 @@ function XRayPlugin:showChapterCharacters()
             local name = char.name or "Unknown"
             
             table.insert(items, {
-                text = string.format("👤 %s (%d %s)\n   %s", 
+                text = string.format("%s (%d %s)\n   %s", 
                     name, 
                     count, 
                     self.loc:t("mentions") or "mentions",
@@ -799,7 +923,7 @@ function XRayPlugin:selectAIProvider()
     local gemini_key = self.ai_helper.providers.gemini and self.ai_helper.providers.gemini.api_key
     if gemini_key and gemini_key ~= "" then
         table.insert(providers, {
-            text = "✅ Google Gemini (" .. (self.ai_provider == "gemini" and "ACTIVE" or "INACTIVE") .. ")",
+            text = "[OK] Google Gemini (" .. (self.ai_provider == "gemini" and "ACTIVE" or "INACTIVE") .. ")",
             callback = function()
                 self.ai_provider = "gemini"
                 self.ai_helper:setDefaultProvider("gemini")
@@ -812,7 +936,7 @@ function XRayPlugin:selectAIProvider()
         })
     else
         table.insert(providers, {
-            text = "❌ Google Gemini (No API key)",
+            text = "Google Gemini (No API key)",
             callback = function()
                 UIManager:show(InfoMessage:new{ text = self.loc:t("set_key_first"), timeout = 3 })
             end,
@@ -822,7 +946,7 @@ function XRayPlugin:selectAIProvider()
     local chatgpt_key = self.ai_helper.providers.chatgpt and self.ai_helper.providers.chatgpt.api_key
     if chatgpt_key and chatgpt_key ~= "" then
         table.insert(providers, {
-            text = "✅ ChatGPT (" .. (self.ai_provider == "chatgpt" and "ACTIVE" or "INACTIVE") .. ")",
+            text = "[OK] ChatGPT (" .. (self.ai_provider == "chatgpt" and "ACTIVE" or "INACTIVE") .. ")",
             callback = function()
                 self.ai_provider = "chatgpt"
                 self.ai_helper:setDefaultProvider("chatgpt")
@@ -835,7 +959,7 @@ function XRayPlugin:selectAIProvider()
         })
     else
         table.insert(providers, {
-            text = "❌ ChatGPT (No API key)",
+            text = "ChatGPT (No API key)",
             callback = function()
                 UIManager:show(InfoMessage:new{ text = self.loc:t("set_key_first"), timeout = 3 })
             end,
@@ -919,9 +1043,9 @@ function XRayPlugin:selectChatGPTModel()
     local current_model = self.ai_helper.providers.chatgpt.model or "gpt-4o-mini"
     local ButtonDialog = require("ui/widget/buttondialog")
     local buttons = {
-        {{ text = "GPT-4o Mini" .. (current_model == "gpt-4o-mini" and " ✓" or ""), 
+        {{ text = "GPT-4o Mini" .. (current_model == "gpt-4o-mini" and " [OK]" or ""), 
            callback = function() self.ai_helper:setChatGPTModel("gpt-4o-mini"); UIManager:close(self.dlg) end }},
-        {{ text = "GPT-4o" .. (current_model == "gpt-4o" and " ✓" or ""), 
+        {{ text = "GPT-4o" .. (current_model == "gpt-4o" and " [OK]" or ""), 
            callback = function() self.ai_helper:setChatGPTModel("gpt-4o"); UIManager:close(self.dlg) end }},
         {{ text = "Manual Input...", 
            callback = function() 

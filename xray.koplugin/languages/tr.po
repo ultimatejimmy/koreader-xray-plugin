@@ -1,4 +1,4 @@
-# Turkish translation for X-Ray Plugin
+﻿# Turkish translation for X-Ray Plugin
 # Copyright (C) 2025
 # This file is distributed under the same license as the X-Ray package.
 #
@@ -51,7 +51,10 @@ msgid "menu_themes"
 msgstr "Temalar"
 
 msgid "menu_fetch_ai"
-msgstr "AI ile Bilgi Çek"
+msgstr "X-Ray Verilerini Çek"
+
+msgid "menu_fetch_xray"
+msgstr "X-Ray Verilerini Çek"
 
 msgid "menu_ai_settings"
 msgstr "AI Ayarları"
@@ -289,18 +292,33 @@ msgstr "AI'dan veri çekilemedi!\n\nSebep olabilir:\n• API key hatalı\n• İ
 
 msgid "ai_fetch_complete"
 msgstr ""
-"✅ %s'den başarıyla çekildi!\n"      ← provider_name
+" %s'den başarıyla çekildi!\n"
 "\n"
-"%s\n"                                 ← book_title
-"Yazar: %s\n"                          ← author
+"%s\n"
+"Yazar: %s\n"
 "\n"
-"%d karakter\n"                        ← #characters
-"%d mekan\n"                           ← #locations
-"%d tema\n"                            ← #themes
-"%d olay\n"                            ← #timeline
-"%d tarihi kişilik\n"                  ← #historical_figures
+"%d karakter\n"
+"%d mekan\n"
+"%d tema\n"
+"%d olay\n"
+"%d tarihi kişilik\n"
 "\n"
-"%s"                                   ← cache_msg
+"%s\n"
+"\n"
+"ÖZET:\n"
+"%s"
+
+msgid "menu_fetch_author"
+msgstr " Yazar Bilgisini Çek (AI)"
+
+msgid "fetching_author"
+msgstr " %s üzerinden yazar bilgisi çekiliyor..."
+
+msgid "no_author_data_fetch"
+msgstr "Yazar bilgisi mevcut değil.\n\nAI'dan çekmek ister misiniz?"
+
+msgid "fetch_button"
+msgstr "Getir"
 
 # ==============================
 # X-RAY MODE & SEARCH
@@ -452,6 +470,9 @@ msgstr "Önce API key ayarlayın"
 # ==============================
 # EXTRA TITLES
 # ==============================
+
+msgid "fetch_successful"
+msgstr "Başarılı"
 
 msgid "summary_title"
 msgstr "Kitap Özeti"
@@ -609,20 +630,20 @@ msgstr ""
 "ÖRNEK KULLANIM SENARYOLARI:\n"
 "\n"
 "Ecinniler (Dostoyevski) okuyorsunuz:\n"
-"✓ 15+ karakter otomatik tespit edildi\n"
-"✓ Sergei Nechayev gibi tarihi figürler eklendi\n"
-"✓ 1860'lar Rusya sosyalist hareketi açıklandı\n"
-"✓ Karakterlerin ilk görünüşleri işaretlendi\n"
+" 15+ karakter otomatik tespit edildi\n"
+" Sergei Nechayev gibi tarihi figürler eklendi\n"
+" 1860'lar Rusya sosyalist hareketi açıklandı\n"
+" Karakterlerin ilk görünüşleri işaretlendi\n"
 "\n"
 "Savaş ve Barış (Tolstoy) okuyorsunuz:\n"
-"✓ 100+ karakter organize edildi\n"
-"✓ Napolyon, Kutuzov gibi tarihsel figürler\n"
-"✓ Borodino Savaşı gibi olaylar zaman çizelgesinde\n"
-"✓ Moskova, Petersburg gibi mekanlar detaylı\n"
+" 100+ karakter organize edildi\n"
+" Napolyon, Kutuzov gibi tarihsel figürler\n"
+" Borodino Savaşı gibi olaylar zaman çizelgesinde\n"
+" Moskova, Petersburg gibi mekanlar detaylı\n"
 "\n"
 "1984 (Orwell) okuyorsunuz:\n"
-"✓ Winston, Julia, O'Brien karakterleri\n"
-"✓ Distopik temalar listelendi\n"
+" Winston, Julia, O'Brien karakterleri\n"
+" Distopik temalar listelendi\n"
 "• Bölüm bölüm karakter takibi\n"
 "• Kişisel notlarla analiz\n"
 "\n"
@@ -755,31 +776,31 @@ msgid "ok"
 msgstr "Tamam"
 
 msgid "menu_fetch_full"
-msgstr "📚 AI ile Bilgi Çek (Tam Kitap)"
+msgstr "� AI ile Bilgi Çek (Tam Kitap)"
 
 msgid "menu_fetch_progress"
-msgstr "📖 Okuduğum Yere Kadar (SPOILER-free)"
+msgstr " Okuduğum Yere Kadar (SPOILER-free)"
 
 msgid "progress_warning_low"
-msgstr "📖 Henüz çok az ilerlemişsiniz (%%%d)\n\nYine de devam edilsin mi?"
+msgstr " Henüz çok az ilerlemişsiniz (%%%d)\n\nYine de devam edilsin mi?"
 
 msgid "progress_error"
-msgstr "⚠️ Okuma ilerlemesi alınamadı!\n\nTam kitap analizi yapılsın mı?"
+msgstr " Okuma ilerlemesi alınamadı!\n\nTam kitap analizi yapılsın mı?"
 
 msgid "error_info"
-msgstr "❌ Hata Oluştu!"
+msgstr " Hata Oluştu!"
 
 msgid "error_no_network"
-msgstr "📡 İnternet bağlantısı yok!\n\nLütfen Wi-Fi bağlantınızı kontrol edin."
+msgstr " İnternet bağlantısı yok!\n\nLütfen Wi-Fi bağlantınızı kontrol edin."
 
 msgid "error_network_timeout"
-msgstr "⏱️ Bağlantı zaman aşımına uğradı!\n\nİnternet bağlantınızı kontrol edip tekrar deneyin."
+msgstr " Bağlantı zaman aşımına uğradı!\n\nİnternet bağlantınızı kontrol edip tekrar deneyin."
 
 msgid "error_invalid_api_key"
-msgstr "🔑 API key geçersiz!\n\nLütfen API key'inizi kontrol edin."
+msgstr " API key geçersiz!\n\nLütfen API key'inizi kontrol edin."
 
 msgid "error_unknown"
-msgstr "❌ Bilinmeyen hata!\n\nLütfen tekrar deneyin."
+msgstr " Bilinmeyen hata!\n\nLütfen tekrar deneyin."
 
 msgid "error_filtered"
 msgstr "İçerik filtreye takıldı."
@@ -788,13 +809,13 @@ msgid "spoiler_preference_title"
 msgstr "Spoiler Tercih"
 
 msgid "spoiler_free_option"
-msgstr "🔒 Spoiler'sız Mod (Sadece %%%d'e kadar)"
+msgstr " Spoiler'sız Mod (Sadece %%%d'e kadar)"
 
 msgid "full_book_option"
-msgstr "📖 Tam Kitap (Tüm içerik)"
+msgstr " Tam Kitap (Tüm içerik)"
 
 msgid "spoiler_free_mode"
-msgstr "🔒 Spoiler'sız Mod: %%%d"
+msgstr " Spoiler'sız Mod: %%%d"
 
 msgid "full_book_mode_active"
-msgstr "📖 Tam Kitap Modu"
+msgstr " Tam Kitap Modu"

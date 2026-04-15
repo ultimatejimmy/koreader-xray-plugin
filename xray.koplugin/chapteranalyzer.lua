@@ -328,14 +328,13 @@ function ChapterAnalyzer:findCharactersInText(text, characters)
     return found_characters
 end
 
--- Count how many times a name appears
--- Get text for analysis (from beginning to current position)
-function ChapterAnalyzer:getTextForAnalysis(ui, max_len)
+-- Get text for analysis (up to max_len characters before current position)
+function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, current_page)
     if not ui or not ui.document then
         return nil
     end
     
-    max_len = max_len or 100000 -- Match assistant.koplugin's 100k default
+    max_len = max_len or 100000 
     local book_text = ""
     
     -- Check if it's a reflowable document (EPUB, etc.)
@@ -345,34 +344,52 @@ function ChapterAnalyzer:getTextForAnalysis(ui, max_len)
         local current_xp = ui.document:getXPointer()
         if not current_xp then return nil end
         
-        -- Start from beginning
-        ui.document:gotoPos(0)
-        local start_xp = ui.document:getXPointer()
-        
-        -- Go back to current position
-        ui.document:gotoXPointer(current_xp)
-        
-        -- Extract text
+        -- Optimization: Adopt "extract from start" approach which is faster in creengine
+        -- than seeking to arbitrary positions which might trigger re-pagination.
         local success, result = pcall(function()
-            return ui.document:getTextFromXPointers(start_xp, current_xp)
+            if progress_callback then progress_callback(0.1) end
+            
+            -- Go to the very beginning of the book (instant)
+            ui.document:gotoPos(0)
+            local start_xp = ui.document:getXPointer()
+            
+            -- Go back to current position
+            ui.document:gotoXPointer(current_xp)
+            
+            if progress_callback then progress_callback(0.3) end
+            
+            -- Extract EVERYTHING from start to here
+            local full_text = ui.document:getTextFromXPointers(start_xp, current_xp) or ""
+            
+            -- Trim to the last max_len characters
+            if #full_text > max_len then
+                return full_text:sub(-max_len)
+            else
+                return full_text
+            end
         end)
         
         if success and result then
             book_text = result
+        else
+            -- Last ditch fallback
+            book_text = ""
         end
     else
-        -- For page-based documents, get text from start to current page
-        local current_page = ui.view.state.page
-        local total_pages = ui.document:getPageCount()
+        -- For page-based documents (PDF), get text from a limited number of pages before current
+        local current_pos = current_page or (ui.view and ui.view.state and ui.view.state.page) or 1
+        local max_pages = 100 
+        local start_page = math.max(1, current_pos - max_pages)
         
-        -- assistant.koplugin uses 250 pages max for PDFs
-        local max_pages = 250
-        local start_page = math.max(1, current_page - max_pages)
+        logger.info("ChapterAnalyzer: Extracting PDF pages", start_page, "to", current_pos)
         
         for page = start_page, current_page do
+            if progress_callback and (page % 10 == 0) then
+                progress_callback(0.1 + (0.8 * (page - start_page) / (current_page - start_page)))
+            end
+            
             local page_text = ui.document:getPageText(page) or ""
             if type(page_text) == "table" then
-                -- Handle structured text if returned
                 local texts = {}
                 for _, block in ipairs(page_text) do
                     if type(block) == "table" then
@@ -390,13 +407,13 @@ function ChapterAnalyzer:getTextForAnalysis(ui, max_len)
         end
     end
     
-    -- Limit text length
+    -- Limit text length (from the end)
     if #book_text > max_len then
-        -- For spoiler-free context, the part LEADING UP to the current position is most important.
-        -- We take the LAST max_len characters of what we've extracted (which ends at current position).
         book_text = book_text:sub(-max_len)
     end
     
+    if progress_callback then progress_callback(1.0) end
+    logger.info("ChapterAnalyzer: Total characters extracted for analysis:", #book_text)
     return book_text
 end
 
@@ -418,6 +435,64 @@ function ChapterAnalyzer:getAnnotationsForAnalysis(ui)
     end
     
     return #annotations_text > 0 and annotations_text or nil
+end
+
+-- Get detailed samples (Start/Mid/End) from each chapter up to current position
+function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters)
+    if not ui or not ui.document then return nil end
+    
+    local toc = ui.document:getToc()
+    if not toc or #toc == 0 then 
+        logger.info("ChapterAnalyzer: No TOC found for detailed sampling")
+        return nil 
+    end
+    
+    local current_page = nil
+    if ui.view and ui.view.state and ui.view.state.page then
+        current_page = ui.view.state.page
+    elseif ui.rolling and ui.rolling.current_page then
+        current_page = ui.rolling.current_page
+    elseif ui.paging and ui.paging.getCurrentPage then
+        current_page = ui.paging:getCurrentPage()
+    end
+    
+    if not current_page then return nil end
+    
+    max_chapters = max_chapters or 50
+    local samples = {}
+    local sample_len = 800 -- Reduced from 2000 to keep payload manageable
+    
+    logger.info("ChapterAnalyzer: Detailed sampling for up to", max_chapters, "chapters")
+    
+    for i, chapter in ipairs(toc) do
+        -- Only process chapters we have already reached or passed
+        if (chapter.page and chapter.page > current_page) or i > max_chapters then
+            break
+        end
+        
+        local success, chapter_text = pcall(function()
+            if ui.document.getTextFromXPointer and chapter.xpointer then
+                -- EPUB: Usually returns the full text of the chapter file
+                return ui.document:getTextFromXPointer(chapter.xpointer)
+            end
+            return ""
+        end)
+        
+        if success and chapter_text and #chapter_text > 200 then
+            local start_txt = chapter_text:sub(1, sample_len)
+            local mid_start = math.max(1, math.floor(#chapter_text / 2) - math.floor(sample_len / 2))
+            local mid_txt = chapter_text:sub(mid_start, mid_start + sample_len)
+            local end_txt = chapter_text:sub(-sample_len)
+            
+            table.insert(samples, string.format(
+                "CHAPTER [%s]:\n[START]: %s\n[MID]: %s\n[END]: %s",
+                chapter.title or tostring(i),
+                start_txt, mid_txt, end_txt
+            ))
+        end
+    end
+    
+    return #samples > 0 and table.concat(samples, "\n\n---\n\n") or nil
 end
 
 function ChapterAnalyzer:countMentions(text, name)

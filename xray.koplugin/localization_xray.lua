@@ -186,11 +186,13 @@ function Localization:t(key, ...)
         logger.warn("Localization: Missing translation key:", key)
         -- Return a user-friendly fallback instead of the key
         local fallbacks = {
-            cache_saved = "💾 Saved!",
-            cache_save_failed = "❌ Save failed",
-            ai_fetch_complete = "✅ Fetched from %s\n\n📖 %s\n👤 %s\n\n👥 %d | 📍 %d | 🎨 %d | 📅 %d | 📜 %d\n\n%s",
-            fetching_ai = "🤖 Fetching from %s...",
-            no_api_key = "⚠️ No API key set!",
+            cache_saved = "[Saved]",
+            cache_save_failed = "[Save failed]",
+            ai_fetch_complete = "Fetched from %s\n\nBook: %s\nAuthor: %s\n\nCharacters: %d | Locations: %d | Themes: %d | Events: %d | History: %d\n\n%s\n\n%s",
+            fetching_ai = "Fetching from %s...",
+            fetching_author = "Fetching author info from %s...",
+            no_api_key = "No API key set!",
+            no_author_data_fetch = "No author info available. Fetch from AI?",
         }
         translation = fallbacks[key] or key
     end

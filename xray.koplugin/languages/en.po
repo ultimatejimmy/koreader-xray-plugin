@@ -1,4 +1,4 @@
-# English translation for X-Ray Plugin
+﻿# English translation for X-Ray Plugin
 # Copyright (C) 2025
 # This file is distributed under the same license as the X-Ray package.
 #
@@ -51,7 +51,10 @@ msgid "menu_themes"
 msgstr "Themes"
 
 msgid "menu_fetch_ai"
-msgstr "Fetch AI Data"
+msgstr "Fetch X-Ray Data"
+
+msgid "menu_fetch_xray"
+msgstr "Fetch X-Ray Data"
 
 msgid "menu_ai_settings"
 msgstr "AI Settings"
@@ -289,18 +292,30 @@ msgstr "Failed to fetch data from AI!\n\nPossible reasons:\n• Invalid API key\
 
 msgid "ai_fetch_complete"
 msgstr ""
-"✅ Successfully fetched from %s!\n"
+"Successfully fetched from %s!\n"
 "\n"
-"%s\n"
+"Book: %s\n"
 "Author: %s\n"
 "\n"
-"%d characters\n"
-"%d locations\n"
-"%d themes\n"
-"%d events\n"
-"%d historical figures\n"
+"Characters: %d\n"
+"Locations: %d\n"
+"Themes: %d\n"
+"Timeline Events: %d\n"
+"Historical Figures: %d\n"
 "\n"
+"%s\n"
+"\n"
+"SUMMARY:\n"
 "%s"
+
+msgid "menu_fetch_author"
+msgstr "Fetch Author Info (AI)"
+
+msgid "fetching_author"
+msgstr "Fetching author info from %s..."
+
+msgid "no_author_data_fetch"
+msgstr "No author info available.\n\nWould you like to fetch it from AI?"
 
 # ==============================
 # X-RAY MODE & SEARCH
@@ -455,6 +470,9 @@ msgstr "Set API key first"
 # ==============================
 # EXTRA TITLES
 # ==============================
+
+msgid "fetch_successful"
+msgstr "Fetch successful"
 
 msgid "summary_title"
 msgstr "Book Summary"
@@ -612,20 +630,20 @@ msgstr ""
 "EXAMPLE SCENARIOS:\n"
 "\n"
 "Reading Demons (Dostoevsky):\n"
-"✓ 15+ characters detected automatically\n"
-"✓ Historical figures like Sergei Nechayev added\n"
-"✓ 1860s Russia socialist movement explained\n"
-"✓ First appearances of characters marked\n"
+" 15+ characters detected automatically\n"
+" Historical figures like Sergei Nechayev added\n"
+" 1860s Russia socialist movement explained\n"
+" First appearances of characters marked\n"
 "\n"
 "Reading War and Peace (Tolstoy):\n"
-"✓ 100+ characters organized\n"
-"✓ Historical figures like Napoleon, Kutuzov\n"
-"✓ Events like Battle of Borodino in timeline\n"
-"✓ Locations like Moscow, Petersburg detailed\n"
+" 100+ characters organized\n"
+" Historical figures like Napoleon, Kutuzov\n"
+" Events like Battle of Borodino in timeline\n"
+" Locations like Moscow, Petersburg detailed\n"
 "\n"
 "Reading 1984 (Orwell):\n"
-"✓ Winston, Julia, O'Brien characters\n"
-"✓ Dystopian themes listed\n"
+" Winston, Julia, O'Brien characters\n"
+" Dystopian themes listed\n"
 "• Chapter by chapter character tracking\n"
 "• Analysis with personal notes\n"
 "\n"
@@ -758,31 +776,31 @@ msgid "ok"
 msgstr "OK"
 
 msgid "menu_fetch_full"
-msgstr "📚 Fetch AI Data (Full Book)"
+msgstr "� Fetch AI Data (Full Book)"
 
 msgid "menu_fetch_progress"
-msgstr "📖 Up to Current Page (SPOILER-free)"
+msgstr " Up to Current Page (SPOILER-free)"
 
 msgid "progress_warning_low"
-msgstr "📖 You haven't progressed much yet (%%%d)\n\nContinue anyway?"
+msgstr " You haven't progressed much yet (%%%d)\n\nContinue anyway?"
 
 msgid "progress_error"
-msgstr "⚠️ Could not get reading progress!\n\nAnalyze full book instead?"
+msgstr " Could not get reading progress!\n\nAnalyze full book instead?"
 
 msgid "error_info"
-msgstr "❌ Error Occurred!"
+msgstr " Error Occurred!"
 
 msgid "error_no_network"
-msgstr "📡 No internet connection!\n\nPlease check your Wi-Fi connection."
+msgstr " No internet connection!\n\nPlease check your Wi-Fi connection."
 
 msgid "error_network_timeout"
-msgstr "⏱️ Connection timed out!\n\nCheck your internet connection and try again."
+msgstr " Connection timed out!\n\nCheck your internet connection and try again."
 
 msgid "error_invalid_api_key"
-msgstr "🔑 Invalid API key!\n\nPlease check your API key."
+msgstr " Invalid API key!\n\nPlease check your API key."
 
 msgid "error_unknown"
-msgstr "❌ Unknown error!\n\nPlease try again."
+msgstr " Unknown error!\n\nPlease try again."
 
 msgid "error_filtered"
 msgstr "Content was filtered."
@@ -791,13 +809,13 @@ msgid "spoiler_preference_title"
 msgstr "Spoiler Preference"
 
 msgid "spoiler_free_option"
-msgstr "🔒 Spoiler-free Mode (Up to %%%d of the book's)"
+msgstr "[Spoiler-free] Mode (Up to %d%% of the book)"
 
 msgid "full_book_option"
-msgstr "📖 Full Mode"
+msgstr "[Full] Mode"
 
 msgid "spoiler_free_mode"
-msgstr "🔒 Spoiler-free Mode: %%%d"
+msgstr "[Spoiler-free] Mode: %d%%"
 
 msgid "full_book_mode_active"
-msgstr "📖 Full Mode"
+msgstr "[Full] Mode"

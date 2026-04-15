@@ -1,4 +1,4 @@
-# Brazilian Português translation for X-Ray Plugin
+﻿# Brazilian Português translation for X-Ray Plugin
 # Copyright (C) 2025
 # This file is distributed under the same license as the X-Ray package.
 #
@@ -47,7 +47,10 @@ msgid "menu_themes"
 msgstr "Temas"
 
 msgid "menu_fetch_ai"
-msgstr "Buscar Dados da IA"
+msgstr "Buscar Dados do X-Ray"
+
+msgid "menu_fetch_xray"
+msgstr "Buscar Dados do X-Ray"
 
 msgid "menu_ai_settings"
 msgstr "Configurações da IA"
@@ -261,7 +264,7 @@ msgstr "Falha ao buscar dados da IA!\n\nPossíveis causas:\n• Chave de API inv
 
 msgid "ai_fetch_complete"
 msgstr ""
-"✅ Dados obtidos com sucesso de %s!\n"
+" Dados obtidos com sucesso de %s!\n"
 "\n"
 "%s\n"
 "Autor: %s\n"
@@ -272,6 +275,9 @@ msgstr ""
 "%d eventos\n"
 "%d figuras históricas\n"
 "\n"
+"%s\n"
+"\n"
+"RESUMO:\n"
 "%s"
 
 msgid "xray_mode_no_data"
@@ -397,6 +403,9 @@ msgstr "ChatGPT selecionado"
 msgid "set_key_first"
 msgstr "Defina a chave da API primeiro"
 
+msgid "fetch_successful"
+msgstr "Sucesso"
+
 msgid "summary_title"
 msgstr "Resumo do Livro"
 
@@ -513,31 +522,31 @@ msgid "ok"
 msgstr "OK"
 
 msgid "menu_fetch_full"
-msgstr "📚 Buscar Dados da IA (Livro Completo)"
+msgstr "� Buscar Dados da IA (Livro Completo)"
 
 msgid "menu_fetch_progress"
-msgstr "📖 Até a Página Atual (Sem spoilers)"
+msgstr " Até a Página Atual (Sem spoilers)"
 
 msgid "progress_warning_low"
-msgstr "📖 Você avançou pouco (%%%d)\n\nDeseja continuar mesmo assim?"
+msgstr " Você avançou pouco (%%%d)\n\nDeseja continuar mesmo assim?"
 
 msgid "progress_error"
-msgstr "⚠️ Não foi possível obter o progresso de leitura!\n\nAnalisar o livro completo?"
+msgstr " Não foi possível obter o progresso de leitura!\n\nAnalisar o livro completo?"
 
 msgid "error_info"
-msgstr "❌ Ocorreu um erro!"
+msgstr " Ocorreu um erro!"
 
 msgid "error_no_network"
-msgstr "📡 Sem conexão com a internet!\n\nVerifique seu Wi-Fi."
+msgstr " Sem conexão com a internet!\n\nVerifique seu Wi-Fi."
 
 msgid "error_network_timeout"
-msgstr "⏱️ Conexão expirou!\n\nVerifique sua internet e tente novamente."
+msgstr " Conexão expirou!\n\nVerifique sua internet e tente novamente."
 
 msgid "error_invalid_api_key"
-msgstr "🔑 Chave de API inválida!\n\nVerifique sua chave."
+msgstr " Chave de API inválida!\n\nVerifique sua chave."
 
 msgid "error_unknown"
-msgstr "❌ Erro desconhecido!\n\nTente novamente."
+msgstr " Erro desconhecido!\n\nTente novamente."
 
 msgid "error_filtered"
 msgstr "Conteúdo filtrado."
@@ -546,13 +555,13 @@ msgid "spoiler_preference_title"
 msgstr "Preferência de Spoiler"
 
 msgid "spoiler_free_option"
-msgstr "🔒 Modo Sem Spoiler (Apenas até %%%d)"
+msgstr " Modo Sem Spoiler (Apenas até %%%d)"
 
 msgid "full_book_option"
-msgstr "📖 Livro Completo (Todo o conteúdo)"
+msgstr " Livro Completo (Todo o conteúdo)"
 
 msgid "spoiler_free_mode"
-msgstr "🔒 Modo Sem Spoiler: %%%d"
+msgstr " Modo Sem Spoiler: %%%d"
 
 msgid "full_book_mode_active"
-msgstr "📖 Modo Livro Completo"
+msgstr " Modo Livro Completo"
