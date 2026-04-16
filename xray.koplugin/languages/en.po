@@ -276,7 +276,7 @@ msgid "no_api_key"
 msgstr "AI API Key not set!\n\nEnter API key in:\nMenu → X-Ray → AI Settings"
 
 msgid "fetching_ai"
-msgstr "Fetching data from AI...\n\n"
+msgstr "Analyzing book to generate X-Ray data...\n\n"
 
 msgid "fetching_model"
 msgstr "Model: "
@@ -473,6 +473,9 @@ msgstr "Set API key first"
 
 msgid "fetch_successful"
 msgstr "Fetch successful"
+
+msgid "fetch_button"
+msgstr "Fetch"
 
 msgid "summary_title"
 msgstr "Book Summary"
@@ -809,13 +812,13 @@ msgid "spoiler_preference_title"
 msgstr "Spoiler Preference"
 
 msgid "spoiler_free_option"
-msgstr "[Spoiler-free] Mode (Up to %d%% of the book)"
+msgstr "Spoiler-free Mode (Up to %d%% of the book)"
 
 msgid "full_book_option"
-msgstr "[Full] Mode"
+msgstr "Full Book Mode"
 
 msgid "spoiler_free_mode"
-msgstr "[Spoiler-free] Mode: %d%%"
+msgstr "Spoiler-free Mode: %d%%"
 
 msgid "full_book_mode_active"
-msgstr "[Full] Mode"
+msgstr "Full Book Mode"

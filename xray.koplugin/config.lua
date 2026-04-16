@@ -6,10 +6,8 @@ return {
     gemini_api_key = "AIzaSy----",  -- Enter your API key here: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     
     -- Gemini Model Selection
-    -- "gemini-2.5-flash"
-    -- "gemini-2.5-pro"
-    -- "gemini-3.0-preview"
-    gemini_model = "gemini-2.5-flash",
+    gemini_primary_model = "gemini-2.5-flash",
+    gemini_secondary_model = "gemini-2.5-flash-lite",
     
     -- ChatGPT API Key 
     -- To get an API key: https://platform.openai.com/api-keys

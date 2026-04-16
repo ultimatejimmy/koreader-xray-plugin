@@ -2,90 +2,74 @@ return {
     -- System instruction
     system_instruction = "You are an expert literary researcher. Your response must be ONLY in valid JSON format. Ensure data is highly accurate and pertains strictly to the provided context.",
     
-    -- Main prompt (Full book analysis)
-    main = [[Book: "%s" - Author: %s
-Create exhaustive X-Ray data for this book.
+    -- Specialized section for Characters and Historical Figures
+    character_section = [[Book: "%s" - Author: %s
+Reading Progress: %d%%
 
-CORE RULES:
-1. TARGET BOOK: Only include data from THIS book.
-2. CHARACTERS: List 15-25 most important characters.
-3. LOCATIONS: List 5-10 significant locations.
-4. HISTORICAL FIGURES: Identify 3-7 real-world historical figures.
-5. TIMELINE: 1 key highlight for EVERY narrative chapter. IGNORE Frontmatter, Table of Contents, "Also by", or Appendices.
-6. CHARACTER DEPTH: Descriptions MUST be 250-300 characters. Provide a comprehensive analysis of the character's history and role throughout the entire book.
-7. CONCISENESS: Other descriptions (locations/historical) MUST be MAX 150 characters.
-
-REQUIRED JSON FORMAT:
-{
-  "book_title": "Full Book Title",
-  "author": "Author Name",
-  "characters": [
-    {
-      "name": "Full Name",
-      "role": "Role",
-      "gender": "Gender",
-      "occupation": "Job",
-      "description": "Comprehensive analysis (250-300 characters). Encompass their full history in the book."
-    }
-  ],
-  "historical_figures": [
-    {
-      "name": "Name",
-      "role": "Role",
-      "biography": "Short bio (MAX 150 chars)",
-      "importance_in_book": "Significance",
-      "context_in_book": "Context"
-    }
-  ],
-  "locations": [
-    {"name": "Place", "description": "Short desc (MAX 150 chars)", "importance": "Significance"}
-  ],
-  "timeline": [
-    {"event": "Key narrative event (MAX 120 chars)", "chapter": "Chapter Name/Number", "importance": "High/Low"}
-  ]
-}]],
-
-    -- Spoiler-free prompt (Based on reading progress)
-    spoiler_free = [[Book: "%s" - Author: %s
-CRITICAL: The reader has only read %d%% of this book. 
+TASK: List 15-25 most important characters and 3-7 real-world historical figures.
 
 STRICT RULES:
-1. NO SPOILERS: No info from after the %d%% mark.
-2. TIMELINE: 1 key highlight for EVERY narrative chapter up to %d%%. IGNORE ToC/Frontmatter.
-3. CHARACTER DEPTH: Descriptions MUST be 250-300 characters. Encompass their full history up to %d%%.
-4. COMPRESSION: Fit within 8,192 token limit.
-
-ITEM COUNT REQUIREMENTS:
-1. CHARACTERS: List 15-25 characters intro'd before %d%%.
-2. LOCATIONS: List 5-10 locations mentioned.
+1. FORMAL NAMES: Use the character's full formal name (e.g., "Abraham Van Helsing" instead of "the Professor"). Only use nicknames if no formal name exists.
+2. HISTORICAL FIGURES: You MUST identify real-world people mentioned (authors, kings, scientists, etc.).
+3. CHARACTER DEPTH: Provide a comprehensive analysis (250-300 characters). Encompass their full history and role throughout the whole book up to the %d%% mark.
+4. NO SPOILERS: ABSOLUTELY NO information from after the %d%% mark.
 
 REQUIRED JSON FORMAT:
 {
-  "book_title": "Book Title",
-  "author": "Author Name",
   "characters": [
     {
-      "name": "Name",
+      "name": "Full Formal Name",
       "role": "Role at %d%%",
       "gender": "Gender",
       "occupation": "Job",
-      "description": "Comprehensive history/status at %d%% (250-300 chars). NO SPOILERS."
+      "description": "Comprehensive history/analysis (250-300 chars). NO SPOILERS."
     }
   ],
   "historical_figures": [
     {
-      "name": "Name",
-      "role": "Role",
+      "name": "Full Name",
+      "role": "Historical Role",
       "biography": "Short bio (MAX 150 chars)",
       "importance_in_book": "Significance at %d%%",
       "context_in_book": "Context"
     }
-  ],
+  ]
+}]],
+
+    -- Specialized section for Locations
+    location_section = [[Book: "%s" - Author: %s
+Reading Progress: %d%%
+
+TASK: List 5-10 significant locations visited or mentioned up to the %d%% mark. 
+SCAN FOR: City names, specific buildings, landmarks, or even recurring rooms.
+
+RULES:
+1. NO SPOILERS: Do not mention locations or events that occur after the %d%% mark.
+2. CONCISENESS: Descriptions must be MAX 150 characters.
+
+REQUIRED JSON FORMAT:
+{
   "locations": [
-    {"name": "Name", "description": "Desc at %d%% (MAX 150 chars).", "importance": "Significance"}
-  ],
+    {"name": "Place", "description": "Short desc (MAX 150 chars)", "importance": "Significance at %d%%"}
+  ]
+}]],
+
+    -- Specialized section for Timeline
+    timeline_section = [[Book: "%s" - Author: %s
+Reading Progress: %d%%
+
+TASK: Create a chronological timeline of key narrative events up to the %d%% mark.
+
+RULES:
+1. COVERAGE: Provide 1 key highlight for EVERY narrative chapter up to the %d%% mark.
+2. EXCLUSION: IGNORE Frontmatter, Table of Contents, "Also by", or Appendices.
+3. BREVITY: Each event description MUST be MAX 120 characters.
+4. NO SPOILERS: Stop exactly at the %d%% mark.
+
+REQUIRED JSON FORMAT:
+{
   "timeline": [
-    {"event": "Key narrative event (MAX 120 chars)", "chapter": "Chapter", "importance": "High/Low"}
+    {"event": "Key narrative event (MAX 120 chars)", "chapter": "Chapter Name/Number", "importance": "High/Low"}
   ]
 }]],
 
