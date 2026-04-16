@@ -3,7 +3,8 @@
 return {
     -- Google Gemini API Key
     -- To get an API key: https://makersuite.google.com/app/apikey
-    gemini_api_key = "AIzaSy----",  -- Enter your API key here: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    -- Enter your API key here:
+    gemini_api_key = "XXXXXX", 
     
     -- Gemini Model Selection
     gemini_primary_model = "gemini-2.5-flash",
@@ -11,7 +12,8 @@ return {
     
     -- ChatGPT API Key 
     -- To get an API key: https://platform.openai.com/api-keys
-    chatgpt_api_key = "sk-XXXX",  -- Enter your API key here: "sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    -- Enter your API key here:
+    chatgpt_api_key = "sk-XXXX",  
     
     -- Default AI Provider
     default_provider = "gemini",
