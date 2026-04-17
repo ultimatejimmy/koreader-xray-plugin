@@ -85,6 +85,58 @@ REQUIRED JSON FORMAT:
   "author_death": "Death Date"
 }]],
 
+    -- Single Comprehensive Fetch (Combined Characters, Locations, Timeline)
+    comprehensive_xray = [[Book: "%s" - Author: %s
+Reading Progress: %d%%
+
+TASK: Provide a comprehensive X-Ray analysis of the book up to the %d%% mark.
+
+1. CHARACTERS & FIGURES:
+- List 15-25 most important characters. Use full formal names.
+- List 3-7 real-world historical figures mentioned.
+- Provide a deep analysis for each (250-300 chars), covering their history/role up to %d%%.
+
+2. LOCATIONS:
+- List 5-10 significant locations (cities, buildings, landmarks).
+- Concise descriptions (MAX 150 chars).
+
+3. TIMELINE:
+- Provide EXACTLY 1 key narrative highlight for EVERY narrative chapter up to the %d%% mark.
+- Each event description MUST be MAX 120 characters.
+- Ensure the timeline is strictly chronological.
+
+STRICT RULES:
+- NO SPOILERS: Stop all analysis and information exactly at the %d%% mark.
+- FORMAT: Return ONLY valid JSON.
+
+REQUIRED JSON FORMAT:
+{
+  "characters": [
+    {
+      "name": "Full Name",
+      "role": "Role at %d%%",
+      "gender": "Gender",
+      "occupation": "Job",
+      "description": "Deep analysis (250-300 chars). NO SPOILERS."
+    }
+  ],
+  "historical_figures": [
+    {
+      "name": "Full Name",
+      "role": "Historical Role",
+      "biography": "Bio (MAX 150 chars)",
+      "importance_in_book": "Significance at %d%%",
+      "context_in_book": "Context"
+    }
+  ],
+  "locations": [
+    {"name": "Place", "description": "Short desc (MAX 150 chars)", "importance": "Significance at %d%%"}
+  ],
+  "timeline": [
+    {"event": "Event (MAX 120 chars)", "chapter": "Chapter Name", "importance": "High/Low"}
+  ]
+}]],
+
     -- Fallback strings
     fallback = {
         unknown_book = "Unknown Book",

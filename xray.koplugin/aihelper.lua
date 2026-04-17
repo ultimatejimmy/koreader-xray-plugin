@@ -174,6 +174,17 @@ function AIHelper:getAuthorData(title, author, provider_name)
     return self:getBookDataSection(title, author, provider_name, nil, "author_only")
 end
 
+function AIHelper:getBookDataComprehensive(title, author, provider_name, context)
+    self:loadConfig()
+    local provider = provider_name or "gemini"
+    local config = self.providers[provider]
+    if not config or not config.api_key then return nil, "error_no_api_key", "API Key not set." end
+    
+    local prompt = self:createPrompt(title, author, context, "comprehensive_xray")
+    if provider == "gemini" then return self:callGemini(prompt, config)
+    else return self:callChatGPT(prompt, config) end
+end
+
 function AIHelper:callGemini(prompt, config)
     local primary = config.primary_model or "gemini-2.5-flash"
     local secondary = config.secondary_model or "gemini-2.5-flash-lite"

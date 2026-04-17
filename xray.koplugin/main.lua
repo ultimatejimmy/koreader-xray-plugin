@@ -5,6 +5,7 @@ local InfoMessage = require("ui/widget/infomessage")
 local ConfirmBox = require("ui/widget/confirmbox")
 local Menu = require("ui/widget/menu")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
+local Trapper = require("ui/trapper")
 local logger = require("logger")
 local _ = require("gettext")
 local Screen = require("device").screen
@@ -350,61 +351,80 @@ function XRayPlugin:continueWithFetch(reading_percent)
     UIManager:scheduleIn(0.5, function()
         if is_cancelled then return end
         if not self.chapter_analyzer then self.chapter_analyzer = require("chapteranalyzer"):new() end
-        local book_text = self.chapter_analyzer:getTextForAnalysis(self.ui, 100000, nil, self.ui:getCurrentPage())
-        local chapter_samples = self.chapter_analyzer:getDetailedChapterSamples(self.ui)
+        
+        -- Non-blocking extraction
+        local function performExtraction()
+            local text = self.chapter_analyzer:getTextForAnalysis(self.ui, 20000, nil, self.ui:getCurrentPage())
+            local samples = self.chapter_analyzer:getDetailedChapterSamples(self.ui, 200, 150000)
+            local annots = self.chapter_analyzer:getAnnotationsForAnalysis(self.ui)
+            return { book_text = text, chapter_samples = samples, annotations = annots }
+        end
+        
+        local completed, result = Trapper:dismissableRunInSubprocess(performExtraction, wait_msg)
+        
+        if not completed or is_cancelled then
+            if wait_msg then UIManager:close(wait_msg) end
+            return
+        end
+        
+        local book_text = result.book_text
+        local chapter_samples = result.chapter_samples
+        
         if (not book_text or #book_text < 10) and not chapter_samples then
             if wait_msg then UIManager:close(wait_msg) end
             UIManager:show(InfoMessage:new{ text = "Error: Could not extract book text.", timeout = 5 })
             return
         end
-        local context = { reading_percent = reading_percent, spoiler_free = reading_percent < 100, filename = self.ui.document.file:match("([^/\\]+)$"), series = props.series or props.Series, chapter_samples = chapter_samples, annotations = self.chapter_analyzer:getAnnotationsForAnalysis(self.ui) }
+        
+        local context = { 
+            reading_percent = reading_percent, 
+            spoiler_free = reading_percent < 100, 
+            filename = self.ui.document.file:match("([^/\\]+)$"), 
+            series = props.series or props.Series, 
+            chapter_samples = chapter_samples, 
+            annotations = result.annotations, 
+            book_text = book_text 
+        }
+        
         self.ai_helper:setTrapWidget(wait_msg)
-        local sections = {{ id = "character_section", name = "Characters & Figures" }, { id = "location_section", name = "Significant Locations" }, { id = "timeline_section", name = "Narrative Timeline" }}
-        local final_book_data = { book_title = title, author = author, characters = {}, historical_figures = {}, locations = {}, timeline = {} }
-        local results_summary = {}
-        local success_count = 0
-        local function fetchNext(index)
-            if is_cancelled then self.ai_helper:resetTrapWidget(); if wait_msg then UIManager:close(wait_msg) end; return end
-            if index > #sections then
-                self.ai_helper:resetTrapWidget(); if wait_msg then UIManager:close(wait_msg) end
-                
-                -- Frequency Sorting
-                final_book_data.characters = self:sortDataByFrequency(final_book_data.characters, book_text, "name")
-                final_book_data.historical_figures = self:sortDataByFrequency(final_book_data.historical_figures, book_text, "name")
-                final_book_data.locations = self:sortDataByFrequency(final_book_data.locations, book_text, "name")
-                
-                self.characters = final_book_data.characters; self.historical_figures = final_book_data.historical_figures; self.locations = final_book_data.locations; self.timeline = final_book_data.timeline
-                if not self.cache_manager then self.cache_manager = require("cachemanager"):new() end
-                local cache_saved = self.cache_manager:saveCache(self.ui.document.file, final_book_data)
-                local summary_list = table.concat(results_summary, "\n• ")
-                local success_message = string.format("AI Fetch Complete!\n\nBook: %s\nAuthor: %s\n\nResults:\n• %s\n\n%s\n\nDetails logged to 'xray.log' in the plugin folder.", title, author, summary_list, cache_saved and "✓ Cache updated." or "✗ Cache failed.")
-                local success_dialog
-                success_dialog = ButtonDialog:new{ title = (success_count > 0) and (self.loc:t("fetch_successful") or "Fetch successful") or "Fetch Failed", text = success_message, buttons = {{{ text = self.loc:t("ok"), callback = function() UIManager:close(success_dialog) end }}} }
-                UIManager:show(success_dialog)
-                return
+        local final_book_data, error_code, error_msg = self.ai_helper:getBookDataComprehensive(title, author, self.ai_provider, context)
+        self.ai_helper:resetTrapWidget()
+        if wait_msg then UIManager:close(wait_msg) end
+        
+        if is_cancelled then return end
+        
+        if not final_book_data then
+            if error_code ~= "USER_CANCELLED" then
+                local error_dialog
+                error_dialog = ButtonDialog:new{ title = "Fetch Failed", text = error_msg or "Failed to fetch data.", buttons = {{{ text = self.loc:t("ok"), callback = function() UIManager:close(error_dialog) end }}} }
+                UIManager:show(error_dialog)
             end
-            local section = sections[index]
-            local current_context = { reading_percent = context.reading_percent, spoiler_free = context.spoiler_free, filename = context.filename, series = context.series, annotations = context.annotations }
-            if section.id == "character_section" then current_context.book_text = book_text:sub(1, 40000)
-            elseif section.id == "location_section" then current_context.book_text = book_text:sub(-40000)
-            elseif section.id == "timeline_section" then current_context.chapter_samples = context.chapter_samples end
-            local section_data, error_code, error_msg = self.ai_helper:getBookDataSection(title, author, self.ai_provider, current_context, section.id)
-            if not section_data then
-                if error_code == "USER_CANCELLED" then is_cancelled = true; fetchNext(#sections + 1); return end
-                table.insert(results_summary, section.name .. ": [FAILED] (" .. (error_msg or "Server Busy") .. ")")
-            else
-                success_count = success_count + 1
-                if section.id == "character_section" then final_book_data.characters = section_data.characters or {}; final_book_data.historical_figures = section_data.historical_figures or {}
-                    table.insert(results_summary, "Characters: " .. #final_book_data.characters); table.insert(results_summary, "Historical Figures: " .. #final_book_data.historical_figures)
-                elseif section.id == "location_section" then final_book_data.locations = section_data.locations or {}
-                    table.insert(results_summary, "Locations: " .. #final_book_data.locations)
-                elseif section.id == "timeline_section" then final_book_data.timeline = section_data.timeline or {}
-                    table.insert(results_summary, "Timeline Events: " .. #final_book_data.timeline)
-                end
-            end
-            UIManager:scheduleIn(5, function() fetchNext(index + 1) end)
+            return
         end
-        fetchNext(1)
+        
+        final_book_data.book_title = title
+        final_book_data.author = author
+        
+        -- Frequency Sorting
+        final_book_data.characters = self:sortDataByFrequency(final_book_data.characters, book_text, "name")
+        final_book_data.historical_figures = self:sortDataByFrequency(final_book_data.historical_figures, book_text, "name")
+        final_book_data.locations = self:sortDataByFrequency(final_book_data.locations, book_text, "name")
+        
+        self.characters = final_book_data.characters
+        self.historical_figures = final_book_data.historical_figures
+        self.locations = final_book_data.locations
+        self.timeline = final_book_data.timeline
+        
+        if not self.cache_manager then self.cache_manager = require("cachemanager"):new() end
+        local cache_saved = self.cache_manager:saveCache(self.ui.document.file, final_book_data)
+        
+        local summary = string.format("AI Fetch Complete!\n\nCharacters: %d\nLocations: %d\nEvents: %d\n\n%s", 
+            #self.characters, #self.locations, #self.timeline,
+            cache_saved and "✓ Cache updated." or "✗ Cache failed.")
+            
+        local success_dialog
+        success_dialog = ButtonDialog:new{ title = self.loc:t("fetch_successful") or "Fetch successful", text = summary, buttons = {{{ text = self.loc:t("ok"), callback = function() UIManager:close(success_dialog) end }}} }
+        UIManager:show(success_dialog)
     end)
 end
 

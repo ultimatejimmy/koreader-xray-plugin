@@ -451,7 +451,7 @@ function ChapterAnalyzer:getAnnotationsForAnalysis(ui)
 end
 
 -- Get detailed samples (Start/Mid/End) from each chapter up to current position
-function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters)
+function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters, total_limit)
     if not ui or not ui.document then return nil end
     
     local toc = ui.document:getToc()
@@ -471,18 +471,38 @@ function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters)
     
     if not current_page then return nil end
     
-    max_chapters = max_chapters or 50
-    local samples = {}
-    local sample_len = 800 -- Reduced from 2000 to keep payload manageable
+    max_chapters = max_chapters or 200
+    total_limit = total_limit or 150000
     
-    logger.info("ChapterAnalyzer: Detailed sampling for up to", max_chapters, "chapters")
-    
+    -- Filter chapters to only those we have reached
+    local active_chapters = {}
     for i, chapter in ipairs(toc) do
-        -- Only process chapters we have already reached or passed
         if (chapter.page and chapter.page > current_page) or i > max_chapters then
             break
         end
-        
+        table.insert(active_chapters, chapter)
+    end
+    
+    if #active_chapters == 0 then return nil end
+    
+    -- Calculate budget per chapter
+    -- Reserve 20k for the main book_text (last 20k)
+    local chapter_total_budget = total_limit - 20000
+    local per_chapter_budget = math.floor(chapter_total_budget / #active_chapters)
+    
+    -- Hard limit of 3600 per chapter as requested
+    if per_chapter_budget > 3600 then per_chapter_budget = 3600 end
+    
+    -- Minimum budget for it to be useful
+    if per_chapter_budget < 300 then per_chapter_budget = 300 end
+    
+    local sample_len = math.floor(per_chapter_budget / 3)
+    local samples = {}
+    
+    logger.info("ChapterAnalyzer: Detailed sampling for", #active_chapters, "chapters. Budget per chapter:", per_chapter_budget)
+    AIHelper:log("ChapterAnalyzer: Sampling " .. #active_chapters .. " chapters with " .. per_chapter_budget .. " chars each.")
+    
+    for i, chapter in ipairs(active_chapters) do
         local success, chapter_text = pcall(function()
             if ui.document.getTextFromXPointer and chapter.xpointer then
                 -- EPUB: Usually returns the full text of the chapter file
@@ -491,7 +511,7 @@ function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters)
             return ""
         end)
         
-        if success and chapter_text and #chapter_text > 200 then
+        if success and chapter_text and #chapter_text > 100 then
             local start_txt = chapter_text:sub(1, sample_len)
             local mid_start = math.max(1, math.floor(#chapter_text / 2) - math.floor(sample_len / 2))
             local mid_txt = chapter_text:sub(mid_start, mid_start + sample_len)
