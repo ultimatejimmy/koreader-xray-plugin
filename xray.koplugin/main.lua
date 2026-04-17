@@ -28,6 +28,7 @@ function XRayPlugin:init()
     self.ai_helper:init(self.path)
     self.ai_provider = self.ai_helper.default_provider or "gemini"
     
+    self:log("XRayPlugin: Initialized with language: " .. self.loc:getLanguage())
     self:onDispatcherRegisterActions()
     
     if self.ui then
@@ -40,6 +41,12 @@ function XRayPlugin:init()
     end
     
     logger.info("XRayPlugin: Initialized with language:", self.loc:getLanguage())
+end
+
+function XRayPlugin:log(msg)
+    if self.ai_helper and self.ai_helper.log then
+        self.ai_helper:log(msg)
+    end
 end
 
 function XRayPlugin:onReaderReady()
@@ -87,9 +94,11 @@ function XRayPlugin:autoLoadCache()
     
     local book_path = self.ui.document.file
     logger.info("XRayPlugin: Auto-loading cache for:", book_path)
+    self:log("XRayPlugin: Auto-loading cache for: " .. tostring(book_path))
     local cached_data = self.cache_manager:loadCache(book_path)
     
     if cached_data then
+        self:log("XRayPlugin: Cache loaded successfully")
         self.book_data = cached_data
         self.characters = cached_data.characters or {}
         self.locations = cached_data.locations or {}
@@ -106,6 +115,8 @@ function XRayPlugin:autoLoadCache()
             }
         end
         if #self.characters > 0 then self.xray_mode_enabled = true end
+    else
+        self:log("XRayPlugin: No cache found or failed to load")
     end
 end
 
@@ -339,7 +350,7 @@ function XRayPlugin:continueWithFetch(reading_percent)
     UIManager:scheduleIn(0.5, function()
         if is_cancelled then return end
         if not self.chapter_analyzer then self.chapter_analyzer = require("chapteranalyzer"):new() end
-        local book_text = self.chapter_analyzer:getTextForAnalysis(self.ui, 100000, function(progress) logger.info("XRayPlugin: Extraction progress:", math.floor(progress * 100), "%") end, self.ui:getCurrentPage())
+        local book_text = self.chapter_analyzer:getTextForAnalysis(self.ui, 100000, nil, self.ui:getCurrentPage())
         local chapter_samples = self.chapter_analyzer:getDetailedChapterSamples(self.ui)
         if (not book_text or #book_text < 10) and not chapter_samples then
             if wait_msg then UIManager:close(wait_msg) end

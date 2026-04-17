@@ -1,5 +1,6 @@
 -- ChapterAnalyzer - Analyze which characters appear in current chapter/page
 local logger = require("logger")
+local AIHelper = require("aihelper")
 
 local ChapterAnalyzer = {}
 
@@ -14,6 +15,7 @@ end
 function ChapterAnalyzer:getCurrentChapterText(ui)
     if not ui or not ui.document then
         logger.warn("ChapterAnalyzer: No document available")
+        AIHelper:log("ChapterAnalyzer: No document available")
         return nil
     end
     
@@ -22,6 +24,7 @@ function ChapterAnalyzer:getCurrentChapterText(ui)
     local is_paged = ui.paging ~= nil
     
     logger.info("ChapterAnalyzer: Reflowable:", is_reflowable, "Paged:", is_paged)
+    AIHelper:log("ChapterAnalyzer: Reflowable: " .. tostring(is_reflowable) .. " Paged: " .. tostring(is_paged))
     
     if is_reflowable then
         return self:getReflowableText(ui)
@@ -29,6 +32,7 @@ function ChapterAnalyzer:getCurrentChapterText(ui)
         return self:getPageBasedText(ui)
     else
         logger.warn("ChapterAnalyzer: Unknown document type")
+        AIHelper:log("ChapterAnalyzer: Unknown document type")
         return self:getFallbackText(ui)
     end
 end
@@ -324,6 +328,7 @@ function ChapterAnalyzer:findCharactersInText(text, characters)
     end)
     
     logger.info("ChapterAnalyzer: Found", #found_characters, "characters in text")
+    AIHelper:log("ChapterAnalyzer: Found " .. tostring(#found_characters) .. " characters in text")
     
     return found_characters
 end
@@ -331,18 +336,23 @@ end
 -- Get text for analysis (up to max_len characters before current position)
 function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, current_page)
     if not ui or not ui.document then
+        AIHelper:log("ChapterAnalyzer: getTextForAnalysis - no document")
         return nil
     end
     
     max_len = max_len or 100000 
     local book_text = ""
+    AIHelper:log("ChapterAnalyzer: Extracting text for analysis (max " .. tostring(max_len) .. " chars)")
     
     -- Check if it's a reflowable document (EPUB, etc.)
     local is_reflowable = ui.rolling ~= nil
     
     if is_reflowable then
         local current_xp = ui.document:getXPointer()
-        if not current_xp then return nil end
+        if not current_xp then 
+            AIHelper:log("ChapterAnalyzer: getTextForAnalysis - could not get XPointer")
+            return nil 
+        end
         
         -- Optimization: Adopt "extract from start" approach which is faster in creengine
         -- than seeking to arbitrary positions which might trigger re-pagination.
@@ -372,6 +382,7 @@ function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, curr
         if success and result then
             book_text = result
         else
+            AIHelper:log("ChapterAnalyzer: getTextForAnalysis - XPointer extraction failed")
             -- Last ditch fallback
             book_text = ""
         end
@@ -382,6 +393,7 @@ function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, curr
         local start_page = math.max(1, current_pos - max_pages)
         
         logger.info("ChapterAnalyzer: Extracting PDF pages", start_page, "to", current_pos)
+        AIHelper:log("ChapterAnalyzer: Extracting PDF pages " .. tostring(start_page) .. " to " .. tostring(current_pos))
         
         for page = start_page, current_page do
             if progress_callback and (page % 10 == 0) then
@@ -414,6 +426,7 @@ function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, curr
     
     if progress_callback then progress_callback(1.0) end
     logger.info("ChapterAnalyzer: Total characters extracted for analysis:", #book_text)
+    AIHelper:log("ChapterAnalyzer: Total characters extracted for analysis: " .. tostring(#book_text))
     return book_text
 end
 

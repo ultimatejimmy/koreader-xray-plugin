@@ -35,10 +35,10 @@ local AIHelper = {
     trap_widget = nil,
 }
 
--- Custom logger for Android troubleshooting
-local function writeXRayLog(message)
-    if not AIHelper.path then return end
-    local log_path = AIHelper.path .. "/xray.log"
+-- Custom logger for X-Ray
+function AIHelper:log(message)
+    if not self.path then return end
+    local log_path = self.path .. "/xray.log"
     local f = io.open(log_path, "a")
     if f then
         f:write(os.date("%Y-%m-%d %H:%M:%S") .. " " .. tostring(message) .. "\n")
@@ -79,10 +79,14 @@ end
 
 function AIHelper:init(path)
     self.path = path or "plugins/xray.koplugin"
-    local f = io.open(self.path .. "/xray.log", "w")
-    if f then f:write("--- X-Ray Log Session Started ---\n"); f:close() end
+    local f = io.open(self.path .. "/xray.log", "a")
+    if f then
+        f:write("\n" .. string.rep("=", 40) .. "\n")
+        f:write("--- X-Ray Session Started: " .. os.date("%Y-%m-%d %H:%M:%S") .. " ---\n")
+        f:close()
+    end
     self:loadConfig(); self:loadModelFromFile(); self:loadLanguage()
-    writeXRayLog("AIHelper initialized")
+    self:log("AIHelper initialized")
 end
 
 function AIHelper:loadConfig()
@@ -175,17 +179,20 @@ function AIHelper:callGemini(prompt, config)
     local secondary = config.secondary_model or "gemini-2.5-flash-lite"
     local fallback_chain = { primary, secondary, "gemini-1.5-flash-8b" }
     local system_instruction_text = self.prompts and self.prompts.system_instruction or "Return valid JSON ONLY."
+    self:log("AIHelper: Gemini Prompt prepared")
     for _, current_model in ipairs(fallback_chain) do
-        writeXRayLog("AIHelper: Trying model: " .. current_model)
+        self:log("AIHelper: Trying model: " .. current_model)
         local url = "https://generativelanguage.googleapis.com/v1beta/models/" .. current_model .. ":generateContent"
         local request_body = json.encode({
             contents = {{ role = "user", parts = {{ text = prompt }} }},
             system_instruction = { parts = {{ text = system_instruction_text }} },
             generationConfig = { temperature = 0.2, maxOutputTokens = 8192 }
         })
+        self:log("AIHelper: Sending Gemini request (" .. #request_body .. " bytes)")
         local ok, code, response_text, status = self:makeRequest(url, { ["Content-Type"] = "application/json", ["x-goog-api-key"] = config.api_key }, request_body)
         local code_num = tonumber(code)
-        writeXRayLog("AIHelper: [" .. current_model .. "] API Code: " .. tostring(code_num))
+        self:log("AIHelper: [" .. current_model .. "] Response Code: " .. tostring(code_num))
+        self:log("AIHelper: [" .. current_model .. "] Response received (" .. (response_text and #response_text or 0) .. " bytes)")
         if code_num == 200 and response_text then
             local success, data = pcall(json.decode, response_text)
             if success and data.candidates and data.candidates[1] then
@@ -195,7 +202,7 @@ function AIHelper:callGemini(prompt, config)
                 end
             end
         elseif code_num == 429 then return nil, "error_quota", "Quota Exceeded (429)"
-        elseif code_num == 503 then writeXRayLog("AIHelper: 503 Overload. Falling back..."); socket.sleep(2)
+        elseif code_num == 503 then self:log("AIHelper: 503 Overload. Falling back..."); socket.sleep(2)
         else
             local error_detail = "HTTP " .. tostring(code_num or code or "Unknown")
             if response_text then
@@ -209,9 +216,13 @@ function AIHelper:callGemini(prompt, config)
 end
 
 function AIHelper:callChatGPT(prompt, config)
-    writeXRayLog("AIHelper: Starting ChatGPT request")
+    self:log("AIHelper: Starting ChatGPT request")
+    self:log("AIHelper: ChatGPT Prompt prepared")
     local request_body = json.encode({ model = config.model or "gpt-4o-mini", messages = {{ role = "user", content = prompt }}, response_format = { type = "json_object" } })
+    self:log("AIHelper: Sending ChatGPT request (" .. #request_body .. " bytes)")
     local ok, code, response_text = self:makeRequest(config.endpoint or "https://api.openai.com/v1/chat/completions", { ["Content-Type"] = "application/json", ["Authorization"] = "Bearer " .. config.api_key }, request_body)
+    self:log("AIHelper: ChatGPT Response Code: " .. tostring(code))
+    self:log("AIHelper: ChatGPT Response received (" .. (response_text and #response_text or 0) .. " bytes)")
     if tonumber(code) == 200 then local data = json.decode(response_text); return self:parseAIResponse(data.choices[1].message.content) end
     return nil, "error_api", "ChatGPT failed"
 end
@@ -231,7 +242,7 @@ function AIHelper:parseAIResponse(text)
     local json_text = text:gsub("```%w*", ""):gsub("```", ""):gsub("^%s+", ""):gsub("%s+$", "")
     local success, data = pcall(json.decode, json_text)
     if not success then
-        writeXRayLog("AIHelper: JSON repair needed")
+        self:log("AIHelper: JSON repair needed")
         local first = json_text:find("{", 1, true) or json_text:find("[", 1, true)
         local last_brace = json_text:reverse():find("}", 1, true)
         local last_bracket = json_text:reverse():find("]", 1, true)
@@ -247,7 +258,7 @@ function AIHelper:parseAIResponse(text)
         end
     end
     if success and data then return self:validateAndCleanData(normalizeKeys(data)) end
-    writeXRayLog("AIHelper: Parse failed. Snippet: " .. tostring(text):sub(1, 100))
+    self:log("AIHelper: Parse failed. Snippet: " .. tostring(text):sub(1, 100))
     return nil, "Failed to parse JSON. Check xray.log."
 end
 

@@ -2,6 +2,7 @@
 local lfs = require("libs/libkoreader-lfs")
 local logger = require("logger")
 local DocSettings = require("docsettings")
+local AIHelper = require("aihelper")
 
 local CacheManager = {}
 
@@ -23,6 +24,7 @@ function CacheManager:getCachePath(book_path)
     local cache_file = cache_dir .. "/xray_cache.lua"
     
     logger.info("CacheManager: Cache path:", cache_file)
+    AIHelper:log("CacheManager: Cache path: " .. tostring(cache_file))
     return cache_file
 end
 
@@ -96,11 +98,13 @@ function CacheManager:saveCache(book_path, data)
         f:close()
         
         logger.info("CacheManager: Saved cache to:", cache_file)
+        AIHelper:log("CacheManager: Saved cache to: " .. tostring(cache_file))
         return true
     end)
     
     if not success then
         logger.warn("CacheManager: Failed to save cache:", err or "unknown error")
+        AIHelper:log("CacheManager: Failed to save cache: " .. tostring(err or "unknown error"))
         return false
     end
     
@@ -116,6 +120,7 @@ function CacheManager:loadCache(book_path)
     local cache_file = self:getCachePath(book_path)
     if not cache_file then
         logger.warn("CacheManager: Cannot determine cache path")
+        AIHelper:log("CacheManager: Cannot determine cache path")
         return nil
     end
     
@@ -123,6 +128,7 @@ function CacheManager:loadCache(book_path)
     local attr = lfs.attributes(cache_file)
     if not attr then
         logger.info("CacheManager: No cache file found")
+        AIHelper:log("CacheManager: No cache file found for " .. tostring(book_path))
         return nil
     end
     
@@ -133,12 +139,14 @@ function CacheManager:loadCache(book_path)
     
     if not success or not data then
         logger.warn("CacheManager: Failed to load cache:", data or "unknown error")
+        AIHelper:log("CacheManager: Failed to load cache: " .. tostring(data or "unknown error"))
         return nil
     end
     
     -- Check cache version
     if data.cache_version ~= "6.0" then
         logger.warn("CacheManager: Cache version mismatch, ignoring")
+        AIHelper:log("CacheManager: Cache version mismatch (found " .. tostring(data.cache_version) .. ", expected 6.0)")
         return nil
     end
     
@@ -146,9 +154,11 @@ function CacheManager:loadCache(book_path)
     -- Cache will stay valid forever unless manually cleared
     
     logger.info("CacheManager: Loaded cache from:", cache_file)
+    AIHelper:log("CacheManager: Loaded cache from " .. tostring(cache_file))
     if data.cached_at then
         local cache_age_days = math.floor((os.time() - data.cached_at) / 86400)
         logger.info("CacheManager: Cache age:", cache_age_days, "days (no expiration)")
+        AIHelper:log("CacheManager: Cache age: " .. tostring(cache_age_days) .. " days")
     end
     
     return data
