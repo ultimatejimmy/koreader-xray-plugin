@@ -30,7 +30,7 @@ ALGORITHM FOR TIMELINE (HIGHEST PRIORITY):
 You suffer from recency bias. To prevent skipping chapters or combining them, you MUST execute this exact loop:
 Step 1. Look ONLY at the "CHAPTER SAMPLES" block. Count the narrative chapters.
 Step 2. Start at the very first chapter in the samples. Create EXACTLY ONE event object in the `timeline` array.
-Step 3. The `chapter` field MUST exactly match the chapter header in the sample.
+Step 3. The `chapter` field MUST exactly match the chapter header in the sample. (NOTE: If this is an omnibus containing multiple books, chapter titles might repeat or reset. Map them strictly in the sequential order provided).
 Step 4. Summarize that specific chapter in the `event` field (Max 200 chars).
 Step 5. Move to the NEXT chapter in the samples and repeat Step 2.
 Step 6. Do NOT stop until EVERY single chapter in the samples has EXACTLY ONE corresponding event. Do not group them. NO SPOILERS: Stop exactly at the %d%% mark.
@@ -47,6 +47,11 @@ Step 1. Extract 5-10 significant locations. NO SPOILERS: Stop exactly at the %d%
 STRICT SPOILER RULES:
 - ABSOLUTELY NO information from after the current reading progress. Stop exactly at the %d%% mark.
 - Descriptions must reflect the characters' state at this exact point in the book.
+
+STRICT JSON SAFETY RULES:
+- You MUST properly escape all double quotes (\") inside strings.
+- Do NOT use unescaped line breaks inside strings.
+- Output ONLY valid, parseable JSON.
 
 REQUIRED JSON FORMAT:
 {

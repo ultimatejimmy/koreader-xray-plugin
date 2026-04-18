@@ -463,7 +463,7 @@ msgstr "Configure primero la clave API"
 # ==============================
 
 msgid "fetch_successful"
-msgstr "Éxito al obtener datos"
+msgstr "Obtención exitosa"
 
 msgid "fetch_button"
 msgstr "Obtener"
@@ -580,7 +580,7 @@ msgid "wifi_connected"
 msgstr "¡Conexión exitosa!\n\nObteniendo datos de IA..."
 
 msgid "error_503"
-msgstr "¡La API de Gemini está sobrecargada!\n\nEl modelo está recibiendo demasiadas solicitudes actualmente.\n\nPor favor, inténtelo de nuevo en unos minutos.\n\nSugerencia: Pruebe un modelo diferente en config.lua"
+msgstr "¡La API de Gemini está sobrecarregada!\n\nEl modelo está recibiendo demasiadas solicitudes actualmente.\n\nPor favor, inténtelo de nuevo en unos minutos.\n\nSugerencia: Pruebe un modelo diferente en config.lua"
 
 msgid "error_429"
 msgstr "¡Demasiadas solicitudes!\n\nHa alcanzado el límite de uso de la API.\n\nPor favor, espere unos minutos y vuelva a intentarlo."
@@ -658,13 +658,13 @@ msgid "spoiler_preference_title"
 msgstr "Preferencia de spoilers"
 
 msgid "spoiler_free_option"
-msgstr " Modo sin spoilers (hasta %d%% del libro)"
+msgstr "Modo sin spoilers (Hasta el %d%% del libro)"
 
 msgid "full_book_option"
-msgstr " Modo libro completo"
+msgstr "Modo libro completo"
 
 msgid "spoiler_free_mode"
-msgstr " Modo sin spoilers: %d%%"
+msgstr "Modo sin spoilers: %d%%"
 
 msgid "full_book_mode_active"
-msgstr " Modo libro completo"
+msgstr "Modo libro completo"

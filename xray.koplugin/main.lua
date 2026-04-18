@@ -349,7 +349,7 @@ function XRayPlugin:continueWithFetch(reading_percent)
 
         -- 1. Extraction (Main Thread)
         local book_text = self.chapter_analyzer:getTextForAnalysis(self.ui, 20000, nil, self.ui:getCurrentPage())
-        local samples, chapter_titles = self.chapter_analyzer:getDetailedChapterSamples(self.ui, 200, 150000)
+        local samples, chapter_titles = self.chapter_analyzer:getDetailedChapterSamples(self.ui, 200, 150000, reading_percent == 100)
         local annots = self.chapter_analyzer:getAnnotationsForAnalysis(self.ui)
         
         if (not book_text or #book_text < 10) and not samples then
@@ -465,6 +465,36 @@ function XRayPlugin:showAuthorInfo()
     end
     local lines = { "NAME: " .. (self.author_info.name or "Unknown"), "BORN: " .. (self.author_info.birthDate or "---"), "DIED: " .. (self.author_info.deathDate or "---"), "", "BIOGRAPHY:", (self.author_info.description or "No biography available.") }
     UIManager:show(InfoMessage:new{ text = table.concat(lines, "\n"), timeout = 30 })
+end
+
+function XRayPlugin:showLocations()
+    if not self.locations or #self.locations == 0 then 
+        UIManager:show(InfoMessage:new{ text = self.loc:t("no_location_data"), timeout = 3 })
+        return 
+    end
+    local items = {}
+    for _, loc in ipairs(self.locations) do 
+        if type(loc) == "table" then
+            local name = loc.name or "???"
+            local desc = loc.description or ""
+            table.insert(items, { 
+                text = name, 
+                callback = function() 
+                    UIManager:show(InfoMessage:new{ 
+                        text = name .. "\n\n" .. desc, 
+                        timeout = 10 
+                    }) 
+                end 
+            })
+        end
+    end
+    
+    if #items == 0 then
+        UIManager:show(InfoMessage:new{ text = self.loc:t("no_location_data"), timeout = 3 })
+        return
+    end
+    
+    UIManager:show(Menu:new{ title = self.loc:t("menu_locations"), item_table = items, is_borderless = true, width = Screen:getWidth(), height = Screen:getHeight() })
 end
 
 function XRayPlugin:showAbout()

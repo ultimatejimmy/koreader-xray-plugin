@@ -30,7 +30,7 @@ ALGORITMO PARA CRONOLOGIA (PRIORIDADE MÁXIMA):
 Você sofre de viés de recência. Para evitar pular capítulos ou combiná-los, você DEVE executar este loop exato:
 Passo 1. Olhe APENAS para o bloco "CHAPTER SAMPLES". Conte os capítulos narrativos.
 Passo 2. Comece no primeiríssimo capítulo das amostras. Crie EXATAMENTE UM objeto de evento no array `timeline`.
-Passo 3. O campo `chapter` DEVE corresponder exatamente ao cabeçalho do capítulo na amostra.
+Passo 3. O campo `chapter` DEVE corresponder exatamente ao cabeçalho do capítulo na amostra. (NOTA: Se este for um omnibus contendo vários livros, os títulos dos capítulos podem se repetir ou reiniciar. Mapeie-os estritamente na ordem sequencial fornecida).
 Passo 4. Resuma esse capítulo específico no campo `event` (Máximo 200 caracteres).
 Passo 5. Vá para o PRÓXIMO capítulo nas amostras e repita o Passo 2.
 Passo 6. NÃO pare até que CADA capítulo nas amostras tenha EXATAMENTE UM evento correspondente. Não os agrupe. SEM SPOILERS: Pare exatamente na marca de %d%%.
@@ -47,6 +47,11 @@ Passo 1. Extraia de 5 a 10 locais significativos. SEM SPOILERS: Pare exatamente 
 REGRAS ESTRITAS DE SPOILER:
 - ABSOLUTAMENTE NENHUMA informação após o progresso de leitura atual. Pare exatamente na marca de %d%%.
 - As descrições devem refletir o estado dos personagens neste exato ponto do livro.
+
+REGRAS ESTRITAS DE SEGURANÇA JSON:
+- Você DEVE escapar corretamente todas as aspas duplas (\") dentro das strings.
+- NÃO use quebras de linha não escapadas dentro das strings.
+- Retorne APENAS um JSON válido e analisável.
 
 FORMATO JSON REQUERIDO:
 {

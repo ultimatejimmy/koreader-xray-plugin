@@ -658,13 +658,13 @@ msgid "spoiler_preference_title"
 msgstr "Spoiler Tercih"
 
 msgid "spoiler_free_option"
-msgstr " Spoiler'sız Mod (Sadece %%%d'e kadar)"
+msgstr "Modo sin spoilers (Hasta el %d%% del libro)"
 
 msgid "full_book_option"
 msgstr " Tam Kitap (Tüm içerik)"
 
 msgid "spoiler_free_mode"
-msgstr " Spoiler'sız Mod: %%%d"
+msgstr " Spoiler'sız Mod: %d%%"
 
 msgid "full_book_mode_active"
 msgstr " Tam Kitap Modu"

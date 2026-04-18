@@ -362,7 +362,7 @@ msgid "no_characters_in_chapter"
 msgstr "Nenhum personagem encontrado neste capítulo.\n\nCapítulo: %s"
 
 msgid "mentions"
-msgstr "menções"
+msgstr "menciones"
 
 msgid "this_chapter"
 msgstr "Este Capítulo"
@@ -658,10 +658,10 @@ msgid "spoiler_preference_title"
 msgstr "Preferência de Spoiler"
 
 msgid "spoiler_free_option"
-msgstr " Modo Sem Spoiler (Apenas até %d%%)"
+msgstr " Modo Sem Spoiler (Até o %d%% do livro)"
 
 msgid "full_book_option"
-msgstr " Livro Completo (Todo o conteúdo)"
+msgstr " Modo livro completo"
 
 msgid "spoiler_free_mode"
 msgstr " Modo Sem Spoiler: %d%%"

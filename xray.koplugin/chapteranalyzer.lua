@@ -450,8 +450,8 @@ function ChapterAnalyzer:getAnnotationsForAnalysis(ui)
     return #annotations_text > 0 and annotations_text or nil
 end
 
--- Get detailed samples (Start/Mid/End) from each chapter up to current position
-function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters, total_limit)
+-- Get detailed samples (Start/Mid/End) from each chapter
+function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters, total_limit, is_full_book)
     if not ui or not ui.document then return nil, nil end
     
     local toc = ui.document:getToc()
@@ -461,26 +461,28 @@ function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters, total_limit
     end
     
     local current_page = nil
-    if ui.view and ui.view.state and ui.view.state.page then
-        current_page = ui.view.state.page
-    elseif ui.rolling and ui.rolling.current_page then
-        current_page = ui.rolling.current_page
-    elseif ui.paging and ui.paging.getCurrentPage then
-        current_page = ui.paging:getCurrentPage()
+    if not is_full_book then
+        if ui.view and ui.view.state and ui.view.state.page then
+            current_page = ui.view.state.page
+        elseif ui.rolling and ui.rolling.current_page then
+            current_page = ui.rolling.current_page
+        elseif ui.paging and ui.paging.getCurrentPage then
+            current_page = ui.paging:getCurrentPage()
+        end
     end
-    
-    if not current_page then return nil, nil end
     
     max_chapters = max_chapters or 200
     total_limit = total_limit or 150000
     
-    -- Filter chapters to only those we have reached
+    -- Filter chapters
     local active_chapters = {}
     local chapter_titles = {}
     for i, chapter in ipairs(toc) do
-        if (chapter.page and chapter.page > current_page) or i > max_chapters then
+        if not is_full_book and current_page and chapter.page and chapter.page > current_page then
             break
         end
+        if i > max_chapters then break end
+        
         table.insert(active_chapters, chapter)
         table.insert(chapter_titles, chapter.title or tostring(i))
     end

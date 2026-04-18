@@ -24,13 +24,13 @@ TAREA: Realiza un análisis X-Ray completo. Devuelve ÚNICAMENTE un objeto JSON 
 PARTICIÓN CRÍTICA DE ATENCIÓN:
 Estás procesando un documento masivo con dos bloques de texto proporcionados al final de esta instrucción:
 1. "CHAPTER SAMPLES" (Muestras de capítulos): Este es el macrocontexto del libro hasta la ubicación actual del lector.
-2. "BOOK TEXT CONTEXT" (Contexto del texto del libro): Este es el microcontexto de los últimos 20.000 caracteres.
+2. "BOOK TEXT CONTEXT" (Contexto del texto del libro): Este es el microcontexto de los últimos 20,000 caracteres.
 
 ALGORITMO PARA LA LÍNEA DE TIEMPO (MÁXIMA PRIORIDAD):
 Sufres de sesgo de recencia. Para evitar saltar capítulos o combinarlos, DEBES ejecutar este bucle exacto:
 Paso 1. Mira ÚNICAMENTE el bloque "CHAPTER SAMPLES". Cuenta los capítulos narrativos.
 Paso 2. Comienza en el primer capítulo de las muestras. Crea EXACTAMENTE UN objeto de evento en la matriz `timeline`.
-Paso 3. El campo `chapter` DEBE coincidir exactamente con el encabezado del capítulo en la muestra.
+Paso 3. El campo `chapter` DEBE coincidir exactamente con el encabezado del capítulo en la muestra. (NOTA: Si esto es un ómnibus que contiene varios libros, los títulos de los capítulos pueden repetirse o reiniciarse. Mapéalos estrictamente en el orden secuencial proporcionado).
 Paso 4. Resume ese capítulo específico en el campo `event` (Máximo 200 caracteres).
 Paso 5. Pasa al SIGUIENTE capítulo en las muestras y repite el Paso 2.
 Paso 6. NO te detengas hasta que CADA capítulo de las muestras tenga EXACTAMENTE UN evento correspondiente. No los agrupes. SIN SPOILERS: Detente exactamente en la marca del %d%%.
@@ -47,6 +47,11 @@ Paso 1. Extrae de 5 a 10 ubicaciones significativas. SIN SPOILERS: Detente exact
 REGLAS ESTRICTAS SOBRE SPOILERS:
 - ABSOLUTAMENTE NINGUNA información posterior al progreso de lectura actual. Detente exactamente en la marca del %d%%.
 - Las descripciones deben reflejar el estado de los personajes en este punto exacto del libro.
+
+REGLAS ESTRICTAS DE SEGURIDAD JSON:
+- DEBES escapar correctamente todas las comillas dobles (\") dentro de las cadenas.
+- NO uses saltos de línea sin escapar dentro de las cadenas.
+- Genera ÚNICAMENTE JSON válido y analizable.
 
 FORMATO JSON REQUERIDO:
 {

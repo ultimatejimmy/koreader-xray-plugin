@@ -220,7 +220,13 @@ function AIHelper:callGemini(prompt, config)
             if success and data.candidates and data.candidates[1] then
                 local candidate = data.candidates[1]
                 if candidate.content and candidate.content.parts and candidate.content.parts[1] then
-                    return self:parseAIResponse(candidate.content.parts[1].text)
+                    local ai_text = candidate.content.parts[1].text
+                    local parsed_data, err = self:parseAIResponse(ai_text)
+                    if parsed_data then
+                        return parsed_data
+                    else
+                        self:log("AIHelper: [" .. current_model .. "] Parse failed, trying fallback: " .. tostring(err))
+                    end
                 end
             end
         elseif code_num == 429 then return nil, "error_quota", "Quota Exceeded (429)"
@@ -234,7 +240,7 @@ function AIHelper:callGemini(prompt, config)
             return nil, "error_api", error_detail
         end
     end
-    return nil, "error_503", "All models busy (503)"
+    return nil, "error_parse", "All models failed to return valid JSON."
 end
 
 function AIHelper:callChatGPT(prompt, config)
@@ -245,8 +251,12 @@ function AIHelper:callChatGPT(prompt, config)
     local ok, code, response_text = self:makeRequest(config.endpoint or "https://api.openai.com/v1/chat/completions", { ["Content-Type"] = "application/json", ["Authorization"] = "Bearer " .. config.api_key }, request_body)
     self:log("AIHelper: ChatGPT Response Code: " .. tostring(code))
     self:log("AIHelper: ChatGPT Response received (" .. (response_text and #response_text or 0) .. " bytes)")
-    if tonumber(code) == 200 then local data = json.decode(response_text); return self:parseAIResponse(data.choices[1].message.content) end
-    return nil, "error_api", "ChatGPT failed"
+    if tonumber(code) == 200 then 
+        local data = json.decode(response_text)
+        local parsed_data, err = self:parseAIResponse(data.choices[1].message.content)
+        if parsed_data then return parsed_data end
+    end
+    return nil, "error_api", "ChatGPT failed or returned invalid JSON"
 end
 
 local function normalizeKeys(t)
@@ -281,27 +291,42 @@ end
 
 function AIHelper:parseAIResponse(text)
     if not text or #text == 0 then return nil, "Empty response" end
-    local json_text = text:gsub("```%w*", ""):gsub("```", ""):gsub("^%s+", ""):gsub("%s+$", "")
+    
+    -- Aggressively clean up markdown and find JSON boundaries
+    local json_text = text:gsub("^%s+", ""):gsub("%s+$", "")
+    
+    -- Method 1: Clean standard markdown blocks
+    if json_text:find("^```") then
+        json_text = json_text:gsub("^```json%s*", ""):gsub("^```%w*%s*", ""):gsub("```%s*$", "")
+    end
+    
+    -- Method 2: Locate first { and last } if decode fails
     local success, data = pcall(json.decode, json_text)
     if not success then
         self:log("AIHelper: JSON repair needed")
         local first = json_text:find("{", 1, true) or json_text:find("[", 1, true)
         local last_brace = json_text:reverse():find("}", 1, true)
         local last_bracket = json_text:reverse():find("]", 1, true)
-        local last = math.max(last_brace or 0, last_bracket or 0)
-        if first and last > 0 then
-             local extracted = json_text:sub(first, #json_text - last + 1)
+        local last_rel = math.max(last_brace or 0, last_bracket or 0)
+        
+        if first and last_rel > 0 then
+             local last = #json_text - last_rel + 1
+             local extracted = json_text:sub(first, last)
              local fixed = fixTruncatedJSON(extracted)
+             
              success, data = pcall(json.decode, fixed)
              if not success and rapidjson_ok then
                  local standard_json = require("json")
-                 if standard_json and standard_json ~= json then success, data = pcall(standard_json.decode, fixed) end
+                 if standard_json and standard_json ~= json then 
+                     success, data = pcall(standard_json.decode, fixed) 
+                 end
              end
         end
     end
+    
     if success and data then return self:validateAndCleanData(normalizeKeys(data)) end
-    self:log("AIHelper: Parse failed. Snippet: " .. tostring(text):sub(1, 100))
-    return nil, "Failed to parse JSON. Check xray.log."
+    self:log("AIHelper: Parse failed. Snippet: " .. tostring(text):sub(1, 150))
+    return nil, "Failed to parse JSON"
 end
 
 function AIHelper:validateAndCleanData(data)
