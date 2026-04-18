@@ -464,7 +464,7 @@ function XRayPlugin:showAuthorInfo()
         UIManager:show(ask_dialog); return
     end
     local lines = { "NAME: " .. (self.author_info.name or "Unknown"), "BORN: " .. (self.author_info.birthDate or "---"), "DIED: " .. (self.author_info.deathDate or "---"), "", "BIOGRAPHY:", (self.author_info.description or "No biography available.") }
-    UIManager:show(InfoMessage:new{ text = table.concat(lines, "\n"), timeout = 15 })
+    UIManager:show(InfoMessage:new{ text = table.concat(lines, "\n"), timeout = 30 })
 end
 
 function XRayPlugin:showAbout()

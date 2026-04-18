@@ -1,4 +1,4 @@
-﻿# Brazilian Português translation for X-Ray Plugin
+# Brazilian Portuguese translation for X-Ray Plugin
 # Copyright (C) 2025
 # This file is distributed under the same license as the X-Ray package.
 #
@@ -6,15 +6,19 @@ msgid ""
 msgstr ""
 "Project-Id-Version: X-Ray 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-24 12:00+0000\n"
-"PO-Revision-Date: 2025-11-24 12:00+0000\n"
+"POT-Creation-Date: 2025-11-17 12:00+0000\n"
+"PO-Revision-Date: 2025-11-17 12:00+0000\n"
 "Last-Translator: eduardorodrigues08\n"
 "Language-Team: Português\n"
-"Language: pt_pr\n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# ==============================
+# MENU ITEMS
+# ==============================
 
 msgid "menu_xray"
 msgstr "X-Ray"
@@ -67,6 +71,10 @@ msgstr "Idioma"
 msgid "menu_about"
 msgstr "Sobre"
 
+# ==============================
+# AI SETTINGS & PROVIDERS
+# ==============================
+
 msgid "menu_gemini_key"
 msgstr "Chave da API Google Gemini"
 
@@ -106,6 +114,10 @@ msgstr "Modelo: Gemini 2.5 Pro\n\nModelo poderoso selecionado!\n\nRecursos:\n•
 msgid "gemini_model_3_pro_info"
 msgstr "Modelo: Gemini 3 Pro\n\nModelo mais novo e mais poderoso selecionado!"
 
+# ==============================
+# STATUS MESSAGES
+# ==============================
+
 msgid "xray_mode_active"
 msgstr "Ativo"
 
@@ -115,29 +127,28 @@ msgstr "Inativo"
 msgid "events"
 msgstr "eventos"
 
-msgid "no_character_data"
-msgstr "Ainda não há dados de personagens. Use 'Buscar Dados da IA' primeiro."
+# ==============================
+# INFO MESSAGES
+# ==============================
 
-msgid "no_char_data_fetch"
-msgstr "Ainda não há informações de personagens.\n\nBusque dados da IA primeiro."
+msgid "no_character_data"
+msgstr "Ainda não há dados de personagens.\n\nUse 'Buscar Dados do X-Ray' primeiro."
 
 msgid "no_location_data"
-msgstr "Ainda não há dados de locais. Use 'Buscar Dados da IA' primeiro."
+msgstr "Ainda não há dados de locais. Use 'Buscar Dados do X-Ray' primeiro."
 
 msgid "no_author_data"
 msgstr "Ainda não há informações do autor. Use 'Buscar Dados da IA' primeiro."
 
-msgid "no_summary_data"
-msgstr "Ainda não há resumo. Use 'Buscar Dados da IA' primeiro."
-
-msgid "no_theme_data"
-msgstr "Ainda não há temas. Use 'Buscar Dados da IA' primeiro."
-
 msgid "no_timeline_data"
-msgstr "Ainda não há dados da linha do tempo.\n\nUse 'Buscar Dados da IA' primeiro.\n\nA IA exibirá eventos importantes em ordem cronológica."
+msgstr "Ainda não há dados da linha do tempo.\n\nUse 'Buscar Dados do X-Ray' primeiro.\n\nA IA exibirá eventos importantes em ordem cronológica."
 
 msgid "no_historical_data"
-msgstr "Ainda não há dados de figuras históricas.\n\nUse 'Buscar Dados da IA' primeiro.\n\nA IA detectará figuras reais mencionadas no livro."
+msgstr "Ainda não há dados de figuras históricas.\n\nUse 'Buscar Dados do X-Ray' primeiro.\n\nA IA detectará figuras reais mencionadas no livro."
+
+# ==============================
+# AUTO-LOAD & CACHE
+# ==============================
 
 msgid "xray_ready"
 msgstr "X-Ray pronto e ativo!"
@@ -181,6 +192,10 @@ msgstr "Cache limpo!\n\nAgora você pode buscar novos dados:\nMenu → X-Ray →
 msgid "cache_not_found"
 msgstr "Cache não encontrado ou não pôde ser limpo"
 
+# ==============================
+# CHARACTER DETAILS
+# ==============================
+
 msgid "character_name"
 msgstr "Personagem:"
 
@@ -213,6 +228,10 @@ msgstr "Masculino"
 
 msgid "gender_female"
 msgstr "Feminino"
+
+# ==============================
+# AI FETCH & STATUS
+# ==============================
 
 msgid "book_title"
 msgstr "Livro:"
@@ -248,13 +267,13 @@ msgid "no_api_key"
 msgstr "Chave de API da IA não definida!\n\nInsira a chave em:\nMenu → X-Ray → Configurações da IA"
 
 msgid "fetching_ai"
-msgstr "Buscando dados da IA...\n\n"
+msgstr "Analisando livro para gerar dados do X-Ray..."
 
 msgid "fetching_model"
 msgstr "Modelo: "
 
 msgid "fetching_wait"
-msgstr "⏳ Aguarde...\nEste processo pode levar de 10 a 30 segundos."
+msgstr "⏳ Aguarde...\nEste processo pode levar de 10 a 50 segundos."
 
 msgid "dont_touch"
 msgstr "Não toque na tela."
@@ -264,21 +283,34 @@ msgstr "Falha ao buscar dados da IA!\n\nPossíveis causas:\n• Chave de API inv
 
 msgid "ai_fetch_complete"
 msgstr ""
-" Dados obtidos com sucesso de %s!\n"
+"Dados obtidos com sucesso de %s!\n"
 "\n"
-"%s\n"
+"Livro: %s\n"
 "Autor: %s\n"
 "\n"
-"%d personagens\n"
-"%d locais\n"
-"%d temas\n"
-"%d eventos\n"
-"%d figuras históricas\n"
+"Personagens: %d\n"
+"Locais: %d\n"
+"Temas: %d\n"
+"Eventos: %d\n"
+"Figuras Históricas: %d\n"
 "\n"
 "%s\n"
 "\n"
 "RESUMO:\n"
 "%s"
+
+msgid "menu_fetch_author"
+msgstr "Buscar informações do autor (IA)"
+
+msgid "fetching_author"
+msgstr "Buscando informações do autor de %s..."
+
+msgid "no_author_data_fetch"
+msgstr "Nenhuma informação do autor disponível.\n\nDeseja buscar na IA?"
+
+# ==============================
+# X-RAY MODE & SEARCH
+# ==============================
 
 msgid "xray_mode_no_data"
 msgstr "Busque dados primeiro para usar o Modo X-Ray!\n\nMenu → X-Ray → Buscar Dados da IA"
@@ -304,6 +336,10 @@ msgstr "Pesquisar"
 msgid "character_not_found"
 msgstr "Personagem não encontrado: %s\n\nDica: digite parte do nome"
 
+# ==============================
+# TIMELINE & CHAPTER
+# ==============================
+
 msgid "timeline_event"
 msgstr "Evento #%d"
 
@@ -325,11 +361,18 @@ msgstr "Não foi possível obter o texto do capítulo"
 msgid "no_characters_in_chapter"
 msgstr "Nenhum personagem encontrado neste capítulo.\n\nCapítulo: %s"
 
+msgid "mentions"
+msgstr "menções"
+
 msgid "this_chapter"
 msgstr "Este Capítulo"
 
 msgid "chapter_chars_title"
 msgstr "Personagem"
+
+# ==============================
+# CHARACTER NOTES
+# ==============================
 
 msgid "character_notes_title"
 msgstr "Notas de Personagem (%d notas)"
@@ -355,11 +398,19 @@ msgstr "Salvar"
 msgid "delete"
 msgstr "Excluir"
 
+# ==============================
+# QUICK MENU
+# ==============================
+
 msgid "quick_menu_title"
 msgstr "Acesso Rápido X-Ray"
 
 msgid "fetch_data"
 msgstr "Buscar Dados da IA"
+
+# ==============================
+# API KEYS
+# ==============================
 
 msgid "gemini_key_title"
 msgstr "Chave da API Google Gemini"
@@ -368,13 +419,13 @@ msgid "gemini_key_hint"
 msgstr "Chave da API"
 
 msgid "gemini_key_desc"
-msgstr "Chave gratuita:\nhttps://makersuite.google.com/app/apikey\n\nOu edite config.lua:\ngemini_api_key = "AIzaSy...""
+msgstr "Chave gratuita:\nhttps://makersuite.google.com/app/apikey\n\nOu edite config.lua:\ngemini_api_key = \"AIzaSy...\""
 
 msgid "testing_key"
 msgstr "Testando chave da API..."
 
 msgid "gemini_key_saved"
-msgstr "Chave da API Gemini!"
+msgstr "¡Chave da API Gemini salva!"
 
 msgid "key_test_failed"
 msgstr "Chave salva, mas o teste falhou!\n\nErro: %s\n\nVerifique sua chave."
@@ -386,10 +437,14 @@ msgid "chatgpt_key_hint"
 msgstr "sk-..."
 
 msgid "chatgpt_key_desc"
-msgstr "Chave de API:\nhttps://platform.openai.com/api-keys\n\nOu edite config.lua:\nchatgpt_api_key = "sk-...""
+msgstr "Chave de API:\nhttps://platform.openai.com/api-keys\n\nOu edite config.lua:\nchatgpt_api_key = \"sk-...\""
 
 msgid "chatgpt_key_saved"
 msgstr "Chave da API ChatGPT salva!"
+
+# ==============================
+# PROVIDER SELECTION
+# ==============================
 
 msgid "provider_select_title"
 msgstr "Selecionar Provedor de IA"
@@ -403,8 +458,15 @@ msgstr "ChatGPT selecionado"
 msgid "set_key_first"
 msgstr "Defina a chave da API primeiro"
 
+# ==============================
+# EXTRA TITLES
+# ==============================
+
 msgid "fetch_successful"
-msgstr "Sucesso"
+msgstr "Sucesso ao buscar dados"
+
+msgid "fetch_button"
+msgstr "Buscar"
 
 msgid "summary_title"
 msgstr "Resumo do Livro"
@@ -421,11 +483,55 @@ msgstr "Importância no Livro"
 msgid "hist_context"
 msgstr "Contexto no Livro"
 
+# ==============================
+# ABOUT
+# ==============================
+
 msgid "about_title"
 msgstr "Plugin X-Ray"
 
 msgid "about_text"
-msgstr "https://github.com/0zd3m1r/koreader-xray-plugin"
+msgstr ""
+"Plugin X-Ray\n"
+"═══════════════════════════════\n"
+"\n"
+"O QUE ELE FAZ?\n"
+"Melhora seus livros assim como o Amazon Kindle X-Ray!\n"
+"Usa IA para identificar automaticamente personagens, locais,\n"
+"contexto histórico e muito mais.\n"
+"\n"
+"═══════════════════════════════\n"
+"\n"
+"RECURSOS:\n"
+"\n"
+"Menus Inteligentes\n"
+"• Contadores ao vivo em cada item do menu\n"
+"• Ex: Personagens (12), Locais (8)\n"
+"\n"
+"Suporte Multi-idioma\n"
+"• Interface em português, inglês e outros\n"
+"• Busca de dados da IA específica para o idioma\n"
+"• Fácil de adicionar novos idiomas\n"
+"\n"
+"Análise Histórica Avançada\n"
+"• Captura referências diretas\n"
+"• Detecta referências indiretas\n"
+"• Encontra contextos filosóficos e intelectuais\n"
+"\n"
+"═══════════════════════════════\n"
+"\n"
+"INÍCIO RÁPIDO:\n"
+"1. Obtenha a Chave da API\n"
+"2. Busque os Dados\n"
+"3. Explore!\n"
+"\n"
+"═══════════════════════════════\n"
+"\n"
+"¡Boa leitura!"
+
+# ==============================
+# LANGUAGE SELECTION
+# ==============================
 
 msgid "language_title"
 msgstr "Selecionar Idioma"
@@ -436,24 +542,21 @@ msgstr "Turco"
 msgid "language_english"
 msgstr "Inglês"
 
-msgid "language_portugues"
-msgstr "Português"
-
 msgid "lang_changed_tr"
 msgstr "Idioma: Turco"
 
 msgid "lang_changed_en"
 msgstr "Idioma: Inglês"
 
-msgid "lang_changed_por"
-msgstr "Idioma: Português"
-
 msgid "language_changed"
 msgstr "Idioma alterado: Português"
 
-
 msgid "please_restart"
 msgstr "Por favor, feche e reabra o livro\npara que as mudanças tenham efeito."
+
+# ==============================
+# PRESERVED FROM ORIGINAL PO (MISSING IN LUA)
+# ==============================
 
 msgid "language_name"
 msgstr "Português (Brasil)"
@@ -477,13 +580,13 @@ msgid "wifi_connected"
 msgstr "Conectado com sucesso!\n\nBuscando dados da IA..."
 
 msgid "error_503"
-msgstr "A API do Gemini está sobrecarregada!\n\nO modelo está recebendo muitas solicitações.\n\nTente novamente em alguns minutos.\n\nDica: experimente outro modelo:\ngemini_model = 'gemini-2.0-flash-exp'"
+msgstr "A API do Gemini está sobrecarregada!\n\nO modelo está recebendo muitas solicitações.\n\nTente novamente em alguns minutos.\n\nDica: experimente outro modelo"
 
 msgid "error_429"
 msgstr "Solicitações demais!\n\nVocê atingiu o limite da API.\n\nAguarde alguns minutos e tente novamente."
 
 msgid "error_404"
-msgstr "Modelo não encontrado!\n\nO modelo selecionado não existe.\n\nAltere o modelo em config.lua:\ngemini_model = 'gemini-2.5-flash'"
+msgstr "Modelo não encontrado!\n\nO modelo selecionado não existe."
 
 msgid "error_400"
 msgstr "Requisição inválida!\n\nVerifique sua chave de API ou configuração do modelo."
@@ -522,7 +625,7 @@ msgid "ok"
 msgstr "OK"
 
 msgid "menu_fetch_full"
-msgstr "� Buscar Dados da IA (Livro Completo)"
+msgstr " Buscar Dados da IA (Livro Completo)"
 
 msgid "menu_fetch_progress"
 msgstr " Até a Página Atual (Sem spoilers)"
@@ -555,13 +658,13 @@ msgid "spoiler_preference_title"
 msgstr "Preferência de Spoiler"
 
 msgid "spoiler_free_option"
-msgstr " Modo Sem Spoiler (Apenas até %%%d)"
+msgstr " Modo Sem Spoiler (Apenas até %d%%)"
 
 msgid "full_book_option"
 msgstr " Livro Completo (Todo o conteúdo)"
 
 msgid "spoiler_free_mode"
-msgstr " Modo Sem Spoiler: %%%d"
+msgstr " Modo Sem Spoiler: %d%%"
 
 msgid "full_book_mode_active"
 msgstr " Modo Livro Completo"

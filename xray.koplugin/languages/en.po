@@ -267,13 +267,13 @@ msgid "no_api_key"
 msgstr "AI API Key not set!\n\nEnter API key in:\nMenu → X-Ray → AI Settings"
 
 msgid "fetching_ai"
-msgstr "Analyzing book to generate X-Ray data...\n\n"
+msgstr "Analyzing book to generate X-Ray data..."
 
 msgid "fetching_model"
 msgstr "Model: "
 
 msgid "fetching_wait"
-msgstr "⏳ Please wait...\nThis process may take 10-30 seconds."
+msgstr "⏳ Please wait...\nThis process may take 10-50 seconds."
 
 msgid "dont_touch"
 msgstr "Do not touch the screen."
