@@ -11,7 +11,7 @@ The prompts are designed to be spoiler-free based on your current reading progre
 
 ## Features
 
-- **Character Tracking:** Automatically extracts character names, roles, and descriptions. You can see who is in the current chapter and add your own personal notes to them.
+- **Character Tracking:** Automatically extracts character names, roles, and descriptions. 
 - **Context & Lore:** Generates a timeline of key events, identifies real historical figures mentioned in the text (along with brief biographies), and lists important locations.
 - **Spoiler-Free:** The AI is instructed to avoid revealing major plot twists beyond your current reading progress.
 - **Local Caching:** Data is fetched once and saved locally per book. It never expires and works completely offline after the initial setup.
