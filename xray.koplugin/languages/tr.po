@@ -33,3 +33,12 @@ msgstr "Spoilersiz mod, yapay zeka çıkarımını halihazırda okuduğunuz sayf
 
 msgid "spoiler_free_option"
 msgstr "Spoilersiz Mod (Kitabın %%%d kadarı)"
+
+msgid "menu_update_xray"
+msgstr "X-Ray Verilerini Güncelle (Birleştir)"
+
+msgid "menu_fetch_more_chars"
+msgstr "Daha Fazla Karakter Getir"
+
+msgid "updating_ai"
+msgstr "%s üzerinden güncelleniyor..."

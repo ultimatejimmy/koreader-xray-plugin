@@ -221,6 +221,11 @@ function XRayPlugin:getSubMenuItems()
             callback = function() self:fetchFromAI() end,
         },
         {
+            text = self.loc:t("menu_update_xray") or "Update X-Ray Data (Merge)",
+            keep_menu_open = true,
+            callback = function() self:updateFromAI() end,
+        },
+        {
             text = self.loc:t("menu_fetch_author") or "Fetch Author Info (AI)",
             keep_menu_open = true,
             callback = function() self:fetchAuthorInfo() end,
@@ -372,7 +377,10 @@ function XRayPlugin:showCharacters()
         UIManager:show(InfoMessage:new{ text = self.loc:t("no_character_data"), timeout = 3 })
         return
     end
-    local items = {{ text = "[Search] " .. self.loc:t("search_character"), callback = function() self:showCharacterSearch() end }}
+    local items = {
+        { text = "⌕ " .. self.loc:t("search_character"), callback = function() self:showCharacterSearch() end },
+        { text = "✚ " .. (self.loc:t("menu_fetch_more_chars") or "Fetch More Characters"), callback = function() self:fetchMoreCharacters() end, separator = true },
+    }
     for _, char in ipairs(self.characters) do
         local name = char.name or "Unknown"
         local text = "• " .. name
@@ -397,6 +405,20 @@ function XRayPlugin:fetchFromAI()
             self:continueWithFetch(100)
         else
             self:continueWithFetch(reading_percent)
+        end
+    end)
+end
+
+function XRayPlugin:updateFromAI()
+    require("ui/network/manager"):runWhenOnline(function() 
+        local current_page = self.ui:getCurrentPage()
+        local reading_percent = math.floor((current_page / self.ui.document:getPageCount()) * 100)
+        local spoiler_setting = self.ai_helper.settings and self.ai_helper.settings.spoiler_setting or "spoiler_free"
+        
+        if spoiler_setting == "full_book" then
+            self:continueWithFetch(100, true)
+        else
+            self:continueWithFetch(reading_percent, true)
         end
     end)
 end
@@ -462,7 +484,7 @@ local function sanitizeMetadata(val)
     else return "Unknown" end
 end
 
-function XRayPlugin:continueWithFetch(reading_percent)
+function XRayPlugin:continueWithFetch(reading_percent, is_update)
     if not self.ai_helper then
         local AIHelper = require("xray_aihelper")
         self.ai_helper = AIHelper
@@ -473,7 +495,8 @@ function XRayPlugin:continueWithFetch(reading_percent)
     local author = sanitizeMetadata(props.authors)
     local wait_msg
     local is_cancelled = false
-    wait_msg = InfoMessage:new{ text = self.loc:t("fetching_ai", self.ai_provider or "AI") .. "\n\n" .. title .. "\n\n" .. self.loc:t("fetching_wait"), timeout = 120 }
+    local fetch_text = is_update and self.loc:t("updating_ai", self.ai_provider or "AI") or self.loc:t("fetching_ai", self.ai_provider or "AI")
+    wait_msg = InfoMessage:new{ text = fetch_text .. "\n\n" .. title .. "\n\n" .. self.loc:t("fetching_wait"), timeout = 120 }
     UIManager:show(wait_msg)
     UIManager:scheduleIn(0.5, function()
         if is_cancelled then return end
@@ -525,13 +548,75 @@ function XRayPlugin:continueWithFetch(reading_percent)
         final_book_data.historical_figures = self:sortDataByFrequency(final_book_data.historical_figures, book_text, "name")
         final_book_data.locations = self:sortDataByFrequency(final_book_data.locations, book_text, "name")
 
-        self.characters = final_book_data.characters
-        self.historical_figures = final_book_data.historical_figures
-        self.locations = final_book_data.locations
-        self.timeline = final_book_data.timeline
+        if is_update then
+            -- Merge characters
+            for _, new_char in ipairs(final_book_data.characters or {}) do
+                local found = false
+                for _, existing_char in ipairs(self.characters or {}) do
+                    if existing_char.name:lower() == new_char.name:lower() then
+                        existing_char.role = new_char.role
+                        existing_char.description = new_char.description
+                        found = true
+                        break
+                    end
+                end
+                if not found then table.insert(self.characters, new_char) end
+            end
+            -- Merge historical figures
+            for _, new_fig in ipairs(final_book_data.historical_figures or {}) do
+                local found = false
+                for _, existing_fig in ipairs(self.historical_figures or {}) do
+                    if existing_fig.name:lower() == new_fig.name:lower() then
+                        existing_fig.biography = new_fig.biography
+                        existing_fig.role = new_fig.role
+                        found = true
+                        break
+                    end
+                end
+                if not found then table.insert(self.historical_figures, new_fig) end
+            end
+            -- Merge locations
+            for _, new_loc in ipairs(final_book_data.locations or {}) do
+                local found = false
+                for _, existing_loc in ipairs(self.locations or {}) do
+                    if existing_loc.name:lower() == new_loc.name:lower() then
+                        existing_loc.description = new_loc.description
+                        found = true
+                        break
+                    end
+                end
+                if not found then table.insert(self.locations, new_loc) end
+            end
+            -- Merge timeline (append only if chapter not found)
+            for _, new_event in ipairs(final_book_data.timeline or {}) do
+                local found = false
+                for _, existing_event in ipairs(self.timeline or {}) do
+                    if existing_event.chapter == new_event.chapter then
+                        found = true
+                        break
+                    end
+                end
+                if not found then table.insert(self.timeline, new_event) end
+            end
+        else
+            self.characters = final_book_data.characters
+            self.historical_figures = final_book_data.historical_figures
+            self.locations = final_book_data.locations
+            self.timeline = final_book_data.timeline
+        end
+
+        local updated_data = {
+            book_title = title,
+            author = author,
+            characters = self.characters,
+            historical_figures = self.historical_figures,
+            locations = self.locations,
+            timeline = self.timeline,
+            author_info = self.author_info
+        }
 
         if not self.cache_manager then self.cache_manager = require("xray_cachemanager"):new() end
-        local cache_saved = self.cache_manager:saveCache(self.ui.document.file, final_book_data)
+        local cache_saved = self.cache_manager:saveCache(self.ui.document.file, updated_data)
 
         local summary = string.format("AI Fetch Complete!\n\nCharacters: %d\nLocations: %d\nEvents: %d\n\n%s", 
             #self.characters, #self.locations, #self.timeline,
@@ -543,6 +628,99 @@ function XRayPlugin:continueWithFetch(reading_percent)
             UIManager:close(success_dialog) 
         end }}} }
         UIManager:show(success_dialog)
+    end)
+end
+
+function XRayPlugin:fetchMoreCharacters()
+    require("ui/network/manager"):runWhenOnline(function() 
+        if not self.ai_helper then
+            local AIHelper = require("xray_aihelper")
+            self.ai_helper = AIHelper
+            self.ai_helper:init(self.path)
+        end
+        local props = self.ui.document:getProps() or {}
+        local title = sanitizeMetadata(props.title)
+        local author = sanitizeMetadata(props.authors)
+        local current_page = self.ui:getCurrentPage()
+        local reading_percent = math.floor((current_page / self.ui.document:getPageCount()) * 100)
+        local spoiler_setting = self.ai_helper.settings and self.ai_helper.settings.spoiler_setting or "spoiler_free"
+        
+        if spoiler_setting == "full_book" then
+            reading_percent = 100
+        end
+        
+        local wait_msg
+        local is_cancelled = false
+        wait_msg = InfoMessage:new{ text = (self.loc:t("fetching_ai") or "Fetching from %s...") .. "\n\n" .. title .. "\n\nExtracting additional characters...", timeout = 120 }
+        UIManager:show(wait_msg)
+        
+        UIManager:scheduleIn(0.5, function()
+            if is_cancelled then return end
+            if not self.chapter_analyzer then self.chapter_analyzer = require("xray_chapteranalyzer"):new() end
+            
+            local book_text = self.chapter_analyzer:getTextForAnalysis(self.ui, 20000, nil, self.ui:getCurrentPage())
+            local samples, _ = self.chapter_analyzer:getDetailedChapterSamples(self.ui, 200, 150000, reading_percent == 100)
+            
+            local exclude_list = {}
+            for _, char in ipairs(self.characters or {}) do
+                table.insert(exclude_list, char.name)
+            end
+            
+            local context = { 
+                reading_percent = reading_percent, 
+                filename = self.ui.document.file:match("([^/\\]+)$"), 
+                series = props.series or props.Series, 
+                chapter_samples = samples, 
+                book_text = book_text,
+                exclude_characters = table.concat(exclude_list, ", ")
+            }
+            
+            self.ai_helper:setTrapWidget(wait_msg)
+            local more_data, error_code, error_msg = self.ai_helper:getMoreCharacters(title, author, nil, context)
+            self.ai_helper:resetTrapWidget()
+            
+            if wait_msg then UIManager:close(wait_msg) end
+            if is_cancelled or error_code == "USER_CANCELLED" then return end
+            
+            if not more_data or not more_data.characters then
+                local error_dialog
+                local ButtonDialog = require("ui/widget/buttondialog")
+                error_dialog = ButtonDialog:new{ title = "Fetch Failed", text = error_msg or "Failed to fetch more characters.", buttons = {{{ text = self.loc:t("ok"), callback = function() UIManager:close(error_dialog) end }}} }
+                UIManager:show(error_dialog)
+                return
+            end
+            
+            local new_count = 0
+            for _, new_char in ipairs(more_data.characters) do
+                local found = false
+                for _, existing_char in ipairs(self.characters or {}) do
+                    if existing_char.name:lower() == new_char.name:lower() then
+                        found = true
+                        break
+                    end
+                end
+                if not found then
+                    table.insert(self.characters, new_char)
+                    new_count = new_count + 1
+                end
+            end
+            
+            -- Save to cache
+            local updated_data = {
+                book_title = title,
+                author = author,
+                characters = self.characters,
+                historical_figures = self.historical_figures,
+                locations = self.locations,
+                timeline = self.timeline,
+                author_info = self.author_info
+            }
+            if not self.cache_manager then self.cache_manager = require("xray_cachemanager"):new() end
+            self.cache_manager:saveCache(self.ui.document.file, updated_data)
+            
+            UIManager:show(InfoMessage:new{ text = string.format("Added %d new characters!", new_count), timeout = 3 })
+            self:showCharacters()
+        end)
     end)
 end
 

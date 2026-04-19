@@ -799,6 +799,15 @@ msgstr " You haven't progressed much yet (%%%d)\n\nContinue anyway?"
 msgid "progress_error"
 msgstr " Could not get reading progress!\n\nAnalyze full book instead?"
 
+msgid "menu_update_xray"
+msgstr "Update X-Ray Data (Merge)"
+
+msgid "menu_fetch_more_chars"
+msgstr "Fetch More Characters"
+
+msgid "updating_ai"
+msgstr "Updating from %s..."
+
 msgid "error_info"
 msgstr " Error Occurred!"
 

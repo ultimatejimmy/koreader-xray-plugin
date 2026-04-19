@@ -301,7 +301,13 @@ function AIHelper:createPrompt(title, author, context, section_name)
         if context.annotations then extra_context = extra_context .. "\n\nUSER HIGHLIGHTS:\n" .. context.annotations end
     end
     local p = (context and context.reading_percent) or 100
-    local success, final_prompt = pcall(string.format, template, enhanced_title, enhanced_author, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p)
+    local success, final_prompt
+    if section_name == "more_characters" then
+        local exclude = context.exclude_characters or ""
+        success, final_prompt = pcall(string.format, template, enhanced_title, enhanced_author, p, exclude, p)
+    else
+        success, final_prompt = pcall(string.format, template, enhanced_title, enhanced_author, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p)
+    end
     if not success then final_prompt = string.format("Book: %s - Author: %s. Extract %s data.", enhanced_title, enhanced_author, section_name) end
     if #extra_context > 0 then final_prompt = final_prompt .. extra_context end
     return final_prompt
@@ -344,6 +350,10 @@ end
 function AIHelper:getAuthorData(title, author, provider_name)
     local prompt = self:createPrompt(title, author, nil, "author_only")
     return self:executeUnifiedRequest(prompt)
+end
+
+function AIHelper:getMoreCharacters(title, author, provider_name, context)
+    return self:getBookDataSection(title, author, provider_name, context, "more_characters")
 end
 
 function AIHelper:getBookDataComprehensive(title, author, provider_name, context)
@@ -463,8 +473,17 @@ local function fixTruncatedJSON(s)
     end
     local res = s
     if in_string then res = res .. '"' end
+    
+    -- Ensure we remove any trailing commas before closing
     res = res:gsub(",%s*$", "")
-    for i = #stack, 1, -1 do if stack[i] == "{" then res = res .. "}" else res = res .. "]" end end
+    
+    for i = #stack, 1, -1 do 
+        if stack[i] == "{" then 
+            res = res .. "}" 
+        else 
+            res = res .. "]" 
+        end 
+    end
     return res
 end
 
@@ -488,8 +507,8 @@ function AIHelper:parseAIResponse(text)
         local last_bracket = json_text:reverse():find("]", 1, true)
         local last_rel = math.max(last_brace or 0, last_bracket or 0)
         
-        if first and last_rel > 0 then
-             local last = #json_text - last_rel + 1
+        if first then
+             local last = (last_rel > 0) and (#json_text - last_rel + 1) or #json_text
              local extracted = json_text:sub(first, last)
              local fixed = fixTruncatedJSON(extracted)
              

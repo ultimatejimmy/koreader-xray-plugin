@@ -89,6 +89,38 @@ FORMATO JSON REQUERIDO:
       "event": "Evento narrativo principal deste capítulo (Máx 150 caracteres)"
     }
   ]
+} ]],
+
+    -- Buscar mais personagens (Bypass do limite de IA)
+    more_characters = [[Livro: %s
+Autor: %s
+Progresso de Leitura: %d%%
+
+TAREFA: Extraia EXATAMENTE 10 personagens importantes ADICIONAIS do texto.
+Retorne APENAS um objeto JSON válido.
+
+MANDATO DE CONCISÃO (CRÍTICO):
+Para evitar o truncamento da resposta da IA, mantenha as descrições dos personagens com menos de 250 caracteres.
+
+INSTRUÇÃO CRÍTICA:
+NÃO inclua nenhum dos seguintes personagens, pois eles já foram extraídos:
+%s
+
+REGRAS ESTRITAS DE SPOILER:
+- ABSOLUTAMENTE NENHUMA informação após o progresso de leitura atual. Pare exatamente na marca de %d%%.
+- As descrições devem refletir o estado dos personagens neste exato ponto do livro.
+
+FORMATO JSON REQUERIDO:
+{
+  "characters": [
+    {
+      "name": "Nome Formal Completo",
+      "role": "Papel até o progresso atual",
+      "gender": "Masculino / Femenino / Desconhecido",
+      "occupation": "Profissão/Status",
+      "description": "Análise profunda com detalhes do texto até agora. SEM SPOILERS. (Máx 300 caracteres)"
+    }
+  ]
 }]],
 
     -- Strings de reserva (Fallback)

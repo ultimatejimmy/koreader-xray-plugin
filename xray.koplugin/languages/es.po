@@ -698,3 +698,12 @@ msgstr "Configuración guardada: Modo libro completo"
 
 msgid "spoiler_free_about"
 msgstr "El modo sin spoilers limita la extracción de IA a las páginas que ya ha leído (hasta su página actual), evitando spoilers de futuros capítulos.\n\nEl modo de libro completo analiza todo el libro, lo que puede contener spoilers."
+
+msgid "menu_update_xray"
+msgstr "Actualizar datos de X-Ray (Combinar)"
+
+msgid "menu_fetch_more_chars"
+msgstr "Obtener más personajes"
+
+msgid "updating_ai"
+msgstr "Actualizando desde %s..."

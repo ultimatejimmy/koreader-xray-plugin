@@ -89,6 +89,38 @@ REQUIRED JSON FORMAT:
       "event": "Key narrative event from this chapter (Max 150 chars)"
     }
   ]
+} ]],
+
+    -- Fetch More Characters (AI Limit Bypass)
+    more_characters = [[Book: %s
+Author: %s
+Reading Progress: %d%%
+
+TASK: Extract EXACTLY 10 ADDITIONAL important characters from the text.
+Return ONLY a valid JSON object.
+
+CONCISENESS MANDATE (CRITICAL):
+To avoid AI response truncation, keep character descriptions under 250 characters.
+
+CRITICAL INSTRUCTION:
+Do NOT include any of the following characters, as they have already been extracted:
+%s
+
+STRICT SPOILER RULES:
+- ABSOLUTELY NO information from after the current reading progress. Stop exactly at the %d%% mark.
+- Descriptions must reflect the characters' state at this exact point in the book.
+
+REQUIRED JSON FORMAT:
+{
+  "characters": [
+    {
+      "name": "Full Formal Name",
+      "role": "Role up to current progress",
+      "gender": "Male / Female / Unknown",
+      "occupation": "Job/Status",
+      "description": "Deep analysis with details from the text so far. NO SPOILERS. (Max 300 chars)"
+    }
+  ]
 }]],
 
     -- Fallback strings
