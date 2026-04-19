@@ -43,7 +43,7 @@ Paso 5. Resume ese capítulo específico en el campo `event` (MÁX 80 caracteres
 Paso 6. SIN SPOILERS: Detente exactamente en la marca del %d%%. No incluyas eventos más allá de este progreso.
 
 ALGORITMO PARA PERSONAJES Y FIGURAS HISTÓRICAS:
-Paso 1. Extrae personajes importantes usando ambos bloques de texto. (15-25 normal, MÁXIMO 10 si es ómnibus).
+Paso 1. Extrae personajes importantes usando ambos bloques de texto. (25 normal, MÁXIMO 10 si es ómnibus).
 Paso 2. DEBES usar sus nombres completos y formales (ej. "Abraham Van Helsing"). NO uses apodos informales como nombre principal.
 Paso 3. Escanea activamente personas REALES de la historia humana (ej. Presidentes, Autores, Generales). Añádelos a `historical_figures`.
 SIN SPOILERS: Detente exactamente en la marca del %d%%.
@@ -68,7 +68,7 @@ FORMATO JSON REQUERIDO:
       "role": "Papel hasta el progreso actual",
       "gender": "Masculino / Femenino / Desconocido",
       "occupation": "Trabajo/Estado",
-      "description": "Análisis profundo con detalles del texto hasta ahora. SIN SPOILERS."
+      "description": "Análisis profundo con detalles del texto hasta ahora. SIN SPOILERS. (Máx 300 caracteres)"
     }
   ],
   "historical_figures": [
@@ -77,7 +77,7 @@ FORMATO JSON REQUERIDO:
       "role": "Papel Histórico",
       "biography": "Biografía breve (MÁX 150 caracteres)",
       "importance_in_book": "Significancia hasta el progreso actual",
-      "context_in_book": "Cómo se mencionan"
+      "context_in_book": "Cómo se mencionan (MÁX 150 caracteres)"
     }
   ],
   "locations": [
@@ -86,7 +86,7 @@ FORMATO JSON REQUERIDO:
   "timeline": [
     {
       "chapter": "Título exacto del capítulo de las muestras",
-      "event": "Evento narrativo clave de este capítulo"
+      "event": "Evento narrativo clave de este capítulo (Máx 150 caracteres)"
     }
   ]
 }]],

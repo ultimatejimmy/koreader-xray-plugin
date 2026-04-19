@@ -43,7 +43,7 @@ Adım 5. Bu özel bölümü `event` alanında özetle (MAKS 80 karakter). Bölü
 Adım 6. SPOILER YOK: Tam olarak %%%d noktasında dur. Bu ilerlemeden sonraki olayları dahil etme.
 
 KARAKTERLER VE TARİHİ KİŞİLER İÇİN ALGORİTMA:
-Adım 1. Her iki metin bloğunu da kullanarak önemli karakterleri çıkar. (Normalde 15-25, omnibus ise MAKSİMUM 10).
+Adım 1. Her iki metin bloğunu da kullanarak önemli karakterleri çıkar. (Normalde 25, omnibus ise MAKSİMUM 10).
 Adım 2. Karakterlerin TAM resmi isimlerini kullanmalısın (örn. "Abraham Van Helsing"). Gündelik takma adları ana isim olarak kullanma.
 Adım 3. İnsanlık tarihindeki GERÇEK kişileri (örn. Başkanlar, Yazarlar, Generaller) aktif olarak tara. Onları `historical_figures` içine ekle.
 SPOILER YOK: Tam olarak %%%d noktasında dur.
@@ -68,7 +68,7 @@ GEREKLİ JSON FORMATI:
       "role": "Mevcut ilerlemeye kadar olan rolü",
       "gender": "Erkek / Kadın / Bilinmiyor",
       "occupation": "Meslek/Durum",
-      "description": "Şu ana kadarki metinden detaylarla derin analiz. SPOILER YOK."
+      "description": "Şu ana kadarki metinden detaylarla derin analiz. SPOILER YOK. (Maks 300 karakter)"
     }
   ],
   "historical_figures": [
@@ -77,7 +77,7 @@ GEREKLİ JSON FORMATI:
       "role": "Tarihi Rolü",
       "biography": "Kısa biyografi (MAKS 150 karakter)",
       "importance_in_book": "Mevcut ilerlemeye kadar olan önemi",
-      "context_in_book": "Nasıl bahsediliyor"
+      "context_in_book": "Nasıl bahsediliyor (MAKS 150 karakter)"
     }
   ],
   "locations": [
@@ -86,7 +86,7 @@ GEREKLİ JSON FORMATI:
   "timeline": [
     {
       "chapter": "Örneklerdeki Tam Bölüm Başlığı",
-      "event": "Bu bölümdeki temel anlatı olayı"
+      "event": "Bu bölümdeki temel anlatı olayı (Maks 150 karakter)"
     }
   ]
 }]],

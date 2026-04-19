@@ -43,7 +43,7 @@ Step 5. Summarize that specific chapter in the `event` field (MAX 80 chars). Do 
 Step 6. NO SPOILERS: Stop exactly at the %d%% mark. Do not include events past this progress.
 
 ALGORITHM FOR CHARACTERS & HISTORICAL FIGURES:
-Step 1. Extract important characters using both text blocks. (15-25 normal, MAX 10 if omnibus).
+Step 1. Extract important characters using both text blocks. (25 normal, MAX 10 if omnibus).
 Step 2. You MUST use their FULL, formal names (e.g., "Abraham Van Helsing"). Do NOT use casual nicknames as the main name.
 Step 3. Actively scan for REAL people from human history (e.g., Presidents, Authors, Generals). Add them to `historical_figures`.
 NO SPOILERS: Stop exactly at the %d%% mark.
@@ -68,7 +68,7 @@ REQUIRED JSON FORMAT:
       "role": "Role up to current progress",
       "gender": "Male / Female / Unknown",
       "occupation": "Job/Status",
-      "description": "Deep analysis with details from the text so far. NO SPOILERS."
+      "description": "Deep analysis with details from the text so far. NO SPOILERS. (Max 300 chars)"
     }
   ],
   "historical_figures": [
@@ -77,7 +77,7 @@ REQUIRED JSON FORMAT:
       "role": "Historical Role",
       "biography": "Short biography (MAX 150 chars)",
       "importance_in_book": "Significance up to current progress",
-      "context_in_book": "How they are mentioned"
+      "context_in_book": "How they are mentioned (MAX 150 chars)"
     }
   ],
   "locations": [
@@ -86,7 +86,7 @@ REQUIRED JSON FORMAT:
   "timeline": [
     {
       "chapter": "Exact Chapter Title from Samples",
-      "event": "Key narrative event from this chapter"
+      "event": "Key narrative event from this chapter (Max 150 chars)"
     }
   ]
 }]],
