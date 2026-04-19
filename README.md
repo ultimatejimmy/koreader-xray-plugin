@@ -20,6 +20,7 @@ The prompts are designed to be spoiler-free based on your current reading progre
 - **Spoiler-Free:** The AI is instructed to avoid revealing major plot twists beyond your current reading progress.
 - **Local Caching:** Data is fetched once and saved locally per book. It works completely offline after the initial setup.
 - **Multilingual:** Supports interface and AI responses in English, Turkish, Portuguese, and Spanish.
+- **Updater:** Built-in updater for the plugin itself. Just click on "Check for Updates" in the menu to update the plugin.
 
 ## Setup
 
