@@ -2,7 +2,7 @@
 local lfs = require("libs/libkoreader-lfs")
 local logger = require("logger")
 local DocSettings = require("docsettings")
-local AIHelper = require("aihelper")
+local AIHelper = require("xray_aihelper")
 
 local CacheManager = {}
 

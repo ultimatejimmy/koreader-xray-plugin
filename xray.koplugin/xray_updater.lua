@@ -99,8 +99,7 @@ local function _currentVersion()
     if ok and type(meta) == "table" and meta.version then
         return meta.version
     end
-    local rok, rmeta = pcall(require, "_meta")
-    return (rok and rmeta and rmeta.version) or "0.0.0"
+    return "0.0.0"
 end
 
 local function _versionLessThan(a, b)

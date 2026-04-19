@@ -24,7 +24,7 @@ function XRayPlugin:init()
     self.loc = Localization
     self.loc:init(self.path)
     
-    local AIHelper = require("aihelper")
+    local AIHelper = require("xray_aihelper")
     self.ai_helper = AIHelper
     self.ai_helper:init(self.path)
     self.ai_provider = self.ai_helper.default_provider or "gemini"
@@ -35,7 +35,7 @@ function XRayPlugin:init()
     end
 
     -- Modular lookup logic for text selection
-    local LookupManager = require("lookupmanager")
+    local LookupManager = require("xray_lookupmanager")
     self.lookup_manager = LookupManager:new(self)
     
     self:log("XRayPlugin: Initialized with language: " .. self.loc:getLanguage())
@@ -125,7 +125,7 @@ end
 
 function XRayPlugin:autoLoadCache()
     if not self.cache_manager then
-        local CacheManager = require("cachemanager")
+        local CacheManager = require("xray_cachemanager")
         self.cache_manager = CacheManager:new()
     end
     
@@ -274,7 +274,7 @@ function XRayPlugin:getSubMenuItems()
             text = self.loc:t("updater_check") or "Check for Updates",
             keep_menu_open = true,
             callback = function()
-                local updater = require("updater")
+                local updater = require("xray_updater")
                 updater.checkForUpdates(self.loc)
             end,
             separator = true,
@@ -452,7 +452,7 @@ end
 
 function XRayPlugin:continueWithFetch(reading_percent)
     if not self.ai_helper then
-        local AIHelper = require("aihelper")
+        local AIHelper = require("xray_aihelper")
         self.ai_helper = AIHelper
         self.ai_helper:init(self.path)
     end
@@ -465,7 +465,7 @@ function XRayPlugin:continueWithFetch(reading_percent)
     UIManager:show(wait_msg)
     UIManager:scheduleIn(0.5, function()
         if is_cancelled then return end
-        if not self.chapter_analyzer then self.chapter_analyzer = require("chapteranalyzer"):new() end
+        if not self.chapter_analyzer then self.chapter_analyzer = require("xray_chapteranalyzer"):new() end
 
         -- 1. Extraction (Main Thread)
         local book_text = self.chapter_analyzer:getTextForAnalysis(self.ui, 20000, nil, self.ui:getCurrentPage())
@@ -518,7 +518,7 @@ function XRayPlugin:continueWithFetch(reading_percent)
         self.locations = final_book_data.locations
         self.timeline = final_book_data.timeline
 
-        if not self.cache_manager then self.cache_manager = require("cachemanager"):new() end
+        if not self.cache_manager then self.cache_manager = require("xray_cachemanager"):new() end
         local cache_saved = self.cache_manager:saveCache(self.ui.document.file, final_book_data)
 
         local summary = string.format("AI Fetch Complete!\n\nCharacters: %d\nLocations: %d\nEvents: %d\n\n%s", 
@@ -536,7 +536,7 @@ end
 
 function XRayPlugin:fetchAuthorInfo()
     if not self.ai_helper then
-        local AIHelper = require("aihelper")
+        local AIHelper = require("xray_aihelper")
         self.ai_helper = AIHelper
         self.ai_helper:init(self.path)
     end
@@ -570,7 +570,7 @@ function XRayPlugin:fetchAuthorInfo()
             birthDate = sanitizeMetadata(author_data.author_birth or "---"), 
             deathDate = sanitizeMetadata(author_data.author_death or "---") 
         }
-        if not self.cache_manager then self.cache_manager = require("cachemanager"):new() end
+        if not self.cache_manager then self.cache_manager = require("xray_cachemanager"):new() end
         local cache = self.cache_manager:loadCache(self.ui.document.file) or {}
         cache.author = self.author_info.name; cache.author_bio = self.author_info.description; cache.author_birth = self.author_info.birthDate; cache.author_death = self.author_info.deathDate
         self.cache_manager:saveCache(self.ui.document.file, cache)
@@ -625,7 +625,7 @@ function XRayPlugin:showAbout()
 end
 
 function XRayPlugin:clearCache()
-    if not self.cache_manager then self.cache_manager = require("cachemanager"):new() end
+    if not self.cache_manager then self.cache_manager = require("xray_cachemanager"):new() end
     self.cache_manager:clearCache(self.ui.document.file)
     self.characters = {}; self.locations = {}; self.timeline = {}; self.historical_figures = {}; self.author_info = nil
     UIManager:show(InfoMessage:new{ text = self.loc:t("cache_cleared"), timeout = 3 })

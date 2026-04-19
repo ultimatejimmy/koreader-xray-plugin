@@ -91,8 +91,31 @@ function AIHelper:init(path)
 end
 
 function AIHelper:loadConfig()
-    local config_file = self.path .. "/config.lua"
-    local success, config = pcall(dofile, config_file)
+    local new_config_file = self.path .. "/xray_config.lua"
+    local old_config_file = self.path .. "/config.lua"
+    
+    -- Graceful migration for existing config.lua users
+    local old_f = io.open(old_config_file, "r")
+    if old_f then
+        old_f:close()
+        local old_success, old_config = pcall(dofile, old_config_file)
+        if old_success and type(old_config) == "table" then
+            local has_keys = false
+            if old_config.gemini_api_key and #old_config.gemini_api_key > 0 then has_keys = true end
+            if old_config.chatgpt_api_key and #old_config.chatgpt_api_key > 0 then has_keys = true end
+            if has_keys then
+                self:log("AIHelper: Migrating user keys from old config.lua to xray_config.lua")
+                os.remove(new_config_file)
+                os.rename(old_config_file, new_config_file)
+            else
+                os.remove(old_config_file)
+            end
+        else
+            os.rename(old_config_file, old_config_file .. ".bak")
+        end
+    end
+
+    local success, config = pcall(dofile, new_config_file)
     self.config_keys = { gemini = nil, chatgpt = nil }
     if success and config then
         if config.gemini_api_key then self.providers.gemini.api_key = config.gemini_api_key; self.config_keys.gemini = config.gemini_api_key end
