@@ -500,7 +500,7 @@ function XRayPlugin:continueWithFetch(reading_percent)
         if not final_book_data then
             local error_dialog
             local ButtonDialog = require("ui/widget/buttondialog")
-            error_dialog = ButtonDialog:new{ title = "Fetch Failed", text = error_msg or "Failed to fetch data.", buttons = {{{ text = self.loc:t("ok"), callback = function() UIManager:close(error_dialog) end }}} }
+            error_dialog = ButtonDialog:new{ title = self.loc:t("error_fetch_title") or "Fetch Failed", text = error_msg or self.loc:t("error_fetch_desc") or "Failed to fetch data.", buttons = {{{ text = self.loc:t("ok"), callback = function() UIManager:close(error_dialog) end }}} }
             UIManager:show(error_dialog)
             return
         end
@@ -560,7 +560,7 @@ function XRayPlugin:fetchAuthorInfo()
         if not author_data then
             local error_dialog
             local ButtonDialog = require("ui/widget/buttondialog")
-            error_dialog = ButtonDialog:new{ title = "Error: Author Fetch", text = (error_msg or "Failed to fetch author info.") .. "\n\n(See crash.log in root for details)", buttons = {{{ text = self.loc:t("ok"), callback = function() UIManager:close(error_dialog) end }}} }
+            error_dialog = ButtonDialog:new{ title = self.loc:t("error_author_fetch_title") or "Error: Author Fetch", text = (error_msg or self.loc:t("error_author_fetch_desc") or "Failed to fetch author info.") .. "\n\n(See crash.log in root for details)", buttons = {{{ text = self.loc:t("ok"), callback = function() UIManager:close(error_dialog) end }}} }
             UIManager:show(error_dialog)
             return
         end

@@ -108,7 +108,14 @@ function AIHelper:loadSettings()
     local DataStorage = require("datastorage")
     local xray_dir = DataStorage:getSettingsDir() .. "/xray"
     
-    local lfs = require("lfs")
+    local ok, lfs = pcall(require, "libs/libkoreader-lfs")
+    if not ok or type(lfs) ~= "table" then
+        ok, lfs = pcall(require, "lfs")
+    end
+    if not ok or type(lfs) ~= "table" then
+        self:log("CRITICAL ERROR: Failed to load 'lfs' module in loadSettings. Settings will not be loaded. Error: " .. tostring(lfs))
+        return
+    end
     if lfs.attributes(xray_dir, "mode") ~= "directory" then
         lfs.mkdir(xray_dir)
     end
@@ -199,7 +206,14 @@ end
 function AIHelper:saveSettings(new_settings)
     local DataStorage = require("datastorage")
     local xray_dir = DataStorage:getSettingsDir() .. "/xray"
-    local lfs = require("lfs")
+    local ok, lfs = pcall(require, "libs/libkoreader-lfs")
+    if not ok or type(lfs) ~= "table" then
+        ok, lfs = pcall(require, "lfs")
+    end
+    if not ok or type(lfs) ~= "table" then
+        self:log("CRITICAL ERROR: Failed to load 'lfs' module in saveSettings. Settings will not be saved. Error: " .. tostring(lfs))
+        return
+    end
     if lfs.attributes(xray_dir, "mode") ~= "directory" then
         lfs.mkdir(xray_dir)
     end
@@ -345,18 +359,44 @@ function AIHelper:callGemini(prompt, config, current_model)
 end
 
 function AIHelper:callChatGPT(prompt, config, current_model)
-    self:log("AIHelper: Starting ChatGPT request")
+    local model = current_model or "gpt-4o-mini"
+    self:log("AIHelper: Starting ChatGPT request for model: " .. model)
+    
+    local legacy_models = { ["gpt-4"] = true, ["gpt-3.5-turbo"] = true, ["gpt-4-32k"] = true }
+    if legacy_models[model] then
+        local err = "Model '" .. model .. "' does not support JSON mode. Please use gpt-4o, gpt-4-turbo, or gpt-4o-mini."
+        self:log("AIHelper: " .. err)
+        return nil, "error_api", err
+    end
+
     self:log("AIHelper: ChatGPT Prompt prepared")
-    local request_body = json.encode({ model = current_model or "gpt-4o-mini", messages = {{ role = "user", content = prompt }}, response_format = { type = "json_object" } })
+    local request_body = json.encode({ model = model, messages = {{ role = "user", content = prompt }}, response_format = { type = "json_object" } })
     self:log("AIHelper: Sending ChatGPT request (" .. #request_body .. " bytes)")
     local ok, code, response_text = self:makeRequest(config.endpoint or "https://api.openai.com/v1/chat/completions", { ["Content-Type"] = "application/json", ["Authorization"] = "Bearer " .. config.api_key }, request_body)
-    self:log("AIHelper: ChatGPT Response Code: " .. tostring(code))
+    
+    local code_num = tonumber(code)
+    self:log("AIHelper: ChatGPT Response Code: " .. tostring(code_num))
     self:log("AIHelper: ChatGPT Response received (" .. (response_text and #response_text or 0) .. " bytes)")
-    if tonumber(code) == 200 then 
-        local data = json.decode(response_text)
-        local parsed_data, err = self:parseAIResponse(data.choices[1].message.content)
-        if parsed_data then return parsed_data end
+    
+    if code_num == 200 and response_text then 
+        local success, data = pcall(json.decode, response_text)
+        if success and data.choices and data.choices[1] then
+            local parsed_data, err = self:parseAIResponse(data.choices[1].message.content)
+            if parsed_data then return parsed_data end
+            self:log("AIHelper: ChatGPT parse failed: " .. tostring(err))
+        end
+    else
+        local error_detail = "HTTP " .. tostring(code_num or code or "Unknown")
+        if response_text then
+            local s, err_data = pcall(json.decode, response_text)
+            if s and err_data and err_data.error then 
+                error_detail = err_data.error.message or error_detail 
+            end
+            self:log("AIHelper: ChatGPT API Error: " .. response_text)
+        end
+        return nil, "error_api", error_detail
     end
+    
     return nil, "error_api", "ChatGPT failed or returned invalid JSON"
 end
 
