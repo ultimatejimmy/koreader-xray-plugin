@@ -1,4 +1,4 @@
-﻿# English translation for X-Ray Plugin
+# English translation for X-Ray Plugin
 # Copyright (C) 2025
 # This file is distributed under the same license as the X-Ray package.
 #
@@ -831,3 +831,15 @@ msgstr "Spoiler-free Mode: %d%%"
 
 msgid "full_book_mode_active"
 msgstr "Full Book Mode"
+
+msgid "spoiler_free_menu_option"
+msgstr "Spoiler-free"
+
+msgid "spoiler_free_saved"
+msgstr "Spoiler setting saved: Spoiler-free Mode"
+
+msgid "full_book_saved"
+msgstr "Spoiler setting saved: Full Book Mode"
+
+msgid "spoiler_free_about"
+msgstr "Spoiler-free mode limits AI extraction to the pages you have already read (up to your current page), preventing spoilers from future chapters.\n\nFull Book Mode analyzes the entire book, which may contain spoilers."

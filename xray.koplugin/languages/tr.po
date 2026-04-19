@@ -18,3 +18,18 @@ msgstr "Bu kitap için X-Ray verisi bulunamadı. Şimdi AI'dan çekmek ister mis
 
 msgid "close"
 msgstr "Kapat"
+
+msgid "spoiler_free_menu_option"
+msgstr "Spoilersiz"
+
+msgid "spoiler_free_saved"
+msgstr "Spoiler ayarı kaydedildi: Spoilersiz Mod"
+
+msgid "full_book_saved"
+msgstr "Spoiler ayarı kaydedildi: Tam Kitap Modu"
+
+msgid "spoiler_free_about"
+msgstr "Spoilersiz mod, yapay zeka çıkarımını halihazırda okuduğunuz sayfalara (mevcut sayfanıza kadar) sınırlayarak gelecek bölümlerden spoiler almanızı önler.\n\nTam Kitap Modu, spoiler içerebilecek tüm kitabı analiz eder."
+
+msgid "spoiler_free_option"
+msgstr "Spoilersiz Mod (Kitabın %%%d kadarı)"

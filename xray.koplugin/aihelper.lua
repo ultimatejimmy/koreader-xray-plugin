@@ -18,15 +18,12 @@ local AIHelper = {
             name = "Google Gemini",
             enabled = true,
             api_key = nil,
-            primary_model = "gemini-2.5-flash",
-            secondary_model = "gemini-2.5-flash-lite",
         },
         chatgpt = {
             name = "ChatGPT",
             enabled = true,
             api_key = nil,
             endpoint = "https://api.openai.com/v1/chat/completions",
-            model = "gpt-4o-mini",
         }
     },
     default_provider = nil,
@@ -89,7 +86,7 @@ function AIHelper:init(path)
         f:write("--- X-Ray Session Started: " .. os.date("%Y-%m-%d %H:%M:%S") .. " ---\n")
         f:close()
     end
-    self:loadConfig(); self:loadModelFromFile(); self:loadLanguage()
+    self:loadConfig(); self:loadSettings()
     self:log("AIHelper initialized")
 end
 
@@ -107,35 +104,122 @@ function AIHelper:loadConfig()
     end
 end
 
-function AIHelper:loadModelFromFile()
+function AIHelper:loadSettings()
     local DataStorage = require("datastorage")
     local xray_dir = DataStorage:getSettingsDir() .. "/xray"
-    local provider_file = io.open(xray_dir .. "/default_provider.txt", "r")
-    if provider_file then
-        local provider = provider_file:read("*a"):match("^%s*(.-)%s*$"); provider_file:close()
-        if provider and (provider == "gemini" or provider == "chatgpt") then self.default_provider = provider end
+    
+    local lfs = require("lfs")
+    if lfs.attributes(xray_dir, "mode") ~= "directory" then
+        lfs.mkdir(xray_dir)
     end
-    local function read_key(n, p)
-        local f = io.open(xray_dir .. "/" .. n, "r")
+    
+    local settings = {}
+    local settings_file = xray_dir .. "/settings.json"
+    
+    -- Migration from old .txt files
+    local migrated = false
+    local function migrate_file(filename, key)
+        local f = io.open(xray_dir .. "/" .. filename, "r")
         if f then
-            local k = f:read("*a"):gsub("%s+", ""); f:close()
-            if #k > 0 then self.providers[p].api_key = k; self.providers[p].ui_key_active = true; return end
+            local val = f:read("*a"):match("^%s*(.-)%s*$")
+            f:close()
+            if val and #val > 0 then
+                settings[key] = val
+                migrated = true
+            end
+            os.remove(xray_dir .. "/" .. filename)
         end
-        self.providers[p].ui_key_active = false
-        if self.config_keys and self.config_keys[p] then self.providers[p].api_key = self.config_keys[p] end
     end
-    read_key("gemini_api_key.txt", "gemini"); read_key("chatgpt_api_key.txt", "chatgpt")
+    
+    migrate_file("default_provider.txt", "default_provider")
+    migrate_file("gemini_api_key.txt", "gemini_api_key")
+    migrate_file("chatgpt_api_key.txt", "chatgpt_api_key")
+    migrate_file("language.txt", "language")
+    
+    -- Load existing settings.json if it exists
+    local f = io.open(settings_file, "r")
+    if f then
+        local content = f:read("*a")
+        f:close()
+        local success, decoded = pcall(json.decode, content)
+        if success and type(decoded) == "table" then
+            for k, v in pairs(decoded) do
+                settings[k] = v
+            end
+        end
+    end
+    
+    -- Ensure config values are used as initial defaults if not in settings.json
+    if not settings.gemini_primary_model then settings.gemini_primary_model = self.providers.gemini.primary_model end
+    if not settings.gemini_secondary_model then settings.gemini_secondary_model = self.providers.gemini.secondary_model end
+    if not settings.chatgpt_model then settings.chatgpt_model = self.providers.chatgpt.model end
+    
+    -- Migration to unified Primary and Secondary AI logic
+    if not settings.primary_ai then
+        local def_prov = settings.default_provider or "gemini"
+        if def_prov == "gemini" then
+            settings.primary_ai = { provider = "gemini", model = settings.gemini_primary_model or "gemini-2.5-flash" }
+            settings.secondary_ai = { provider = "gemini", model = settings.gemini_secondary_model or "gemini-2.5-flash-lite" }
+        else
+            settings.primary_ai = { provider = "chatgpt", model = settings.chatgpt_model or "gpt-4o-mini" }
+            settings.secondary_ai = { provider = "gemini", model = "gemini-2.5-flash-lite" }
+        end
+        migrated = true
+    end
+    
+    if migrated then
+        self.settings = settings
+        self:saveSettings()
+    end
+    
+    self.settings = settings
+    self.current_language = settings.language or "en"
+    
+    if settings.gemini_api_key then 
+        if settings.gemini_use_ui_key ~= false then
+            self.providers.gemini.api_key = settings.gemini_api_key
+            self.providers.gemini.ui_key_active = true
+        else
+            self.providers.gemini.ui_key_active = false
+        end
+    end
+    
+    if settings.chatgpt_api_key then 
+        if settings.chatgpt_use_ui_key ~= false then
+            self.providers.chatgpt.api_key = settings.chatgpt_api_key
+            self.providers.chatgpt.ui_key_active = true
+        else
+            self.providers.chatgpt.ui_key_active = false
+        end
+    end
+    
+    self:loadLanguage()
+end
+
+function AIHelper:saveSettings(new_settings)
+    local DataStorage = require("datastorage")
+    local xray_dir = DataStorage:getSettingsDir() .. "/xray"
+    local lfs = require("lfs")
+    if lfs.attributes(xray_dir, "mode") ~= "directory" then
+        lfs.mkdir(xray_dir)
+    end
+    
+    self.settings = self.settings or {}
+    if new_settings then
+        for k, v in pairs(new_settings) do
+            self.settings[k] = v
+        end
+    end
+    
+    local settings_file = xray_dir .. "/settings.json"
+    local f = io.open(settings_file, "w")
+    if f then
+        f:write(json.encode(self.settings))
+        f:close()
+    end
 end
 
 function AIHelper:loadLanguage()
-    local DataStorage = require("datastorage")
-    local f = io.open(DataStorage:getSettingsDir() .. "/xray/language.txt", "r")
-    self.current_language = f and f:read("*a"):match("^%s*(.-)%s*$") or "en"
-    if f then f:close() end
-    self:loadPrompts()
-end
-
-function AIHelper:loadPrompts()
     local en_file = self.path .. "/prompts/en.lua"
     local ok_en, en_prompts = pcall(dofile, en_file)
     self.prompts = ok_en and en_prompts or {}
@@ -171,82 +255,99 @@ function AIHelper:createPrompt(title, author, context, section_name)
     return final_prompt
 end
 
+function AIHelper:executeUnifiedRequest(prompt)
+    local primary = self.settings.primary_ai or { provider = "gemini", model = "gemini-2.5-flash" }
+    local secondary = self.settings.secondary_ai or { provider = "gemini", model = "gemini-2.5-flash-lite" }
+    
+    local models_to_try = { primary, secondary }
+    local last_err = "No models configured."
+    
+    for _, ai in ipairs(models_to_try) do
+        local config = self.providers[ai.provider]
+        if not config or not config.api_key or config.api_key == "" then
+            self:log("AIHelper: Skipping " .. ai.provider .. " (" .. ai.model .. ") - API Key missing")
+            last_err = "API Key not set for " .. (ai.provider == "gemini" and "Google Gemini" or "ChatGPT")
+        else
+            self:log("AIHelper: Trying unified fallback model: " .. ai.provider .. " / " .. ai.model)
+            local result, err_code, err_msg
+            if ai.provider == "gemini" then
+                result, err_code, err_msg = self:callGemini(prompt, config, ai.model)
+            else
+                result, err_code, err_msg = self:callChatGPT(prompt, config, ai.model)
+            end
+            
+            if result then return result end
+            self:log("AIHelper: Model failed: " .. tostring(err_msg))
+            last_err = err_msg or "Unknown API Error"
+        end
+    end
+    return nil, "error_api", last_err
+end
+
 function AIHelper:getBookDataSection(title, author, provider_name, context, section_name)
-    self:loadConfig()
-    local provider = provider_name or "gemini"
-    local config = self.providers[provider]
-    if not config or not config.api_key then return nil, "error_no_api_key", "API Key not set." end
     local prompt = self:createPrompt(title, author, context, section_name)
-    if provider == "gemini" then return self:callGemini(prompt, config)
-    else return self:callChatGPT(prompt, config) end
+    return self:executeUnifiedRequest(prompt)
 end
 
 function AIHelper:getAuthorData(title, author, provider_name)
-    return self:getBookDataSection(title, author, provider_name, nil, "author_only")
+    local prompt = self:createPrompt(title, author, nil, "author_only")
+    return self:executeUnifiedRequest(prompt)
 end
 
 function AIHelper:getBookDataComprehensive(title, author, provider_name, context)
-    self:loadConfig()
-    local provider = provider_name or "gemini"
-    local config = self.providers[provider]
-    if not config or not config.api_key then return nil, "error_no_api_key", "API Key not set." end
-    
     local prompt = self:createPrompt(title, author, context, "comprehensive_xray")
-    if provider == "gemini" then return self:callGemini(prompt, config)
-    else return self:callChatGPT(prompt, config) end
+    return self:executeUnifiedRequest(prompt)
 end
 
-function AIHelper:callGemini(prompt, config)
-    local primary = config.primary_model or "gemini-2.5-flash"
-    local secondary = config.secondary_model or "gemini-2.5-flash-lite"
-    local fallback_chain = { primary, secondary, "gemini-1.5-flash-8b" }
+function AIHelper:callGemini(prompt, config, current_model)
+    current_model = current_model or "gemini-2.0-flash"
     local system_instruction_text = self.prompts and self.prompts.system_instruction or "Return valid JSON ONLY."
     self:log("AIHelper: Gemini Prompt prepared")
-    for _, current_model in ipairs(fallback_chain) do
-        self:log("AIHelper: Trying model: " .. current_model)
-        local url = "https://generativelanguage.googleapis.com/v1beta/models/" .. current_model .. ":generateContent"
-        local request_body = json.encode({
-            contents = {{ role = "user", parts = {{ text = prompt }} }},
-            system_instruction = { parts = {{ text = system_instruction_text }} },
-            generationConfig = { temperature = 0.2, maxOutputTokens = 8192 }
-        })
-        self:log("AIHelper: Sending Gemini request (" .. #request_body .. " bytes)")
-        local ok, code, response_text, status = self:makeRequest(url, { ["Content-Type"] = "application/json", ["x-goog-api-key"] = config.api_key }, request_body)
-        local code_num = tonumber(code)
-        self:log("AIHelper: [" .. current_model .. "] Response Code: " .. tostring(code_num))
-        self:log("AIHelper: [" .. current_model .. "] Response received (" .. (response_text and #response_text or 0) .. " bytes)")
-        if code_num == 200 and response_text then
-            local success, data = pcall(json.decode, response_text)
-            if success and data.candidates and data.candidates[1] then
-                local candidate = data.candidates[1]
-                if candidate.content and candidate.content.parts and candidate.content.parts[1] then
-                    local ai_text = candidate.content.parts[1].text
-                    local parsed_data, err = self:parseAIResponse(ai_text)
-                    if parsed_data then
-                        return parsed_data
-                    else
-                        self:log("AIHelper: [" .. current_model .. "] Parse failed, trying fallback: " .. tostring(err))
-                    end
+    
+    local url = "https://generativelanguage.googleapis.com/v1beta/models/" .. current_model .. ":generateContent"
+    local request_body = json.encode({
+        contents = {{ role = "user", parts = {{ text = prompt }} }},
+        system_instruction = { parts = {{ text = system_instruction_text }} },
+        generationConfig = { temperature = 0.2, maxOutputTokens = 8192 }
+    })
+    self:log("AIHelper: Sending Gemini request (" .. #request_body .. " bytes)")
+    local ok, code, response_text, status = self:makeRequest(url, { ["Content-Type"] = "application/json", ["x-goog-api-key"] = config.api_key }, request_body)
+    local code_num = tonumber(code)
+    self:log("AIHelper: [" .. current_model .. "] Response Code: " .. tostring(code_num))
+    self:log("AIHelper: [" .. current_model .. "] Response received (" .. (response_text and #response_text or 0) .. " bytes)")
+    
+    if code_num == 200 and response_text then
+        local success, data = pcall(json.decode, response_text)
+        if success and data.candidates and data.candidates[1] then
+            local candidate = data.candidates[1]
+            if candidate.content and candidate.content.parts and candidate.content.parts[1] then
+                local ai_text = candidate.content.parts[1].text
+                local parsed_data, err = self:parseAIResponse(ai_text)
+                if parsed_data then
+                    return parsed_data
+                else
+                    self:log("AIHelper: [" .. current_model .. "] Parse failed: " .. tostring(err))
+                    return nil, "error_parse", "Parse failed: " .. tostring(err)
                 end
             end
-        elseif code_num == 429 then return nil, "error_quota", "Quota Exceeded (429)"
-        elseif code_num == 503 then self:log("AIHelper: 503 Overload. Falling back..."); socket.sleep(2)
-        else
-            local error_detail = "HTTP " .. tostring(code_num or code or "Unknown")
-            if response_text then
-                local s, err_data = pcall(json.decode, response_text)
-                if s and err_data and err_data.error then error_detail = err_data.error.message or error_detail end
-            end
-            return nil, "error_api", error_detail
         end
+    elseif code_num == 429 then return nil, "error_quota", "Quota Exceeded (429)"
+    elseif code_num == 503 then self:log("AIHelper: 503 Overload"); socket.sleep(2)
+    else
+        local error_detail = "HTTP " .. tostring(code_num or code or "Unknown")
+        if response_text then
+            local s, err_data = pcall(json.decode, response_text)
+            if s and err_data and err_data.error then error_detail = err_data.error.message or error_detail end
+        end
+        return nil, "error_api", error_detail
     end
-    return nil, "error_parse", "All models failed to return valid JSON."
+    return nil, "error_parse", "Failed to return valid JSON."
 end
 
-function AIHelper:callChatGPT(prompt, config)
+function AIHelper:callChatGPT(prompt, config, current_model)
     self:log("AIHelper: Starting ChatGPT request")
     self:log("AIHelper: ChatGPT Prompt prepared")
-    local request_body = json.encode({ model = config.model or "gpt-4o-mini", messages = {{ role = "user", content = prompt }}, response_format = { type = "json_object" } })
+    local request_body = json.encode({ model = current_model or "gpt-4o-mini", messages = {{ role = "user", content = prompt }}, response_format = { type = "json_object" } })
     self:log("AIHelper: Sending ChatGPT request (" .. #request_body .. " bytes)")
     local ok, code, response_text = self:makeRequest(config.endpoint or "https://api.openai.com/v1/chat/completions", { ["Content-Type"] = "application/json", ["Authorization"] = "Bearer " .. config.api_key }, request_body)
     self:log("AIHelper: ChatGPT Response Code: " .. tostring(code))
@@ -396,7 +497,21 @@ function AIHelper:getFallbackStrings()
     return self.prompts and self.prompts.fallback or {}
 end
 
-function AIHelper:setAPIKey(p, k) self.providers[p].api_key = k; return true end
-function AIHelper:setDefaultProvider(p) self.default_provider = p; return true end
+function AIHelper:setAPIKey(p, k) 
+    self.providers[p].api_key = k
+    self.providers[p].ui_key_active = true
+    self:saveSettings({ [p .. "_api_key"] = k, [p .. "_use_ui_key"] = true })
+    return true 
+end
+
+function AIHelper:setUnifiedModel(type, provider, model)
+    if type == "primary" then
+        self.settings.primary_ai = { provider = provider, model = model }
+    elseif type == "secondary" then
+        self.settings.secondary_ai = { provider = provider, model = model }
+    end
+    self:saveSettings()
+    return true
+end
 
 return AIHelper

@@ -195,6 +195,8 @@ function Localization:t(key, ...)
             no_author_data_fetch = "No author info available. Fetch from AI?",
             xray_mode_desc = "Adds an 'X-Ray' button to dictionary and selection menus for instant lookups.",
             no_data_prompt = "No X-Ray data found for this book. Would you like to fetch it from AI now?",
+            spoiler_free_option = "Spoiler-free Mode (Up to %d%% of the book)",
+            spoiler_free_about = "Spoiler-free mode limits AI extraction to the pages you have already read (up to your current page), preventing spoilers from future chapters.\n\nFull Book Mode analyzes the entire book, which may contain spoilers.",
         }
         translation = fallbacks[key] or key
     end

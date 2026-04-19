@@ -686,3 +686,15 @@ msgstr "Modo sin spoilers: %d%%"
 
 msgid "full_book_mode_active"
 msgstr "Modo libro completo"
+
+msgid "spoiler_free_menu_option"
+msgstr "Sin spoilers"
+
+msgid "spoiler_free_saved"
+msgstr "Configuración guardada: Modo sin spoilers"
+
+msgid "full_book_saved"
+msgstr "Configuración guardada: Modo libro completo"
+
+msgid "spoiler_free_about"
+msgstr "El modo sin spoilers limita la extracción de IA a las páginas que ya ha leído (hasta su página actual), evitando spoilers de futuros capítulos.\n\nEl modo de libro completo analiza todo el libro, lo que puede contener spoilers."

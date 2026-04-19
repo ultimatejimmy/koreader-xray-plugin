@@ -29,18 +29,18 @@ Bu istemin sonunda sağlanan iki metin bloğunu işliyorsunuz:
 ANTI-TRUNCATION PROTOKOLÜ (KRİTİK):
 Katı bir maksimum çıktı sınırınız var. Eğer "CHAPTER SAMPLES" 40'tan FAZLA bölüm içeriyorsa (örn. bir omnibus baskısı):
 1. Karakter listesini SADECE en önemli ilk 10 karakterle sınırlamalısınız.
-2. Karakter açıklamalarını MAKSİMUM 120 karakterle sınırlamalısınız.
+2. Karakter açıklamalarını MAKSİMUM 200 karakterle sınırlamalısınız.
 3. Zaman çizelgesi olay özetlerini MAKSİMUM 80 karakterle sınırlamalısınız.
 Çıktınızı devasa kitaplar için sıkıştırmazsanız, JSON kesilecek ve hata verecektir.
 
 ZAMAN ÇİZELGESİ İÇİN ALGORİTMA (EN YÜKSEK ÖNCELİK):
-Sizde 'yakınlık önyargısı' (recency bias) var. Bölüm atlamayı veya bölümleri birleştirmeyi önlemek için, bu döngüyü tam olarak uygulamalısınız:
-Adım 1. SADECE "CHAPTER SAMPLES" bloğuna bak. Anlatı bölümlerini say.
-Adım 2. Örneklerdeki ilk bölümden başla. `timeline` dizisinde TAM OLARAK BİR olay objesi oluştur.
-Adım 3. `chapter` alanı, örnekteki bölüm başlığıyla tam olarak eşleşmelidir. (NOT: Bu birden fazla kitabı içeren bir omnibus ise, bölüm başlıkları tekrarlanabilir veya sıfırlanabilir. Bunları kesinlikle sağlanan sıralı düzende eşleyin).
-Adım 4. Bu özel bölümü `event` alanında özetle (Anti-Truncation uzunluklarına uyun).
-Adım 5. Örneklerdeki BİR SONRAKİ bölüme geç ve Adım 2'yi tekrarla.
-Adım 6. Örneklerdeki HER BİR bölüm için TAM OLARAK BİR karşılık gelen olay oluşana kadar durma. Bölümleri gruplandırma. SPOILER YOK: Tam olarak %%%d noktasında dur.
+Bölüm atlamayı veya olay uydurmayı önlemek için, bu döngüyü tam olarak uygulamalısınız:
+Adım 1. SADECE "CHAPTER SAMPLES" bloğuna bak. Anlatı bölümlerini belirle.
+Adım 2. Anlatı olmayan tüm ön madde ve arka maddeleri HARİÇ TUT (örn., Kapak, Başlık Sayfası, Telif Hakkı, İçindekiler, İthaf, Teşekkür, Ayrıca Yazan).
+Adım 3. Her anlatı bölümü için, en ilk bölümden başlayarak, `timeline` dizisinde TAM OLARAK BİR olay objesi oluştur.
+Adım 4. `chapter` alanı, örnekteki bölüm başlığıyla tam olarak eşleşmelidir. (Bunları kesinlikle sıralı düzende eşle).
+Adım 5. Bu özel bölümü `event` alanında özetle (MAKS 80 karakter). Bölümleri GRUPLANDIRMA.
+Adım 6. SPOILER YOK: Tam olarak %%%d noktasında dur. Bu ilerlemeden sonraki olayları dahil etme.
 
 KARAKTERLER VE TARİHİ KİŞİLER İÇİN ALGORİTMA:
 Adım 1. Her iki metin bloğunu da kullanarak önemli karakterleri çıkar. (Normalde 15-25, omnibus ise MAKSİMUM 10).
@@ -68,7 +68,7 @@ GEREKLİ JSON FORMATI:
       "role": "Mevcut ilerlemeye kadar olan rolü",
       "gender": "Erkek / Kadın / Bilinmiyor",
       "occupation": "Meslek/Durum",
-      "description": "Derin analiz. SPOILER YOK."
+      "description": "Şu ana kadarki metinden detaylarla derin analiz. SPOILER YOK."
     }
   ],
   "historical_figures": [

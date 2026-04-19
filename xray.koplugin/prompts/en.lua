@@ -29,18 +29,18 @@ You are processing a massive document with two text blocks provided at the end o
 ANTI-TRUNCATION PROTOCOL (CRITICAL):
 You have a strict maximum output limit. If the "CHAPTER SAMPLES" contains MORE THAN 40 chapters (e.g., an omnibus edition):
 1. You MUST reduce the characters list to ONLY the top 10 absolute most important characters.
-2. You MUST reduce character descriptions to MAX 120 characters.
+2. You MUST reduce character descriptions to MAX 200 characters.
 3. You MUST reduce timeline event summaries to MAX 80 characters.
 Failure to compress your output for massive books will cause the JSON to truncate and fail.
 
 ALGORITHM FOR TIMELINE (HIGHEST PRIORITY):
-You suffer from recency bias. To prevent skipping chapters or combining them, you MUST execute this exact loop:
-Step 1. Look ONLY at the "CHAPTER SAMPLES" block. Count the narrative chapters.
-Step 2. Start at the very first chapter in the samples. Create EXACTLY ONE event object in the `timeline` array.
-Step 3. The `chapter` field MUST exactly match the chapter header in the sample. (NOTE: If this is an omnibus containing multiple books, chapter titles might repeat or reset. Map them strictly in the sequential order provided).
-Step 4. Summarize that specific chapter in the `event` field (Follow Anti-Truncation lengths).
-Step 5. Move to the NEXT chapter in the samples and repeat Step 2.
-Step 6. Do NOT stop until EVERY single chapter in the samples has EXACTLY ONE corresponding event. Do not group them. NO SPOILERS: Stop exactly at the %d%% mark.
+To prevent skipping chapters or hallucinating events, you MUST execute this exact loop:
+Step 1. Look ONLY at the "CHAPTER SAMPLES" block. Identify the narrative chapters.
+Step 2. EXCLUDE all non-narrative frontmatter and backmatter (e.g., Cover, Title Page, Copyright, Table of Contents, Dedication, Acknowledgments, Also By).
+Step 3. For each narrative chapter, starting from the very first one, create EXACTLY ONE event object in the `timeline` array.
+Step 4. The `chapter` field MUST exactly match the chapter header in the sample. (Map them strictly in sequential order).
+Step 5. Summarize that specific chapter in the `event` field (MAX 80 chars). Do NOT group chapters.
+Step 6. NO SPOILERS: Stop exactly at the %d%% mark. Do not include events past this progress.
 
 ALGORITHM FOR CHARACTERS & HISTORICAL FIGURES:
 Step 1. Extract important characters using both text blocks. (15-25 normal, MAX 10 if omnibus).
@@ -68,7 +68,7 @@ REQUIRED JSON FORMAT:
       "role": "Role up to current progress",
       "gender": "Male / Female / Unknown",
       "occupation": "Job/Status",
-      "description": "Deep analysis. NO SPOILERS."
+      "description": "Deep analysis with details from the text so far. NO SPOILERS."
     }
   ],
   "historical_figures": [

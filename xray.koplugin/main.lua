@@ -28,6 +28,11 @@ function XRayPlugin:init()
     self.ai_helper = AIHelper
     self.ai_helper:init(self.path)
     self.ai_provider = self.ai_helper.default_provider or "gemini"
+    
+    self.xray_mode_enabled = true
+    if self.ai_helper.settings and self.ai_helper.settings.xray_mode_enabled ~= nil then
+        self.xray_mode_enabled = self.ai_helper.settings.xray_mode_enabled
+    end
 
     -- Modular lookup logic for text selection
     local LookupManager = require("lookupmanager")
@@ -170,104 +175,120 @@ if reader_menu_order and reader_menu_order.tools then
     if not found then table.insert(reader_menu_order.tools, 1, "xray") end
 end
 
-function XRayPlugin:addToMainMenu(menu_items)
-    local counts = self:getMenuCounts()
+function XRayPlugin:getSubMenuItems()
+    self.current_xray_menu_table = {
+        {
+            text = self.loc:t("menu_characters") or "Characters",
+            keep_menu_open = true,
+            callback = function() self:showCharacters() end,
+        },
+        {
+            text = self.loc:t("menu_timeline") or "Timeline",
+            keep_menu_open = true,
+            callback = function() self:showTimeline() end,
+        },
+        {
+            text = self.loc:t("menu_historical_figures") or "Historical Figures",
+            keep_menu_open = true,
+            callback = function() self:showHistoricalFigures() end,
+        },
+        {
+            text = self.loc:t("menu_locations") or "Locations",
+            keep_menu_open = true,
+            callback = function() self:showLocations() end,
+        },
+        {
+            text = self.loc:t("menu_author_info"),
+            keep_menu_open = true,
+            callback = function() self:showAuthorInfo() end,
+            separator = true,
+        },
+        {
+            text = self.loc:t("menu_fetch_xray") or "Fetch X-Ray Data",
+            keep_menu_open = true,
+            callback = function() self:fetchFromAI() end,
+        },
+        {
+            text = self.loc:t("menu_fetch_author") or "Fetch Author Info (AI)",
+            keep_menu_open = true,
+            callback = function() self:fetchAuthorInfo() end,
+            separator = true,
+        },
+        {
+            text = "Spoiler Settings",
+            keep_menu_open = true,
+            callback = function() self:showSpoilerSettings() end,
+        },
+        {
+            text = self.loc:t("menu_clear_cache"),
+            keep_menu_open = true,
+            callback = function() self:clearCache() end,
+        },
+        {
+            text = self.loc:t("menu_xray_mode"),
+            keep_menu_open = true,
+            callback = function() self:toggleXRayMode() end,
+            separator = true,
+        },
+        {
+            text = self.loc:t("menu_ai_settings"),
+            keep_menu_open = true,
+            sub_item_table = {
+                {
+                    text = "Primary AI Model",
+                    keep_menu_open = true,
+                    sub_item_table_func = function() return self:getAIModelSelectionMenu("primary") end
+                },
+                {
+                    text = "Secondary AI Model",
+                    keep_menu_open = true,
+                    sub_item_table_func = function() return self:getAIModelSelectionMenu("secondary") end,
+                    separator = true,
+                },
+                {
+                    text = self.loc:t("menu_gemini_key"), 
+                    keep_menu_open = true,
+                    sub_item_table_func = function() return self:getAPIKeySelectionMenu("gemini", "Google Gemini") end,
+                    separator = true,
+                },
+                {
+                    text = self.loc:t("menu_chatgpt_key"), 
+                    keep_menu_open = true,
+                    sub_item_table_func = function() return self:getAPIKeySelectionMenu("chatgpt", "ChatGPT") end,
+                    separator = true,
+                },
+                {
+                    text = "View All Config Values", 
+                    keep_menu_open = true,
+                    callback = function() self:showConfigSummary() end,
+                },
+            }
+        },
+        {
+            text = self.loc:t("menu_language") or "Language",
+            keep_menu_open = true,
+            callback = function() self:showLanguageSelection() end,
+            separator = true,
+        },
+        {
+            text = self.loc:t("menu_about"),
+            keep_menu_open = true,
+            callback = function() self:showAbout() end,
+        },
+    }
     
+    return self.current_xray_menu_table
+end
+
+
+
+function XRayPlugin:addToMainMenu(menu_items)
     menu_items.xray = {
         text = self.loc:t("menu_xray") or "X-Ray",
         sorting_hint = "tools",
         callback = function() self:showQuickXRayMenu() end,
         hold_callback = function() self:showFullXRayMenu() end,
-        sub_item_table = {
-            {
-                text = self.loc:t("menu_characters") .. (counts.characters > 0 and " (" .. counts.characters .. ")" or ""),
-                keep_menu_open = true,
-                callback = function() self:showCharacters() end,
-            },
-            {
-                text = self.loc:t("menu_timeline") .. (counts.timeline > 0 and " (" .. counts.timeline .. " " .. self.loc:t("events") .. ")" or ""),
-                keep_menu_open = true,
-                callback = function() self:showTimeline() end,
-            },
-            {
-                text = self.loc:t("menu_historical_figures") .. (counts.historical_figures > 0 and " (" .. counts.historical_figures .. ")" or ""),
-                keep_menu_open = true,
-                callback = function() self:showHistoricalFigures() end,
-            },
-            {
-                text = self.loc:t("menu_locations") .. (counts.locations > 0 and " (" .. counts.locations .. ")" or ""),
-                keep_menu_open = true,
-                callback = function() self:showLocations() end,
-            },
-            {
-                text = self.loc:t("menu_author_info"),
-                keep_menu_open = true,
-                callback = function() self:showAuthorInfo() end,
-                separator = true,
-            },
-            {
-                text = self.loc:t("menu_fetch_xray") or "Fetch X-Ray Data",
-                keep_menu_open = true,
-                callback = function() self:fetchFromAI() end,
-            },
-            {
-                text = self.loc:t("menu_fetch_author") or "Fetch Author Info (AI)",
-                keep_menu_open = true,
-                callback = function() self:fetchAuthorInfo() end,
-                separator = true,
-            },
-            {
-                text = self.loc:t("menu_ai_settings"),
-                keep_menu_open = true,
-                sub_item_table = {
-                    {
-                        text = self.loc:t("menu_provider_select") .. " (" .. (self.ai_provider or "gemini") .. ")", 
-                        keep_menu_open = true,
-                        callback = function() self:selectAIProvider() end,
-                        separator = true,
-                    },
-                    {
-                        text = self.loc:t("menu_gemini_key") .. " (" .. (self.ai_helper.providers.gemini.api_key and "SET" or "NOT SET") .. ")", 
-                        keep_menu_open = true,
-                        callback = function() self:setGeminiAPIKey() end,
-                        separator = true,
-                    },
-                    {
-                        text = self.loc:t("menu_chatgpt_key") .. " (" .. (self.ai_helper.providers.chatgpt.api_key and "SET" or "NOT SET") .. ")", 
-                        keep_menu_open = true,
-                        callback = function() self:setChatGPTAPIKey() end,
-                        separator = true,
-                    },
-                    {
-                        text = "View All Config Values", 
-                        keep_menu_open = true,
-                        callback = function() self:showConfigSummary() end,
-                    },
-                }
-            },
-            {
-                text = self.loc:t("menu_clear_cache"),
-                keep_menu_open = true,
-                callback = function() self:clearCache() end,
-                separator = true,
-            },
-            {
-                text = self.loc:t("menu_xray_mode"),
-                keep_menu_open = true,
-                callback = function() self:toggleXRayMode() end,
-            },
-            {
-                text = self.loc:t("menu_language") or "Language",
-                keep_menu_open = true,
-                callback = function() self:showLanguageSelection() end,
-                separator = true,
-            },
-            {
-                text = self.loc:t("menu_about"),
-                keep_menu_open = true,
-                callback = function() self:showAbout() end,
-            },
-        }
+        sub_item_table_func = function() return self:getSubMenuItems() end,
     }
 end
 
@@ -299,6 +320,9 @@ function XRayPlugin:showLanguageSelection()
         UIManager:close(self.ldlg)
         if self.loc and self.loc.setLanguage then
             self.loc:setLanguage(lang_code)
+            if self.ai_helper then
+                self.ai_helper:saveSettings({ language = lang_code })
+            end
         end
         
         local msg = (self.loc and self.loc:t("language_changed")) or "Language changed"
@@ -343,22 +367,75 @@ function XRayPlugin:showCharacterDetails(character)
 end
 
 function XRayPlugin:fetchFromAI()
-    require("ui/network/manager"):runWhenOnline(function() self:askSpoilerPreference() end)
+    require("ui/network/manager"):runWhenOnline(function() 
+        local current_page = self.ui:getCurrentPage()
+        local reading_percent = math.floor((current_page / self.ui.document:getPageCount()) * 100)
+        local spoiler_setting = self.ai_helper.settings and self.ai_helper.settings.spoiler_setting or "spoiler_free"
+        
+        if spoiler_setting == "full_book" then
+            self:continueWithFetch(100)
+        else
+            self:continueWithFetch(reading_percent)
+        end
+    end)
 end
 
-function XRayPlugin:askSpoilerPreference()
-    local current_page = self.ui:getCurrentPage()
-    local reading_percent = math.floor((current_page / self.ui.document:getPageCount()) * 100)
-    local spoiler_menu = Menu:new{
-        title = self.loc:t("spoiler_preference_title"),
-        item_table = {
-            { text = self.loc:t("spoiler_free_option", reading_percent), callback = function() UIManager:close(spoiler_menu); self:continueWithFetch(reading_percent) end },
-            { text = self.loc:t("full_book_option"), callback = function() UIManager:close(spoiler_menu); self:continueWithFetch(100) end },
-            { text = self.loc:t("cancel"), callback = function() UIManager:close(spoiler_menu) end },
-        },
-        is_borderless = true, width = Screen:getWidth(), height = Screen:getHeight(),
-    }
-    UIManager:show(spoiler_menu)
+function XRayPlugin:showSpoilerSettings()
+    local ButtonDialog = require("ui/widget/buttondialog")
+    local info_dialog
+    
+    local function showSettings()
+        if info_dialog then UIManager:close(info_dialog) end
+        
+        local current_setting = self.ai_helper.settings and self.ai_helper.settings.spoiler_setting or "spoiler_free"
+        
+        info_dialog = ButtonDialog:new{
+            title = self.loc:t("spoiler_preference_title") or "Spoiler Settings",
+            text = "Select your spoiler preference for X-Ray data:",
+            buttons = {
+                {
+                    {
+                        text = (current_setting == "spoiler_free" and "[✓] " or "[  ] ") .. (self.loc:t("spoiler_free_menu_option") or "Spoiler-free"),
+                        callback = function()
+                            self.ai_helper:saveSettings({ spoiler_setting = "spoiler_free" })
+                            UIManager:show(InfoMessage:new{ text = (self.loc:t("spoiler_free_saved") or "Spoiler setting saved: Spoiler-free Mode"), timeout = 2 })
+                            self:refreshXRayMenuText()
+                            UIManager:nextTick(function() showSettings() end)
+                        end
+                    },
+                    {
+                        text = (current_setting == "full_book" and "[✓] " or "[  ] ") .. (self.loc:t("full_book_option") or "Full Book Mode"),
+                        callback = function()
+                            self.ai_helper:saveSettings({ spoiler_setting = "full_book" })
+                            UIManager:show(InfoMessage:new{ text = (self.loc:t("full_book_saved") or "Spoiler setting saved: Full Book Mode"), timeout = 2 })
+                            self:refreshXRayMenuText()
+                            UIManager:nextTick(function() showSettings() end)
+                        end
+                    }
+                },
+                {
+                    {
+                        text = self.loc:t("menu_about") or "About",
+                        callback = function()
+                            UIManager:show(InfoMessage:new{
+                                text = self.loc:t("spoiler_free_about") or "Spoiler-free mode limits AI extraction to the pages you have already read (up to your current page), preventing spoilers from future chapters.\n\nFull Book Mode analyzes the entire book, which may contain spoilers.",
+                                timeout = 30
+                            })
+                        end
+                    },
+                    {
+                        text = self.loc:t("close") or "Close",
+                        callback = function()
+                            UIManager:close(info_dialog)
+                        end
+                    }
+                }
+            }
+        }
+        UIManager:show(info_dialog)
+    end
+    
+    showSettings()
 end
 
 local function sanitizeMetadata(val)
@@ -408,7 +485,7 @@ function XRayPlugin:continueWithFetch(reading_percent)
         
         -- 2. AI Request (Background Subprocess via aihelper:makeRequest)
         self.ai_helper:setTrapWidget(wait_msg)
-        local final_book_data, error_code, error_msg = self.ai_helper:getBookDataComprehensive(title, author, self.ai_provider, context)
+        local final_book_data, error_code, error_msg = self.ai_helper:getBookDataComprehensive(title, author, nil, context)
         self.ai_helper:resetTrapWidget()
 
         if wait_msg then UIManager:close(wait_msg) end
@@ -444,7 +521,9 @@ function XRayPlugin:continueWithFetch(reading_percent)
 
         local success_dialog
         local ButtonDialog = require("ui/widget/buttondialog")
-        success_dialog = ButtonDialog:new{ title = self.loc:t("fetch_successful") or "Fetch successful", text = summary, buttons = {{{ text = self.loc:t("ok"), callback = function() UIManager:close(success_dialog) end }}} }
+        success_dialog = ButtonDialog:new{ title = self.loc:t("fetch_successful") or "Fetch successful", text = summary, buttons = {{{ text = self.loc:t("ok"), callback = function() 
+            UIManager:close(success_dialog) 
+        end }}} }
         UIManager:show(success_dialog)
     end)
 end
@@ -460,13 +539,13 @@ function XRayPlugin:fetchAuthorInfo()
     local author = sanitizeMetadata(props.authors)
     local wait_msg
     local is_cancelled = false
-    wait_msg = InfoMessage:new{ text = self.loc:t("fetching_author", self.ai_provider or "AI") .. "\n\n" .. title .. " - " .. author .. "\n\n" .. self.loc:t("fetching_wait"), timeout = 120 }
+    wait_msg = InfoMessage:new{ text = self.loc:t("fetching_author", "AI") .. "\n\n" .. title .. " - " .. author .. "\n\n" .. self.loc:t("fetching_wait"), timeout = 120 }
     UIManager:show(wait_msg)
     UIManager:scheduleIn(0.5, function()
         if is_cancelled then return end
         
         self.ai_helper:setTrapWidget(wait_msg)
-        local author_data, error_code, error_msg = self.ai_helper:getAuthorData(title, author, self.ai_provider)
+        local author_data, error_code, error_msg = self.ai_helper:getAuthorData(title, author, nil)
         self.ai_helper:resetTrapWidget()
         
         if wait_msg then UIManager:close(wait_msg) end
@@ -562,6 +641,7 @@ function XRayPlugin:toggleXRayMode()
                         text = (self.xray_mode_enabled and "[✓] " or "[  ] ") .. self.loc:t("xray_enabled_label"),
                         callback = function()
                             self.xray_mode_enabled = true
+                            if self.ai_helper then self.ai_helper:saveSettings({ xray_mode_enabled = true }) end
                             UIManager:nextTick(function() showSettings() end)
                         end
                     },
@@ -569,6 +649,7 @@ function XRayPlugin:toggleXRayMode()
                         text = (not self.xray_mode_enabled and "[✓] " or "[  ] ") .. self.loc:t("xray_disabled_label"),
                         callback = function()
                             self.xray_mode_enabled = false
+                            if self.ai_helper then self.ai_helper:saveSettings({ xray_mode_enabled = false }) end
                             UIManager:nextTick(function() showSettings() end)
                         end
                     }
@@ -614,44 +695,153 @@ end
 
 function XRayPlugin:showQuickXRayMenu() self:showFullXRayMenu() end
 function XRayPlugin:showFullXRayMenu()
-    local menu_items = {}; self:addToMainMenu(menu_items)
-    if menu_items.xray then UIManager:show(Menu:new{ title = self.loc:t("menu_xray") or "X-Ray", item_table = menu_items.xray.sub_item_table, is_borderless = true, width = Screen:getWidth(), height = Screen:getHeight() }) end
+    if self.xray_menu then UIManager:close(self.xray_menu); self.xray_menu = nil end
+    self.xray_menu = Menu:new{ 
+        title = self.loc:t("menu_xray") or "X-Ray", 
+        item_table = self:getSubMenuItems(), 
+        is_borderless = true, 
+        width = Screen:getWidth(), 
+        height = Screen:getHeight() 
+    }
+    UIManager:show(self.xray_menu) 
 end
 
-function XRayPlugin:setGeminiAPIKey()
-    local InputDialog = require("ui/widget/inputdialog")
-    if not self.ai_helper then require("aihelper"):init(self.path) end
-    local input_dialog
-    input_dialog = InputDialog:new{ title = self.loc:t("gemini_key_title"), input = self.ai_helper.providers.gemini.api_key or "", input_hint = self.loc:t("gemini_key_hint"), description = self.loc:t("gemini_key_desc"), buttons = {{{ text = self.loc:t("cancel"), callback = function() UIManager:close(input_dialog) end }, { text = self.loc:t("save"), is_enter_default = true, callback = function() local api_key = input_dialog:getInputText(); if api_key and #api_key > 0 then self.ai_helper:setAPIKey("gemini", api_key); self.ai_provider = "gemini"; UIManager:show(InfoMessage:new{ text = self.loc:t("gemini_key_saved"), timeout = 3 }) end; UIManager:close(input_dialog) end }}} }
-    UIManager:show(input_dialog); input_dialog:onShowKeyboard()
+function XRayPlugin:getAPIKeySelectionMenu(provider, provider_name)
+    local config_key = self.ai_helper.config_keys[provider]
+    
+    local menu_items = {
+        {
+            text = "Use key from config.lua: " .. (config_key and #config_key > 0 and config_key or "(Not set)"),
+            checked_func = function() 
+                return not self.ai_helper.providers[provider].ui_key_active 
+            end,
+            callback = function()
+                self.ai_helper:saveSettings({ [provider .. "_use_ui_key"] = false })
+                self.ai_helper:init(self.path)
+                UIManager:setDirty(nil, "ui")
+            end
+        },
+        {
+            text = "Enter UI override key: " .. (self.ai_helper.settings[provider .. "_api_key"] or "(Not set)"),
+            checked_func = function() 
+                return self.ai_helper.providers[provider].ui_key_active 
+            end,
+            callback = function()
+                local ui_key = self.ai_helper.settings[provider .. "_api_key"]
+                
+                -- If we have a UI key but it's not currently active, let's just activate it
+                if ui_key and #ui_key > 0 and not self.ai_helper.providers[provider].ui_key_active then
+                    self.ai_helper:saveSettings({ [provider .. "_use_ui_key"] = true })
+                    self.ai_helper:init(self.path)
+                    UIManager:setDirty(nil, "ui")
+                    return
+                end
+
+                local InputDialog = require("ui/widget/inputdialog")
+                local input_dialog
+                input_dialog = InputDialog:new{
+                    title = provider_name .. " API Key",
+                    input = ui_key or "",
+                    buttons = {
+                        {
+                            { text = self.loc:t("cancel"), callback = function() UIManager:close(input_dialog) end },
+                            { text = self.loc:t("save"), is_enter_default = true, callback = function()
+                                local key = input_dialog:getInputText()
+                                UIManager:close(input_dialog)
+                                if key and #key > 0 then
+                                    self.ai_helper:setAPIKey(provider, key)
+                                    UIManager:setDirty(nil, "ui")
+                                end
+                            end }
+                        }
+                    }
+                }
+                UIManager:show(input_dialog)
+                input_dialog:onShowKeyboard()
+            end
+        }
+    }
+    return menu_items
 end
 
-function XRayPlugin:setChatGPTAPIKey()
-    local InputDialog = require("ui/widget/inputdialog")
-    if not self.ai_helper then require("aihelper"):init(self.path) end
-    local input_dialog
-    input_dialog = InputDialog:new{ title = self.loc:t("chatgpt_key_title"), input = self.ai_helper.providers.chatgpt.api_key or "", input_hint = self.loc:t("chatgpt_key_hint"), description = self.loc:t("chatgpt_key_desc"), buttons = {{{ text = self.loc:t("cancel"), callback = function() UIManager:close(input_dialog) end }, { text = self.loc:t("save"), is_enter_default = true, callback = function() local api_key = input_dialog:getInputText(); if api_key and #api_key > 0 then self.ai_helper:setAPIKey("chatgpt", api_key); self.ai_provider = "chatgpt"; UIManager:show(InfoMessage:new{ text = self.loc:t("chatgpt_key_saved"), timeout = 3 }) end; UIManager:close(input_dialog) end }}} }
-    UIManager:show(input_dialog); input_dialog:onShowKeyboard()
-end
-
-function XRayPlugin:selectAIProvider()
-    if not self.ai_helper then require("aihelper"):init(self.path) end
-    local provider_menu
-    local providers = {}
-    local function add(p, n)
-        local key = self.ai_helper.providers[p] and self.ai_helper.providers[p].api_key
-        if key and key ~= "" then table.insert(providers, { text = "[OK] " .. n .. " (" .. (self.ai_provider == p and "ACTIVE" or "INACTIVE") .. ")", callback = function() self.ai_provider = p; self.ai_helper:setDefaultProvider(p); UIManager:show(InfoMessage:new{ text = self.loc:t(p .. "_selected"), timeout = 2 }); if provider_menu then UIManager:close(provider_menu) end end })
-        else table.insert(providers, { text = n .. " (No API key)", callback = function() UIManager:show(InfoMessage:new{ text = self.loc:t("set_key_first"), timeout = 3 }) end }) end
+function XRayPlugin:getAIModelSelectionMenu(setting_type)
+    local models = {
+        { name = "Google Gemini Flash (gemini-2.5-flash)", provider = "gemini", id = "gemini-2.5-flash" },
+        { name = "Google Gemini Flash-Lite (gemini-2.5-flash-lite)", provider = "gemini", id = "gemini-2.5-flash-lite" },
+        { name = "Google Gemini Pro (gemini-1.5-pro)", provider = "gemini", id = "gemini-1.5-pro" },
+        { name = "ChatGPT Mini (gpt-4o-mini)", provider = "chatgpt", id = "gpt-4o-mini" },
+        { name = "ChatGPT (gpt-4o)", provider = "chatgpt", id = "gpt-4o" },
+    }
+    
+    local menu_items = {}
+    for _, m in ipairs(models) do
+        table.insert(menu_items, {
+            text = m.name,
+            checked_func = function()
+                local current = setting_type == "primary" and self.ai_helper.settings.primary_ai or self.ai_helper.settings.secondary_ai
+                if not current then return false end
+                return current.provider == m.provider and current.model == m.id
+            end,
+            callback = function()
+                self.ai_helper:setUnifiedModel(setting_type, m.provider, m.id)
+                UIManager:setDirty(nil, "ui")
+            end
+        })
     end
-    add("gemini", "Google Gemini"); add("chatgpt", "ChatGPT")
-    provider_menu = Menu:new{ title = self.loc:t("provider_select_title"), item_table = providers, is_borderless = true, width = Screen:getWidth(), height = Screen:getHeight() }
-    UIManager:show(provider_menu)
+    
+    table.insert(menu_items, { separator = true })
+    table.insert(menu_items, {
+        text = "Enter custom model...",
+        keep_menu_open = true,
+        callback = function()
+            local InputDialog = require("ui/widget/inputdialog")
+            local input_dialog
+            local current = setting_type == "primary" and self.ai_helper.settings.primary_ai or self.ai_helper.settings.secondary_ai
+            input_dialog = InputDialog:new{
+                title = "Custom " .. setting_type:gsub("^%l", string.upper) .. " Model",
+                input = current and current.model or "",
+                input_hint = "e.g., gemini-1.5-pro",
+                buttons = {
+                    {
+                        {
+                            text = self.loc:t("cancel") or "Cancel",
+                            callback = function() UIManager:close(input_dialog) end
+                        },
+                        {
+                            text = self.loc:t("save") or "Save",
+                            is_enter_default = true,
+                            callback = function()
+                                local custom_model = input_dialog:getInputText()
+                                if custom_model and #custom_model > 0 then
+                                    local provider = string.find(custom_model, "gpt") and "chatgpt" or "gemini"
+                                    self.ai_helper:setUnifiedModel(setting_type, provider, custom_model)
+                                    UIManager:show(InfoMessage:new{ text = setting_type:gsub("^%l", string.upper) .. " AI set to " .. custom_model, timeout = 3 })
+                                    UIManager:setDirty(nil, "ui")
+                                end
+                                UIManager:close(input_dialog)
+                            end
+                        }
+                    }
+                }
+            }
+            UIManager:show(input_dialog)
+            input_dialog:onShowKeyboard()
+        end
+    })
+    
+    return menu_items
 end
+
 
 function XRayPlugin:findCharacterByName(word)
     if not self.characters or not word then return nil end
     local word_lower = string.lower(word)
-    for _, char in ipairs(self.characters) do local name_lower = string.lower(char.name or ""); if name_lower == word_lower or string.find(name_lower, word_lower, 1, true) then return char end end
+    for _, char in ipairs(self.characters) do
+        local name_lower = string.lower(char.name or "")
+        if name_lower == word_lower or string.find(name_lower, word_lower, 1, true) then
+            return char
+        end
+    end
     return nil
 end
 
@@ -664,25 +854,24 @@ function XRayPlugin:showCharacterSearch()
 end
 
 function XRayPlugin:showConfigSummary()
-    local text = "--- Current Configuration ---\n\nDefault Provider: " .. (self.ai_provider or "gemini") .. "\n\n"
+    local text = "--- Current Configuration ---\n\n"
+    
+    local primary = self.ai_helper.settings.primary_ai
+    local secondary = self.ai_helper.settings.secondary_ai
+    
+    text = text .. "Primary AI:\n"
+    if primary then text = text .. "  Provider: " .. primary.provider .. "\n  Model: " .. primary.model .. "\n\n" else text = text .. "  Default (Gemini)\n\n" end
+    
+    text = text .. "Secondary AI:\n"
+    if secondary then text = text .. "  Provider: " .. secondary.provider .. "\n  Model: " .. secondary.model .. "\n\n" else text = text .. "  Default (Gemini)\n\n" end
+    
     local function add(p, n)
         local c = self.ai_helper.providers[p]
-        text = text .. n .. ":\n  Model: " .. (c.model or "???") .. "\n  Key Status: " .. (c.api_key and "SET" or "NOT SET") .. "\n" .. (c.ui_key_active and "  (Using UI Override Key)\n" or "  (Using Key from config.lua)\n") .. "\n"
+        text = text .. n .. " API Key: " .. (c.api_key and "SET" or "NOT SET") .. "\n"
     end
     add("gemini", "Google Gemini"); add("chatgpt", "ChatGPT")
+    
     UIManager:show(InfoMessage:new{ text = text, timeout = 15 })
-end
-
-function XRayPlugin:findCharacterByName(word)
-    if not self.characters or not word then return nil end
-    local word_lower = string.lower(word)
-    for _, char in ipairs(self.characters) do
-        local name_lower = string.lower(char.name or "")
-        if name_lower == word_lower or string.find(name_lower, word_lower, 1, true) then
-            return char
-        end
-    end
-    return nil
 end
 
 return XRayPlugin

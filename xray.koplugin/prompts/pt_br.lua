@@ -29,18 +29,18 @@ Você está processando um documento massivo com dois blocos de texto fornecidos
 PROTOCOLO ANTI-TRUNCAMENTO (CRÍTICO):
 Você tem um limite máximo de saída estrito. Se as "CHAPTER SAMPLES" contiverem MAIS DE 40 capítulos (ex: uma edição omnibus):
 1. Você DEVE reduzir a lista de personagens para APENAS os 10 personagens mais importantes.
-2. Você DEVE reduzir as descrições dos personagens para no MÁXIMO 120 caracteres.
+2. Você DEVE reduzir as descrições dos personagens para no MÁXIMO 200 caracteres.
 3. Você DEVE reduzir os resumos dos eventos da cronologia para no MÁXIMO 80 caracteres.
 A falha em comprimir sua saída para livros massivos fará com que o JSON seja truncado e falhe.
 
 ALGORITMO PARA CRONOLOGIA (PRIORIDADE MÁXIMA):
-Você sofre de viés de recência. Para evitar pular capítulos ou combiná-los, você DEVE executar este loop exato:
-Passo 1. Olhe APENAS para o bloco "CHAPTER SAMPLES". Conte os capítulos narrativos.
-Passo 2. Comece no primeiríssimo capítulo das amostras. Crie EXATAMENTE UM objeto de evento no array `timeline`.
-Passo 3. O campo `chapter` DEVE corresponder exatamente ao cabeçalho do capítulo na amostra. (NOTA: Se este for um omnibus contendo vários livros, os títulos dos capítulos podem se repetir ou reiniciar. Mapeie-os estritamente na ordem sequencial fornecida).
-Passo 4. Resuma esse capítulo específico no campo `event` (Siga as extensões do Protocolo Anti-Truncamento).
-Passo 5. Vá para o PRÓXIMO capítulo nas amostras e repita o Passo 2.
-Passo 6. NÃO pare até que CADA capítulo nas amostras tenha EXATAMENTE UM evento correspondente. Não os agrupe. SEM SPOILERS: Pare exatamente na marca de %d%%.
+Para evitar pular capítulos ou alucinar eventos, você DEVE executar este loop exato:
+Passo 1. Olhe APENAS para o bloco "CHAPTER SAMPLES". Identifique os capítulos narrativos.
+Passo 2. EXCLUA todo o material pré-textual e pós-textual não narrativo (ex: Capa, Folha de Rosto, Direitos Autorais, Índice, Dedicatória, Agradecimentos, Também por).
+Passo 3. Para cada capítulo narrativo, começando do primeiríssimo, crie EXATAMENTE UM objeto de evento no array `timeline`.
+Passo 4. O campo `chapter` DEVE corresponder exatamente ao cabeçalho do capítulo na amostra. (Mapeie-os estritamente em ordem sequencial).
+Passo 5. Resuma esse capítulo específico no campo `event` (MÁX 80 caracteres). NÃO agrupe capítulos.
+Passo 6. SEM SPOILERS: Pare exatamente na marca de %d%%. Não inclua eventos após este progresso.
 
 ALGORITMO PARA PERSONAGENS E FIGURAS HISTÓRICAS:
 Passo 1. Extraia personagens importantes usando ambos os blocos de texto. (15-25 normal, no MÁXIMO 10 se for omnibus).
@@ -68,7 +68,7 @@ FORMATO JSON REQUERIDO:
       "role": "Papel até o progresso atual",
       "gender": "Masculino / Feminino / Desconhecido",
       "occupation": "Profissão/Status",
-      "description": "Análise profunda. SEM SPOILERS."
+      "description": "Análise profunda com detalhes do texto até agora. SEM SPOILERS."
     }
   ],
   "historical_figures": [
