@@ -46,6 +46,13 @@ function XRayPlugin:init()
         self.xray_mode_enabled = self.ai_helper.settings.xray_mode_enabled
     end
 
+    -- Auto-fetch on chapter change (session state)
+    self.last_auto_chapter = nil
+    self.chapters_fetched = {}
+    self.bg_fetch_pending = false
+    self.auto_fetch_enabled = (self.ai_helper.settings and
+        self.ai_helper.settings.auto_fetch_on_chapter == true) or false
+
     -- Modular lookup logic for text selection
     local LookupManager = require("xray_lookupmanager")
     self.lookup_manager = LookupManager:new(self)
@@ -106,6 +113,67 @@ end
 
 function XRayPlugin:onReaderReady()
     self:autoLoadCache()
+    -- Reset per-session chapter fetch tracking
+    self.last_auto_chapter = nil
+    self.chapters_fetched = {}
+    self.bg_fetch_pending = false
+end
+
+function XRayPlugin:onPageUpdate(pageno)
+    if not self.auto_fetch_enabled then return end
+    if not self.xray_mode_enabled then return end
+    if not self.ui or not self.ui.document then return end
+
+    -- Resolve current chapter title from TOC
+    local toc = self.ui.document:getToc()
+    if not toc or #toc == 0 then return end
+
+    local chapter_title = nil
+    for _, entry in ipairs(toc) do
+        if entry.page and entry.page <= pageno then
+            chapter_title = entry.title
+        else
+            break
+        end
+    end
+    if not chapter_title then return end
+
+    -- Already fetched this chapter this session?
+    if self.chapters_fetched[chapter_title] then return end
+
+    -- Same chapter as before (no change)?
+    if chapter_title == self.last_auto_chapter then return end
+    self.last_auto_chapter = chapter_title
+
+    -- Debounce: ignore if a fetch is already scheduled
+    if self.bg_fetch_pending then return end
+    self.bg_fetch_pending = true
+
+    -- Wait 2s for the reader to settle on the new chapter before fetching
+    UIManager:scheduleIn(2, function()
+        self.bg_fetch_pending = false
+        self:triggerBackgroundMergeFetch(chapter_title)
+    end)
+end
+
+function XRayPlugin:triggerBackgroundMergeFetch(chapter_title)
+    if self.chapters_fetched[chapter_title] then return end
+    if not self.ui or not self.ui.document then return end
+
+    require("ui/network/manager"):runWhenOnline(function()
+        local current_page = self.ui:getCurrentPage()
+        local total_pages = self.ui.document:getPageCount()
+        if not total_pages or total_pages == 0 then return end
+        local reading_percent = math.floor((current_page / total_pages) * 100)
+        local spoiler_setting = self.ai_helper.settings and
+            self.ai_helper.settings.spoiler_setting or "spoiler_free"
+        if spoiler_setting == "full_book" then
+            reading_percent = 100
+        end
+        self:log("XRayPlugin: Auto-merge fetch for chapter: " .. tostring(chapter_title))
+        self:continueWithFetch(reading_percent, true, true)  -- is_update=true, is_silent=true
+        self.chapters_fetched[chapter_title] = true
+    end)
 end
 
 function XRayPlugin:onDispatcherRegisterActions()
@@ -239,6 +307,17 @@ function XRayPlugin:getSubMenuItems()
                     text = "Spoiler Settings",
                     keep_menu_open = true,
                     callback = function() self:showSpoilerSettings() end,
+                },
+                {
+                    text = "Auto-update on new chapter",
+                    keep_menu_open = true,
+                    checked_func = function()
+                        return self.auto_fetch_enabled == true
+                    end,
+                    callback = function()
+                        self.auto_fetch_enabled = not self.auto_fetch_enabled
+                        self.ai_helper:saveSettings({ auto_fetch_on_chapter = self.auto_fetch_enabled })
+                    end,
                 },
                 {
                     text = self.loc:t("menu_xray_mode"),
@@ -494,7 +573,7 @@ local function sanitizeMetadata(val)
     else return "Unknown" end
 end
 
-function XRayPlugin:continueWithFetch(reading_percent, is_update)
+function XRayPlugin:continueWithFetch(reading_percent, is_update, is_silent)
     if not self.ai_helper then
         local AIHelper = require("xray_aihelper")
         self.ai_helper = AIHelper
@@ -505,9 +584,11 @@ function XRayPlugin:continueWithFetch(reading_percent, is_update)
     local author = sanitizeMetadata(props.authors)
     local wait_msg
     local is_cancelled = false
-    local fetch_text = is_update and self.loc:t("updating_ai", self.ai_provider or "AI") or self.loc:t("fetching_ai", self.ai_provider or "AI")
-    wait_msg = InfoMessage:new{ text = fetch_text .. "\n\n" .. title .. "\n\n" .. self.loc:t("fetching_wait"), timeout = 120 }
-    UIManager:show(wait_msg)
+    if not is_silent then
+        local fetch_text = is_update and self.loc:t("updating_ai", self.ai_provider or "AI") or self.loc:t("fetching_ai", self.ai_provider or "AI")
+        wait_msg = InfoMessage:new{ text = fetch_text .. "\n\n" .. title .. "\n\n" .. self.loc:t("fetching_wait"), timeout = 120 }
+        UIManager:show(wait_msg)
+    end
     UIManager:scheduleIn(0.5, function()
         if is_cancelled then return end
         if not self.chapter_analyzer then self.chapter_analyzer = require("xray_chapteranalyzer"):new() end
@@ -519,7 +600,10 @@ function XRayPlugin:continueWithFetch(reading_percent, is_update)
         
         if (not book_text or #book_text < 10) and not samples then
             if wait_msg then UIManager:close(wait_msg) end
-            UIManager:show(InfoMessage:new{ text = "Error: Could not extract book text.", timeout = 5 })
+            if not is_silent then
+                UIManager:show(InfoMessage:new{ text = "Error: Could not extract book text.", timeout = 5 })
+            end
+            self:log("XRayPlugin: Text extraction failed" .. (is_silent and " (silent)" or ""))
             return
         end
         
@@ -534,7 +618,24 @@ function XRayPlugin:continueWithFetch(reading_percent, is_update)
             book_text = book_text 
         }
         
-        -- 2. AI Request (Background Subprocess via aihelper:makeRequest)
+        -- 2. AI Request
+        if is_silent then
+            local req_params, err_code, err_msg = self.ai_helper:buildComprehensiveRequest(title, author, context)
+            if not req_params then
+                self:log("XRayPlugin: Failed to build async request: " .. tostring(err_msg))
+                return
+            end
+            
+            local result_file = "/tmp/xray_bg_fetch_" .. tostring(os.time()) .. ".json"
+            local started = self.ai_helper:makeRequestAsync(req_params, result_file)
+            if started then
+                self:pollBackgroundFetch(result_file, title, author, book_text, is_update)
+            else
+                self:log("XRayPlugin: Failed to start async background fetch")
+            end
+            return
+        end
+
         self.ai_helper:setTrapWidget(wait_msg)
         local final_book_data, error_code, error_msg = self.ai_helper:getBookDataComprehensive(title, author, nil, context)
         self.ai_helper:resetTrapWidget()
@@ -550,84 +651,119 @@ function XRayPlugin:continueWithFetch(reading_percent, is_update)
             return
         end
 
-        final_book_data.book_title = title
-        final_book_data.author = author
+        self:finalizeXRayData(final_book_data, title, author, book_text, is_update, is_silent)
+    end)
+end
 
-        -- Frequency Sorting
-        final_book_data.characters = self:sortDataByFrequency(final_book_data.characters, book_text, "name")
-        final_book_data.historical_figures = self:sortDataByFrequency(final_book_data.historical_figures, book_text, "name")
-        final_book_data.locations = self:sortDataByFrequency(final_book_data.locations, book_text, "name")
-
-        if is_update then
-            -- Merge characters
-            for _, new_char in ipairs(final_book_data.characters or {}) do
-                local found = false
-                for _, existing_char in ipairs(self.characters or {}) do
-                    if existing_char.name:lower() == new_char.name:lower() then
-                        existing_char.role = new_char.role
-                        existing_char.description = new_char.description
-                        found = true
-                        break
-                    end
-                end
-                if not found then table.insert(self.characters, new_char) end
+function XRayPlugin:pollBackgroundFetch(result_file, title, author, book_text, is_update)
+    local poll_count = 0
+    local function check()
+        poll_count = poll_count + 1
+        local data, err_code, err_msg = self.ai_helper:checkAsyncResult(result_file)
+        
+        if data == nil then
+            -- Still pending
+            if poll_count < 60 then -- 2 minutes max
+                UIManager:scheduleIn(2, check)
+            else
+                self:log("XRayPlugin: Background fetch timed out")
+                os.remove(result_file)
             end
-            -- Merge historical figures
-            for _, new_fig in ipairs(final_book_data.historical_figures or {}) do
-                local found = false
-                for _, existing_fig in ipairs(self.historical_figures or {}) do
-                    if existing_fig.name:lower() == new_fig.name:lower() then
-                        existing_fig.biography = new_fig.biography
-                        existing_fig.role = new_fig.role
-                        found = true
-                        break
-                    end
-                end
-                if not found then table.insert(self.historical_figures, new_fig) end
-            end
-            -- Merge locations
-            for _, new_loc in ipairs(final_book_data.locations or {}) do
-                local found = false
-                for _, existing_loc in ipairs(self.locations or {}) do
-                    if existing_loc.name:lower() == new_loc.name:lower() then
-                        existing_loc.description = new_loc.description
-                        found = true
-                        break
-                    end
-                end
-                if not found then table.insert(self.locations, new_loc) end
-            end
-            -- Merge timeline (append only if chapter not found)
-            for _, new_event in ipairs(final_book_data.timeline or {}) do
-                local found = false
-                for _, existing_event in ipairs(self.timeline or {}) do
-                    if existing_event.chapter == new_event.chapter then
-                        found = true
-                        break
-                    end
-                end
-                if not found then table.insert(self.timeline, new_event) end
-            end
+        elseif data == false then
+            -- Failed
+            self:log("XRayPlugin: Background fetch failed: " .. tostring(err_msg))
         else
-            self.characters = final_book_data.characters
-            self.historical_figures = final_book_data.historical_figures
-            self.locations = final_book_data.locations
-            self.timeline = final_book_data.timeline
+            -- Success
+            self:finalizeXRayData(data, title, author, book_text, is_update, true)
         end
+    end
+    UIManager:scheduleIn(2, check)
+end
 
-        local updated_data = {
-            book_title = title,
-            author = author,
-            characters = self.characters,
-            historical_figures = self.historical_figures,
-            locations = self.locations,
-            timeline = self.timeline,
-            author_info = self.author_info
-        }
+function XRayPlugin:finalizeXRayData(final_book_data, title, author, book_text, is_update, is_silent)
+    final_book_data.book_title = title
+    final_book_data.author = author
 
-        if not self.cache_manager then self.cache_manager = require("xray_cachemanager"):new() end
-        local cache_saved = self.cache_manager:saveCache(self.ui.document.file, updated_data)
+    -- Frequency Sorting
+    final_book_data.characters = self:sortDataByFrequency(final_book_data.characters, book_text, "name")
+    final_book_data.historical_figures = self:sortDataByFrequency(final_book_data.historical_figures, book_text, "name")
+    final_book_data.locations = self:sortDataByFrequency(final_book_data.locations, book_text, "name")
 
+    if is_update then
+        -- Merge characters
+        for _, new_char in ipairs(final_book_data.characters or {}) do
+            local found = false
+            for _, existing_char in ipairs(self.characters or {}) do
+                if existing_char.name:lower() == new_char.name:lower() then
+                    existing_char.role = new_char.role
+                    existing_char.description = new_char.description
+                    found = true
+                    break
+                end
+            end
+            if not found then table.insert(self.characters, new_char) end
+        end
+        -- Merge historical figures
+        for _, new_fig in ipairs(final_book_data.historical_figures or {}) do
+            local found = false
+            for _, existing_fig in ipairs(self.historical_figures or {}) do
+                if existing_fig.name:lower() == new_fig.name:lower() then
+                    existing_fig.biography = new_fig.biography
+                    existing_fig.role = new_fig.role
+                    found = true
+                    break
+                end
+            end
+            if not found then table.insert(self.historical_figures, new_fig) end
+        end
+        -- Merge locations
+        for _, new_loc in ipairs(final_book_data.locations or {}) do
+            local found = false
+            for _, existing_loc in ipairs(self.locations or {}) do
+                if existing_loc.name:lower() == new_loc.name:lower() then
+                    existing_loc.description = new_loc.description
+                    found = true
+                    break
+                end
+            end
+            if not found then table.insert(self.locations, new_loc) end
+        end
+        -- Merge timeline (append only if chapter not found)
+        for _, new_event in ipairs(final_book_data.timeline or {}) do
+            local found = false
+            for _, existing_event in ipairs(self.timeline or {}) do
+                if existing_event.chapter == new_event.chapter then
+                    found = true
+                    break
+                end
+            end
+            if not found then table.insert(self.timeline, new_event) end
+        end
+    else
+        self.characters = final_book_data.characters
+        self.historical_figures = final_book_data.historical_figures
+        self.locations = final_book_data.locations
+        self.timeline = final_book_data.timeline
+    end
+
+    local updated_data = {
+        book_title = title,
+        author = author,
+        characters = self.characters,
+        historical_figures = self.historical_figures,
+        locations = self.locations,
+        timeline = self.timeline,
+        author_info = self.author_info
+    }
+
+    if not self.cache_manager then self.cache_manager = require("xray_cachemanager"):new() end
+    local cache_saved = self.cache_manager:saveCache(self.ui.document.file, updated_data)
+
+    if is_silent then
+        self:log(string.format("XRayPlugin: Silent merge complete — Chars: %d, Locs: %d, Events: %d, Cache: %s",
+            #self.characters, #self.locations, #self.timeline,
+            cache_saved and "saved" or "failed"))
+    else
         local summary = string.format("AI Fetch Complete!\n\nCharacters: %d\nLocations: %d\nEvents: %d\n\n%s", 
             #self.characters, #self.locations, #self.timeline,
             cache_saved and "✓ Cache updated." or "✗ Cache failed.")
@@ -638,7 +774,7 @@ function XRayPlugin:continueWithFetch(reading_percent, is_update)
             UIManager:close(success_dialog) 
         end }}} }
         UIManager:show(success_dialog)
-    end)
+    end
 end
 
 function XRayPlugin:fetchMoreCharacters()

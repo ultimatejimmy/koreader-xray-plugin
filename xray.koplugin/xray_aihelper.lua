@@ -78,6 +78,173 @@ function AIHelper:makeRequest(url, headers, request_body, timeout, maxtime)
     end
 end
 
+-- Build the full HTTP request parameters for a comprehensive fetch without executing it.
+-- Returns: { url, headers, body, provider, model } or nil, error_code, error_msg
+function AIHelper:buildComprehensiveRequest(title, author, context)
+    local prompt = self:createPrompt(title, author, context, "comprehensive_xray")
+    local primary = self.settings.primary_ai or { provider = "gemini", model = "gemini-2.5-flash" }
+    local secondary = self.settings.secondary_ai or { provider = "gemini", model = "gemini-2.5-flash-lite" }
+
+    -- Try primary, then secondary
+    for _, ai in ipairs({ primary, secondary }) do
+        local config = self.providers[ai.provider]
+        if config and config.api_key and config.api_key ~= "" then
+            local url, headers, body
+            if ai.provider == "gemini" then
+                local model = ai.model or "gemini-2.5-flash"
+                local system_instruction_text = self.prompts and self.prompts.system_instruction or "Return valid JSON ONLY."
+                url = "https://generativelanguage.googleapis.com/v1beta/models/" .. model .. ":generateContent"
+                headers = { ["Content-Type"] = "application/json", ["x-goog-api-key"] = config.api_key }
+                body = json.encode({
+                    contents = {{ role = "user", parts = {{ text = prompt }} }},
+                    system_instruction = { parts = {{ text = system_instruction_text }} },
+                    generationConfig = { temperature = 0.2, maxOutputTokens = 8192 }
+                })
+            else
+                local model = ai.model or "gpt-4o-mini"
+                url = config.endpoint or "https://api.openai.com/v1/chat/completions"
+                headers = { ["Content-Type"] = "application/json", ["Authorization"] = "Bearer " .. config.api_key }
+                body = json.encode({ model = model, messages = {{ role = "user", content = prompt }}, response_format = { type = "json_object" } })
+            end
+            return { url = url, headers = headers, body = body, provider = ai.provider, model = ai.model }
+        end
+    end
+    return nil, "error_api", "No API key configured"
+end
+
+-- Fork a child process to perform the HTTP request. Returns the temp file path
+-- that the parent should poll for, or nil on error.
+function AIHelper:makeRequestAsync(request_params, result_file)
+    local ok_posix, posix = pcall(require, "posix.unistd")
+    if not ok_posix then
+        self:log("AIHelper: posix.unistd not available, cannot fork for async request")
+        return nil
+    end
+
+    local pid = posix.fork()
+    if pid == nil then
+        self:log("AIHelper: fork() failed")
+        return nil
+    end
+
+    if pid == 0 then
+        -- CHILD PROCESS: do the HTTP request synchronously and write result to file
+        local child_ok, child_err = pcall(function()
+            local http_req = require("socket.http")
+            local https_req = require("ssl.https")
+            local ltn12_req = require("ltn12")
+            local socketutil_req = require("socketutil")
+            https_req.cert_verify = false
+            socketutil_req:set_timeout(60, 120)  -- shorter timeout for background
+
+            local response_body = {}
+            local request = {
+                url = request_params.url,
+                method = "POST",
+                headers = request_params.headers or {},
+                source = ltn12_req.source.string(request_params.body or ""),
+                sink = socketutil_req.table_sink(response_body)
+            }
+            local ok, code, response_headers, status = http_req.request(request)
+            socketutil_req:reset_timeout()
+            local response_text = table.concat(response_body)
+
+            -- Write result: first line = HTTP code, rest = response body
+            local f = io.open(result_file, "w")
+            if f then
+                f:write(tostring(code) .. "\n")
+                f:write(request_params.provider .. "\n")
+                f:write(response_text)
+                f:close()
+            end
+        end)
+
+        if not child_ok then
+            -- Write error marker
+            local f = io.open(result_file, "w")
+            if f then
+                f:write("ERROR\n")
+                f:write(request_params.provider .. "\n")
+                f:write(tostring(child_err))
+                f:close()
+            end
+        end
+
+        posix._exit(0)  -- Exit child cleanly without running atexit handlers
+    else
+        -- PARENT PROCESS: store child PID for waitpid later
+        self._async_child_pid = pid
+        return result_file
+    end
+end
+
+-- Check if the async result file exists and parse it. Returns:
+--   nil (still pending)
+--   book_data table (success)
+--   false, error_code, error_msg (failed)
+function AIHelper:checkAsyncResult(result_file)
+    local f = io.open(result_file, "r")
+    if not f then return nil end  -- still pending
+
+    local content = f:read("*a")
+    f:close()
+    os.remove(result_file)
+
+    -- Reap child process to prevent zombies
+    if self._async_child_pid then
+        pcall(function()
+            local posix_sys = require("posix.sys.wait")
+            posix_sys.wait(self._async_child_pid, posix_sys.WNOHANG)
+        end)
+        self._async_child_pid = nil
+    end
+
+    -- Parse: first line = code, second line = provider, rest = response body
+    local first_newline = content:find("\n")
+    if not first_newline then return false, "error_parse", "Malformed async result" end
+    local code_str = content:sub(1, first_newline - 1)
+    local rest = content:sub(first_newline + 1)
+    local second_newline = rest:find("\n")
+    if not second_newline then return false, "error_parse", "Malformed async result" end
+    local provider = rest:sub(1, second_newline - 1)
+    local response_text = rest:sub(second_newline + 1)
+
+    if code_str == "ERROR" then
+        return false, "error_api", response_text
+    end
+
+    local code_num = tonumber(code_str)
+    if code_num ~= 200 or not response_text or #response_text == 0 then
+        return false, "error_api", "HTTP " .. tostring(code_num)
+    end
+
+    -- Parse the response based on provider
+    local success, data = pcall(json.decode, response_text)
+    if not success then return false, "error_parse", "JSON decode failed" end
+
+    local ai_text
+    if provider == "gemini" then
+        if data.candidates and data.candidates[1] and
+           data.candidates[1].content and data.candidates[1].content.parts and
+           data.candidates[1].content.parts[1] then
+            ai_text = data.candidates[1].content.parts[1].text
+        end
+    else
+        if data.choices and data.choices[1] then
+            ai_text = data.choices[1].message.content
+        end
+    end
+
+    if not ai_text then return false, "error_parse", "No text in AI response" end
+
+    local parsed_data, parse_err = self:parseAIResponse(ai_text)
+    if parsed_data then
+        return parsed_data
+    else
+        return false, "error_parse", tostring(parse_err)
+    end
+end
+
 function AIHelper:init(path)
     self.path = path or "plugins/xray.koplugin"
     local f = io.open(self.path .. "/xray.log", "a")
