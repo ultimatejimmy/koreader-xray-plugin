@@ -106,13 +106,14 @@ local function _versionLessThan(a, b)
     local function parts(v)
         local t_parts = {}
         for n in (v .. "."):gmatch("(%d+)%.") do t_parts[#t_parts + 1] = tonumber(n) end
-        while #t_parts < 3 do t_parts[#t_parts + 1] = 0 end
         return t_parts
     end
     local pa, pb = parts(a), parts(b)
-    for i = 1, 3 do
-        if pa[i] < pb[i] then return true end
-        if pa[i] > pb[i] then return false end
+    for i = 1, math.max(#pa, #pb) do
+        local va = pa[i] or 0
+        local vb = pb[i] or 0
+        if va < vb then return true end
+        if va > vb then return false end
     end
     return false
 end
