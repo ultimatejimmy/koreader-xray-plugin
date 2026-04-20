@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*' # Triggers on any tag push
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Plugin Archive
+        run: |
+          # Package the plugin directory into a zip file
+          # Excluding hidden files and git metadata
+          zip -r xray.koplugin.zip xray.koplugin -x "*.git*" "*/.*"
+
+      - name: Create Draft Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: xray.koplugin.zip
+          draft: true
+          prerelease: ${{ contains(github.ref_name, '-beta') }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
