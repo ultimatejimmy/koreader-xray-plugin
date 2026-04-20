@@ -535,7 +535,10 @@ function AIHelper:createPrompt(title, author, context, section_name)
         end
         if context.chapter_samples then extra_context = extra_context .. "\n\nCHAPTER SAMPLES:\n" .. context.chapter_samples end
         if context.annotations then extra_context = extra_context .. "\n\nUSER HIGHLIGHTS:\n" .. context.annotations end
-        -- Merge mode: tell AI what we already know so it only returns NEW information
+        -- Merge mode: tell AI what we already know
+        local has_merge_data = false
+        local merge_instructions = "\n\nMERGE MODE INSTRUCTIONS:\nYou are UPDATING an existing X-Ray.\n- For entities (Characters, Locations, Historical Figures) that already exist, synthesize a completely rewritten, cohesive summary combining the EXISTING KNOWLEDGE with any new information found in the text.\n- Write a solid summary that is not repetitive.\n- Descriptions MUST NOT exceed 500 characters.\n- If there is no new information, return the existing description (or a refined version of it under 500 characters)."
+        
         if context.existing_characters and #context.existing_characters > 0 then
             local existing_lines = {}
             for _, c in ipairs(context.existing_characters) do
@@ -544,16 +547,34 @@ function AIHelper:createPrompt(title, author, context, section_name)
                 end
             end
             if #existing_lines > 0 then
-                extra_context = extra_context .. "\n\nMERGE MODE INSTRUCTIONS:\nYou are UPDATING an existing X-Ray, not creating one from scratch.\n- For character descriptions, return ONLY genuinely new facts, plot developments, or relationship changes not already covered below.\n- Do NOT rephrase or restate existing information in different words.\n- Keep descriptions cumulative and general — do not make them overly specific to a single scene or chapter.\n- If a character has no new information, return an empty description for them.\n\nEXISTING CHARACTER KNOWLEDGE:\n" .. table.concat(existing_lines, "\n")
+                if not has_merge_data then extra_context = extra_context .. merge_instructions; has_merge_data = true end
+                extra_context = extra_context .. "\n\nEXISTING CHARACTER KNOWLEDGE:\n" .. table.concat(existing_lines, "\n")
             end
         end
-        if context.existing_locations and #context.existing_locations > 0 then
-            local existing_locs = {}
-            for _, l in ipairs(context.existing_locations) do
-                if l.name then table.insert(existing_locs, l.name) end
+        
+        if context.existing_historical_figures and #context.existing_historical_figures > 0 then
+            local existing_lines = {}
+            for _, h in ipairs(context.existing_historical_figures) do
+                if h.name and h.biography then
+                    table.insert(existing_lines, "- " .. h.name .. ": " .. h.biography)
+                end
             end
-            if #existing_locs > 0 then
-                extra_context = extra_context .. "\n\nEXISTING LOCATIONS (skip these unless new info is available): " .. table.concat(existing_locs, ", ")
+            if #existing_lines > 0 then
+                if not has_merge_data then extra_context = extra_context .. merge_instructions; has_merge_data = true end
+                extra_context = extra_context .. "\n\nEXISTING HISTORICAL FIGURE KNOWLEDGE:\n" .. table.concat(existing_lines, "\n")
+            end
+        end
+        
+        if context.existing_locations and #context.existing_locations > 0 then
+            local existing_lines = {}
+            for _, l in ipairs(context.existing_locations) do
+                if l.name and l.description then
+                    table.insert(existing_lines, "- " .. l.name .. ": " .. l.description)
+                end
+            end
+            if #existing_lines > 0 then
+                if not has_merge_data then extra_context = extra_context .. merge_instructions; has_merge_data = true end
+                extra_context = extra_context .. "\n\nEXISTING LOCATION KNOWLEDGE:\n" .. table.concat(existing_lines, "\n")
             end
         end
     end

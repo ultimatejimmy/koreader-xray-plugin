@@ -596,9 +596,9 @@ local word_to_num = {
 function XRayPlugin:normalizeChapterName(name)
     if not name then return "" end
     local s = name:lower():gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
-    -- Replace written-out numbers with digits (try two-word combos first, then single)
+    -- Replace written-out numbers with digits using word boundaries
     for word, num in pairs(word_to_num) do
-        s = s:gsub(word, tostring(num))
+        s = s:gsub("%f[%a]" .. word .. "%f[%A]", tostring(num))
     end
     -- Strip common prefixes like "chapter" so "chapter 13" and "13" both become "13"
     s = s:gsub("^chapter%s*", ""):gsub("^ch%.?%s*", "")
@@ -679,6 +679,7 @@ function XRayPlugin:continueWithFetch(reading_percent, is_update, last_fetch_pag
             -- For merge fetches, pass existing data so AI only returns new information
             existing_characters = is_update and self.characters or nil,
             existing_locations = is_update and self.locations or nil,
+            existing_historical_figures = is_update and self.historical_figures or nil,
         }
         
         -- 2. AI Request
@@ -786,9 +787,9 @@ function XRayPlugin:finalizeXRayData(final_book_data, title, author, book_text, 
             for _, existing_char in ipairs(self.characters or {}) do
                 if existing_char.name:lower() == new_char.name:lower() then
                     existing_char.role = new_char.role
-                    -- Append new description text if it's different and not empty
-                    if new_char.description and new_char.description ~= "" and existing_char.description ~= new_char.description then
-                        existing_char.description = (existing_char.description or "") .. " " .. new_char.description
+                    -- Replace existing description with the AI's rewritten cohesive summary
+                    if new_char.description and new_char.description ~= "" then
+                        existing_char.description = new_char.description
                     end
                     found = true
                     break
@@ -801,8 +802,8 @@ function XRayPlugin:finalizeXRayData(final_book_data, title, author, book_text, 
             local found = false
             for _, existing_fig in ipairs(self.historical_figures or {}) do
                 if existing_fig.name:lower() == new_fig.name:lower() then
-                    if new_fig.biography and new_fig.biography ~= "" and existing_fig.biography ~= new_fig.biography then
-                        existing_fig.biography = (existing_fig.biography or "") .. " " .. new_fig.biography
+                    if new_fig.biography and new_fig.biography ~= "" then
+                        existing_fig.biography = new_fig.biography
                     end
                     existing_fig.role = new_fig.role
                     found = true
@@ -816,8 +817,8 @@ function XRayPlugin:finalizeXRayData(final_book_data, title, author, book_text, 
             local found = false
             for _, existing_loc in ipairs(self.locations or {}) do
                 if existing_loc.name:lower() == new_loc.name:lower() then
-                    if new_loc.description and new_loc.description ~= "" and existing_loc.description ~= new_loc.description then
-                        existing_loc.description = (existing_loc.description or "") .. " " .. new_loc.description
+                    if new_loc.description and new_loc.description ~= "" then
+                        existing_loc.description = new_loc.description
                     end
                     found = true
                     break
@@ -862,7 +863,7 @@ function XRayPlugin:finalizeXRayData(final_book_data, title, author, book_text, 
     local cache_saved = self.cache_manager:saveCache(self.ui.document.file, updated_data)
 
     if is_silent then
-        self:log(string.format("XRayPlugin: Silent merge complete — Chars: %d, Locs: %d, Events: %d, Cache: %s",
+        self:log(string.format("XRayPlugin: Silent merge complete - Chars: %d, Locs: %d, Events: %d, Cache: %s",
             #self.characters, #self.locations, #self.timeline,
             cache_saved and "saved" or "failed"))
         -- Testing notification: brief toast
