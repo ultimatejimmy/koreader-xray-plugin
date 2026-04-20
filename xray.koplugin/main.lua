@@ -689,7 +689,8 @@ function XRayPlugin:continueWithFetch(reading_percent, is_update, last_fetch_pag
                 return
             end
             
-            local result_file = "/tmp/xray_bg_fetch_" .. tostring(os.time()) .. ".json"
+            local DataStorage = require("datastorage")
+            local result_file = DataStorage:getSettingsDir() .. "/xray/bg_fetch_" .. tostring(os.time()) .. ".json"
             self.bg_fetch_active = true
             local started = self.ai_helper:makeRequestAsync(req_params, result_file)
             if started then

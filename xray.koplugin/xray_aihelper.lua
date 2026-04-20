@@ -127,6 +127,7 @@ function AIHelper:makeRequestAsync(request_params, result_file)
     
     local function child_logic(pid, write_fd)
         local child_ok, child_err = pcall(function()
+            self:log("AIHelper Child: Started background process")
             local http_req = require("socket.http")
             local https_req = require("ssl.https")
             local ltn12_req = require("ltn12")
@@ -134,6 +135,7 @@ function AIHelper:makeRequestAsync(request_params, result_file)
             https_req.cert_verify = false
             socketutil_req:set_timeout(60, 120)  -- shorter timeout for background
 
+            self:log("AIHelper Child: Sending request to " .. request_params.provider)
             local response_body = {}
             local request = {
                 url = request_params.url,
@@ -146,6 +148,8 @@ function AIHelper:makeRequestAsync(request_params, result_file)
             socketutil_req:reset_timeout()
             local response_text = table.concat(response_body)
 
+            self:log("AIHelper Child: Request finished with code " .. tostring(code))
+
             -- Write result to file
             local f = io.open(result_file, "w")
             if f then
@@ -153,10 +157,14 @@ function AIHelper:makeRequestAsync(request_params, result_file)
                 f:write(request_params.provider .. "\n")
                 f:write(response_text)
                 f:close()
+                self:log("AIHelper Child: Result written to " .. result_file)
+            else
+                self:log("AIHelper Child: Failed to open result file " .. result_file)
             end
         end)
         
         if not child_ok then
+            self:log("AIHelper Child: CRITICAL ERROR: " .. tostring(child_err))
             local f = io.open(result_file, "w")
             if f then
                 f:write("ERROR\n")
@@ -166,15 +174,21 @@ function AIHelper:makeRequestAsync(request_params, result_file)
             end
         end
 
-        -- On some platforms, ffiutil.runInSubProcess handles the exit.
-        -- If we are in a raw fork, we need to exit manually.
-        if not pid or pid == 0 then
-            local posix_ok, posix = pcall(require, "posix.unistd")
-            if posix_ok and posix and posix._exit then
-                posix._exit(0)
-            else
-                os.exit(0)
-            end
+        -- Close write_fd if provided by runInSubProcess
+        if write_fd and write_fd > 0 then
+            pcall(function() 
+                local ffi = require("ffi")
+                ffi.cdef[[ int close(int fd); ]]
+                ffi.C.close(write_fd) 
+            end)
+        end
+
+        -- Exit child cleanly
+        local posix_ok, posix = pcall(require, "posix.unistd")
+        if posix_ok and posix and posix._exit then
+            posix._exit(0)
+        else
+            os.exit(0)
         end
     end
 
@@ -183,10 +197,14 @@ function AIHelper:makeRequestAsync(request_params, result_file)
         self:log("AIHelper: Trying ffiutil.runInSubProcess")
         local pid, read_fd = ffiutil.runInSubProcess(child_logic, true)
         if pid and pid > 0 then
+            self:log("AIHelper: runInSubProcess started PID " .. tostring(pid))
             -- We don't need the pipe for now as we use the result_file
-            if read_fd then
-                local ffi = require("ffi")
-                ffi.C.close(read_fd)
+            if read_fd and read_fd > 0 then
+                pcall(function() 
+                    local ffi = require("ffi")
+                    ffi.cdef[[ int close(int fd); ]]
+                    ffi.C.close(read_fd) 
+                end)
             end
             self._async_child_pid = pid
             return true
@@ -217,14 +235,15 @@ function AIHelper:makeRequestAsync(request_params, result_file)
         local pid = fork()
         if pid == 0 then
             child_logic(0, nil)
-            return true -- unreachable but for completeness
+            return true -- unreachable
         elseif pid and pid > 0 then
+            self:log("AIHelper: Manual fork started PID " .. tostring(pid))
             self._async_child_pid = pid
             return true
         end
     end
 
-    self:log("AIHelper: All background fetch methods failed (tried runInSubProcess and fork)")
+    self:log("AIHelper: All background fetch methods failed")
     return false
 end
 
