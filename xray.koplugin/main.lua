@@ -146,7 +146,7 @@ function XRayPlugin:onPageUpdate(pageno)
     self.last_auto_chapter = chapter_title
 
     -- Debounce: ignore if a fetch is already scheduled
-    if self.bg_fetch_pending then return end
+    if self.bg_fetch_pending or self.bg_fetch_active then return end
     self.bg_fetch_pending = true
 
     -- Wait 2s for the reader to settle on the new chapter before fetching
@@ -157,7 +157,7 @@ function XRayPlugin:onPageUpdate(pageno)
 end
 
 function XRayPlugin:triggerBackgroundMergeFetch(chapter_title)
-    if self.chapters_fetched[chapter_title] then return end
+    if self.chapters_fetched[chapter_title] or self.bg_fetch_active then return end
     if not self.ui or not self.ui.document then return end
 
     -- SILENT NETWORK CHECK: use isOnline() instead of runWhenOnline to avoid "white box" connecting dialogs
@@ -690,10 +690,12 @@ function XRayPlugin:continueWithFetch(reading_percent, is_update, last_fetch_pag
             end
             
             local result_file = "/tmp/xray_bg_fetch_" .. tostring(os.time()) .. ".json"
+            self.bg_fetch_active = true
             local started = self.ai_helper:makeRequestAsync(req_params, result_file)
             if started then
                 self:pollBackgroundFetch(result_file, title, author, book_text, is_update, current_page)
             else
+                self.bg_fetch_active = false
                 self:log("XRayPlugin: Failed to start async background fetch")
             end
             return
@@ -734,9 +736,11 @@ function XRayPlugin:pollBackgroundFetch(result_file, title, author, book_text, i
             end
         elseif data == false then
             -- Failed
+            self.bg_fetch_active = false
             self:log("XRayPlugin: Background fetch failed: " .. tostring(err_msg))
         else
             -- Success
+            self.bg_fetch_active = false
             self:finalizeXRayData(data, title, author, book_text, is_update, true, current_page)
         end
     end
