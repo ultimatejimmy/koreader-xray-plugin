@@ -50,8 +50,8 @@ function XRayPlugin:init()
     self.last_auto_chapter = nil
     self.chapters_fetched = {}
     self.bg_fetch_pending = false
-    self.auto_fetch_enabled = (self.ai_helper.settings and
-        self.ai_helper.settings.auto_fetch_on_chapter == true) or false
+    self.auto_fetch_enabled = not (self.ai_helper.settings and
+        self.ai_helper.settings.auto_fetch_on_chapter == false)
 
     -- Modular lookup logic for text selection
     local LookupManager = require("xray_lookupmanager")
