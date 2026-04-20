@@ -3,7 +3,8 @@ name: Release
 on:
   push:
     tags:
-      - '*' # Triggers on any tag push
+      - '**' # Matches any tag including those with slashes
+  workflow_dispatch: # Allows manual triggering from the Actions tab
 
 jobs:
   build:
@@ -27,6 +28,6 @@ jobs:
           files: xray.koplugin.zip
           draft: true
           prerelease: ${{ contains(github.ref_name, '-beta') }}
-          generate_release_notes: false
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
