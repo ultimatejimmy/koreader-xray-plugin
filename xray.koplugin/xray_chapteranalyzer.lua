@@ -334,7 +334,7 @@ function ChapterAnalyzer:findCharactersInText(text, characters)
 end
 
 -- Get text for analysis (up to max_len characters before current position)
-function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, current_page)
+function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, current_page, start_page)
     if not ui or not ui.document then
         AIHelper:log("ChapterAnalyzer: getTextForAnalysis - no document")
         return nil
@@ -359,8 +359,14 @@ function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, curr
         local success, result = pcall(function()
             if progress_callback then progress_callback(0.1) end
             
-            -- Go to the very beginning of the book (instant)
-            ui.document:gotoPos(0)
+            if start_page and start_page > 1 then
+                -- Seek to start_page to get the incremental start XPointer
+                AIHelper:log("ChapterAnalyzer: getTextForAnalysis - incremental mode from page " .. tostring(start_page))
+                ui.document:gotoPage(start_page)
+            else
+                -- Go to the very beginning of the book (instant)
+                ui.document:gotoPos(0)
+            end
             local start_xp = ui.document:getXPointer()
             
             -- Go back to current position
@@ -390,14 +396,17 @@ function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, curr
         -- For page-based documents (PDF), get text from a limited number of pages before current
         local current_pos = current_page or (ui.view and ui.view.state and ui.view.state.page) or 1
         local max_pages = 100 
-        local start_page = math.max(1, current_pos - max_pages)
+        local calc_start_page = math.max(1, current_pos - max_pages)
+        if start_page and start_page > 1 then
+            calc_start_page = math.max(start_page, calc_start_page)
+        end
         
-        logger.info("ChapterAnalyzer: Extracting PDF pages", start_page, "to", current_pos)
-        AIHelper:log("ChapterAnalyzer: Extracting PDF pages " .. tostring(start_page) .. " to " .. tostring(current_pos))
+        logger.info("ChapterAnalyzer: Extracting PDF pages", calc_start_page, "to", current_pos)
+        AIHelper:log("ChapterAnalyzer: Extracting PDF pages " .. tostring(calc_start_page) .. " to " .. tostring(current_pos))
         
-        for page = start_page, current_page do
-            if progress_callback and (page % 10 == 0) then
-                progress_callback(0.1 + (0.8 * (page - start_page) / (current_page - start_page)))
+        for page = calc_start_page, current_pos do
+            if progress_callback and (page % 10 == 0) and current_pos > calc_start_page then
+                progress_callback(0.1 + (0.8 * (page - calc_start_page) / (current_pos - calc_start_page)))
             end
             
             local page_text = ui.document:getPageText(page) or ""
@@ -451,7 +460,7 @@ function ChapterAnalyzer:getAnnotationsForAnalysis(ui)
 end
 
 -- Get detailed samples (Start/Mid/End) from each chapter
-function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters, total_limit, is_full_book)
+function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters, total_limit, is_full_book, start_page)
     if not ui or not ui.document then return nil, nil end
     
     local toc = ui.document:getToc()
@@ -474,6 +483,23 @@ function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters, total_limit
     max_chapters = max_chapters or 200
     total_limit = total_limit or 150000
     
+    -- Non-narrative TOC entries to exclude
+    local non_narrative_patterns = {
+        "^cover$", "^title", "^copyright", "^table of contents", "^contents$",
+        "^dedication", "^acknowledgment", "^also by", "^about the author",
+        "^epilogue$", "^epigraph$", "^foreword$", "^preface$", "^introduction$",
+        "^appendix", "^glossary", "^index$", "^notes$", "^bibliography",
+        "^colophon", "^frontispiece",
+    }
+    local function isNonNarrative(title)
+        if not title then return false end
+        local lower = title:lower():gsub("^%s+", ""):gsub("%s+$", "")
+        for _, pat in ipairs(non_narrative_patterns) do
+            if lower:match(pat) then return true end
+        end
+        return false
+    end
+
     -- Filter chapters
     local active_chapters = {}
     local chapter_titles = {}
@@ -481,10 +507,27 @@ function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters, total_limit
         if not is_full_book and current_page and chapter.page and chapter.page > current_page then
             break
         end
-        if i > max_chapters then break end
         
-        table.insert(active_chapters, chapter)
-        table.insert(chapter_titles, chapter.title or tostring(i))
+        -- Skip non-narrative chapters
+        if isNonNarrative(chapter.title) then
+            AIHelper:log("ChapterAnalyzer: Skipping non-narrative chapter: " .. (chapter.title or tostring(i)))
+        else
+            local skip = false
+            if start_page and not is_full_book then
+                local next_chapter_page = toc[i+1] and toc[i+1].page or math.huge
+                if next_chapter_page <= start_page then
+                    skip = true
+                end
+            end
+            
+            if not skip then
+                if #active_chapters >= max_chapters then break end
+                table.insert(active_chapters, chapter)
+                table.insert(chapter_titles, chapter.title or tostring(i))
+            else
+                AIHelper:log("ChapterAnalyzer: Skipping already-fetched chapter: " .. (chapter.title or tostring(i)))
+            end
+        end
     end
     
     if #active_chapters == 0 then return nil, nil end

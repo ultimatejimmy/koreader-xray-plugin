@@ -466,6 +466,27 @@ function AIHelper:createPrompt(title, author, context, section_name)
         end
         if context.chapter_samples then extra_context = extra_context .. "\n\nCHAPTER SAMPLES:\n" .. context.chapter_samples end
         if context.annotations then extra_context = extra_context .. "\n\nUSER HIGHLIGHTS:\n" .. context.annotations end
+        -- Merge mode: tell AI what we already know so it only returns NEW information
+        if context.existing_characters and #context.existing_characters > 0 then
+            local existing_lines = {}
+            for _, c in ipairs(context.existing_characters) do
+                if c.name and c.description then
+                    table.insert(existing_lines, "- " .. c.name .. ": " .. c.description)
+                end
+            end
+            if #existing_lines > 0 then
+                extra_context = extra_context .. "\n\nMERGE MODE INSTRUCTIONS:\nYou are UPDATING an existing X-Ray, not creating one from scratch.\n- For character descriptions, return ONLY genuinely new facts, plot developments, or relationship changes not already covered below.\n- Do NOT rephrase or restate existing information in different words.\n- Keep descriptions cumulative and general — do not make them overly specific to a single scene or chapter.\n- If a character has no new information, return an empty description for them.\n\nEXISTING CHARACTER KNOWLEDGE:\n" .. table.concat(existing_lines, "\n")
+            end
+        end
+        if context.existing_locations and #context.existing_locations > 0 then
+            local existing_locs = {}
+            for _, l in ipairs(context.existing_locations) do
+                if l.name then table.insert(existing_locs, l.name) end
+            end
+            if #existing_locs > 0 then
+                extra_context = extra_context .. "\n\nEXISTING LOCATIONS (skip these unless new info is available): " .. table.concat(existing_locs, ", ")
+            end
+        end
     end
     local p = (context and context.reading_percent) or 100
     local success, final_prompt
