@@ -78,14 +78,14 @@ function AIHelper:makeRequest(url, headers, request_body, timeout, maxtime)
     end
 end
 
--- Build the full HTTP request parameters for a comprehensive fetch without executing it.
--- Returns: { url, headers, body, provider, model } or nil, error_code, error_msg
+-- Build all possible HTTP request parameters (primary and fallback) for a comprehensive fetch.
+-- Returns: { {url, headers, body, provider, model}, ... } or nil, error_code, error_msg
 function AIHelper:buildComprehensiveRequest(title, author, context)
     local prompt = self:createPrompt(title, author, context, "comprehensive_xray")
     local primary = self.settings.primary_ai or { provider = "gemini", model = "gemini-2.5-flash" }
     local secondary = self.settings.secondary_ai or { provider = "gemini", model = "gemini-2.5-flash-lite" }
 
-    -- Try primary, then secondary
+    local requests = {}
     for _, ai in ipairs({ primary, secondary }) do
         local config = self.providers[ai.provider]
         if config and config.api_key and config.api_key ~= "" then
@@ -112,8 +112,12 @@ function AIHelper:buildComprehensiveRequest(title, author, context)
                 headers = { ["Content-Type"] = "application/json", ["Authorization"] = "Bearer " .. config.api_key }
                 body = json.encode({ model = model, messages = {{ role = "user", content = prompt }}, response_format = { type = "json_object" } })
             end
-            return { url = url, headers = headers, body = body, provider = ai.provider, model = ai.model }
+            table.insert(requests, { url = url, headers = headers, body = body, provider = ai.provider, model = ai.model })
         end
+    end
+    
+    if #requests > 0 then
+        return requests
     end
     return nil, "error_api", "No API key configured"
 end
@@ -142,32 +146,55 @@ function AIHelper:makeRequestAsync(request_params, result_file)
             https_req.cert_verify = false
             socketutil_req:set_timeout(60, 120)  -- shorter timeout for background
 
-            self:log("AIHelper Child: Sending request to " .. request_params.provider)
-            local response_body = {}
-            local request = {
-                url = request_params.url,
-                method = "POST",
-                headers = request_params.headers or {},
-                source = ltn12_req.source.string(request_params.body or ""),
-                sink = socketutil_req.table_sink(response_body)
-            }
-            local ok, code, response_headers, status = http_req.request(request)
-            socketutil_req:reset_timeout()
-            local response_text = table.concat(response_body)
+            local requests = request_params
+            if request_params.url then requests = { request_params } end -- Handle single request fallback
 
-            self:log("AIHelper Child: Request finished with code " .. tostring(code))
+            local success_found = false
+            for i, req in ipairs(requests) do
+                self:log(string.format("AIHelper Child: Sending request %d/%d to %s (%s)", i, #requests, req.provider, req.model or "default"))
+                local response_body = {}
+                local request = {
+                    url = req.url,
+                    method = "POST",
+                    headers = req.headers or {},
+                    source = ltn12_req.source.string(req.body or ""),
+                    sink = socketutil_req.table_sink(response_body)
+                }
+                local ok, code, response_headers, status = http_req.request(request)
+                local response_text = table.concat(response_body)
+                local code_num = tonumber(code)
 
-            -- Write result to file
-            local f = io.open(result_file, "w")
-            if f then
-                f:write(tostring(code) .. "\n")
-                f:write(request_params.provider .. "\n")
-                f:write(response_text)
-                f:close()
-                self:log("AIHelper Child: Result written to " .. result_file)
-            else
-                self:log("AIHelper Child: Failed to open result file " .. result_file)
+                self:log("AIHelper Child: Request finished with code " .. tostring(code))
+
+                if code_num == 200 then
+                    -- Success! Write result to file and exit loop
+                    local f = io.open(result_file, "w")
+                    if f then
+                        f:write(tostring(code) .. "\n")
+                        f:write(req.provider .. "\n")
+                        f:write(response_text)
+                        f:close()
+                        self:log("AIHelper Child: Result written to " .. result_file)
+                        success_found = true
+                        break
+                    else
+                        self:log("AIHelper Child: Failed to open result file " .. result_file)
+                    end
+                else
+                    self:log(string.format("AIHelper Child: Provider %s failed with code %s", req.provider, tostring(code)))
+                    -- If it's the last one, write the error
+                    if i == #requests then
+                        local f = io.open(result_file, "w")
+                        if f then
+                            f:write(tostring(code) .. "\n")
+                            f:write(req.provider .. "\n")
+                            f:write(response_text)
+                            f:close()
+                        end
+                    end
+                end
             end
+            socketutil_req:reset_timeout()
         end)
         
         if not child_ok then
@@ -175,7 +202,7 @@ function AIHelper:makeRequestAsync(request_params, result_file)
             local f = io.open(result_file, "w")
             if f then
                 f:write("ERROR\n")
-                f:write(request_params.provider .. "\n")
+                f:write("unknown\n")
                 f:write(tostring(child_err))
                 f:close()
             end
