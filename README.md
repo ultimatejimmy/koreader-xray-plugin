@@ -5,16 +5,18 @@
 ![Platform](https://img.shields.io/badge/platform-KOReader-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-yellow.svg)
 
-This plugin brings Kindle-style X-Ray features to KOReader. It uses AI to track characters, build plot timelines, and provide historical context while you read.
+This plugin brings Kindle-style X-Ray features to KOReader. It uses AI to track characters, build plot timelines, and provide insights while you read.
 
 ## What it does
 
-- **AI-Powered Insights**: Uses Google Gemini or OpenAI ChatGPT to scan your books.
+- **AI-Powered Insights**: Uses Google Gemini or OpenAI ChatGPT to scan your books and generate descriptions, summaries, and more.
 - **Character Tracking**: View bios and roles so you never forget who someone is.
 - **Plot Timeline**: Keeps track of major events chapter by chapter.
 - **Historical Context**: Pulls real-world info for historical figures and locations.
 - **Spoiler Protection**: "Spoiler-free" mode only reads up to your current page so future twists aren't ruined.
-- **Offline First**: You only need internet to fetch the data initially. After that, it's saved locally.
+- **Auto Fetching while you read**: Automatically fetches data when you get to a new chapter, to ensure you always have up-to-date, spoiler-free X-Ray data available.
+- **X-Ray Mode**: Get insights while you read by highlighting character names and places and tapping the "X-Ray" button.
+- **Offline First**: You only need internet to fetch the data. After that, it's saved locally.
 - **Multilingual**: Available in English, Spanish, Portuguese, and Turkish.
 
 ## Documentation
