@@ -333,6 +333,88 @@ function ChapterAnalyzer:findCharactersInText(text, characters)
     return found_characters
 end
 
+-- Extract text from a specific page range (start_page to end_page)
+-- Returns up to max_len characters from the specified region
+function ChapterAnalyzer:getTextFromPageRange(ui, start_page, end_page, max_len)
+    if not ui or not ui.document then return nil end
+    max_len = max_len or 15000
+    
+    local is_reflowable = ui.rolling ~= nil
+    
+    if is_reflowable then
+        -- Save the reader's actual position so we can restore it
+        local saved_xp = ui.document:getXPointer()
+        
+        local success, result = pcall(function()
+            -- Get XPointer for the start of the range
+            local start_xp = nil
+            if ui.document.getPageXPointer then
+                start_xp = ui.document:getPageXPointer(start_page)
+            end
+            if not start_xp then
+                ui.document:gotoPage(start_page)
+                start_xp = ui.document:getXPointer()
+            end
+            
+            -- Get XPointer for the end of the range
+            local end_xp = nil
+            if ui.document.getPageXPointer then
+                end_xp = ui.document:getPageXPointer(end_page)
+            end
+            if not end_xp then
+                ui.document:gotoPage(end_page)
+                end_xp = ui.document:getXPointer()
+            end
+            
+            if not start_xp or not end_xp then return "" end
+            
+            -- Extract text between the two XPointers
+            local text = ui.document:getTextFromXPointers(start_xp, end_xp) or ""
+            
+            -- Trim to max_len (take from the beginning since we want this specific range)
+            if #text > max_len then
+                text = text:sub(1, max_len)
+            end
+            return text
+        end)
+        
+        -- Always restore the reader's position
+        if saved_xp then
+            pcall(function() ui.document:gotoXPointer(saved_xp) end)
+        end
+        
+        if success and result and #result > 0 then
+            return result
+        end
+        return nil
+    else
+        -- PDF: page-by-page extraction
+        local text = ""
+        for page = start_page, end_page do
+            local page_text = ui.document:getPageText(page) or ""
+            if type(page_text) == "table" then
+                local texts = {}
+                for _, block in ipairs(page_text) do
+                    if type(block) == "table" then
+                        for j = 1, #block do
+                            local span = block[j]
+                            if type(span) == "table" and span.word then
+                                table.insert(texts, span.word)
+                            end
+                        end
+                    end
+                end
+                page_text = table.concat(texts, " ")
+            end
+            text = text .. page_text .. "\n"
+            if #text >= max_len then
+                return text:sub(1, max_len)
+            end
+        end
+        return #text > 0 and text or nil
+    end
+end
+
 -- Get text for analysis (up to max_len characters before current position)
 function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, current_page, start_page)
     if not ui or not ui.document then
@@ -354,23 +436,37 @@ function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, curr
             return nil 
         end
         
-        -- Optimization: Adopt "extract from start" approach which is faster in creengine
-        -- than seeking to arbitrary positions which might trigger re-pagination.
+        -- Optimization: Try to get start XPointer without jumping to avoid "white flash"
         local success, result = pcall(function()
             if progress_callback then progress_callback(0.1) end
             
+            local start_xp = nil
             if start_page and start_page > 1 then
-                -- Seek to start_page to get the incremental start XPointer
                 AIHelper:log("ChapterAnalyzer: getTextForAnalysis - incremental mode from page " .. tostring(start_page))
-                ui.document:gotoPage(start_page)
+                
+                -- Method 1: Use getPageXPointer (fast, no flash)
+                if ui.document.getPageXPointer then
+                    start_xp = ui.document:getPageXPointer(start_page)
+                end
+                
+                -- Method 2: Fallback to jumping (causes flash, but only if Method 1 failed)
+                if not start_xp then
+                    AIHelper:log("ChapterAnalyzer: Fallback to gotoPage for start XPointer")
+                    ui.document:gotoPage(start_page)
+                    start_xp = ui.document:getXPointer()
+                    ui.document:gotoXPointer(current_xp)
+                end
             else
-                -- Go to the very beginning of the book (instant)
-                ui.document:gotoPos(0)
+                -- Beginning of book
+                start_xp = "main.0" -- Common start XPointer for creengine, or just jump to 0
+                if ui.document.gotoPos then
+                    ui.document:gotoPos(0)
+                    start_xp = ui.document:getXPointer()
+                    ui.document:gotoXPointer(current_xp)
+                end
             end
-            local start_xp = ui.document:getXPointer()
             
-            -- Go back to current position
-            ui.document:gotoXPointer(current_xp)
+            if not start_xp then return "" end
             
             if progress_callback then progress_callback(0.3) end
             
@@ -388,8 +484,7 @@ function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, curr
         if success and result then
             book_text = result
         else
-            AIHelper:log("ChapterAnalyzer: getTextForAnalysis - XPointer extraction failed")
-            -- Last ditch fallback
+            AIHelper:log("ChapterAnalyzer: getTextForAnalysis - XPointer extraction failed: " .. tostring(result))
             book_text = ""
         end
     else
@@ -460,7 +555,7 @@ function ChapterAnalyzer:getAnnotationsForAnalysis(ui)
 end
 
 -- Get detailed samples (Start/Mid/End) from each chapter
-function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters, total_limit, is_full_book, start_page)
+function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters, total_limit, is_full_book, start_page, known_chapters)
     if not ui or not ui.document then return nil, nil end
     
     local toc = ui.document:getToc()
@@ -487,7 +582,7 @@ function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters, total_limit
     local non_narrative_patterns = {
         "^cover$", "^title", "^copyright", "^table of contents", "^contents$",
         "^dedication", "^acknowledgment", "^also by", "^about the author",
-        "^epilogue$", "^epigraph$", "^foreword$", "^preface$", "^introduction$",
+        "^epigraph$", "^foreword$", "^preface$",
         "^appendix", "^glossary", "^index$", "^notes$", "^bibliography",
         "^colophon", "^frontispiece",
     }
@@ -500,45 +595,79 @@ function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters, total_limit
         return false
     end
 
+    -- Helper to normalize title for comparison (matching main.lua logic roughly)
+    local function normalize(t)
+        if not t then return "" end
+        return t:lower():gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", ""):gsub("^chapter%s*", ""):gsub("^ch%.?%s*", "")
+    end
+
     -- Filter chapters
     local active_chapters = {}
     local chapter_titles = {}
-    for i, chapter in ipairs(toc) do
-        if not is_full_book and current_page and chapter.page and chapter.page > current_page then
-            break
-        end
-        
-        -- Skip non-narrative chapters
-        if isNonNarrative(chapter.title) then
-            AIHelper:log("ChapterAnalyzer: Skipping non-narrative chapter: " .. (chapter.title or tostring(i)))
-        else
-            local skip = false
-            if start_page and not is_full_book then
-                local next_chapter_page = toc[i+1] and toc[i+1].page or math.huge
-                if next_chapter_page <= start_page then
-                    skip = true
-                end
+    if toc and #toc > 0 then
+        for i, chapter in ipairs(toc) do
+            if not is_full_book and current_page and chapter.page and chapter.page > current_page then
+                break
             end
             
-            if not skip then
-                if #active_chapters >= max_chapters then break end
-                table.insert(active_chapters, chapter)
-                table.insert(chapter_titles, chapter.title or tostring(i))
+            -- Skip non-narrative chapters
+            if isNonNarrative(chapter.title) then
+                AIHelper:log("ChapterAnalyzer: Skipping non-narrative chapter: " .. (chapter.title or tostring(i)))
             else
-                AIHelper:log("ChapterAnalyzer: Skipping already-fetched chapter: " .. (chapter.title or tostring(i)))
+                local skip = false
+                if start_page and not is_full_book then
+                    local next_chapter_page = toc[i+1] and toc[i+1].page or math.huge
+                    if next_chapter_page <= start_page then
+                        -- ONLY skip if it's already in our data
+                        if known_chapters then
+                            local norm_title = normalize(chapter.title)
+                            if known_chapters[norm_title] then
+                                skip = true
+                            end
+                        else
+                            -- Fallback to old behavior if no list provided
+                            skip = true
+                        end
+                    end
+                end
+                
+                if not skip then
+                    if #active_chapters >= max_chapters then break end
+                    table.insert(active_chapters, chapter)
+                    table.insert(chapter_titles, chapter.title or tostring(i))
+                else
+                    AIHelper:log("ChapterAnalyzer: Skipping already-fetched chapter: " .. (chapter.title or tostring(i)))
+                end
             end
         end
     end
     
-    if #active_chapters == 0 then return nil, nil end
+    -- If no chapters found in TOC, we don't exit; we'll fallback to even sampling later.
+    -- However, we still need a count for budget calculations.
+    local num_chapters = #active_chapters
+    if num_chapters == 0 then
+        num_chapters = 20 -- Default budget for even sampling
+    end
     
+    -- DYNAMIC BUDGET: Scale down for large books to leave room for AI output
+    if #active_chapters > 60 then
+        -- Very large omnibus: aggressive compression
+        total_limit = math.min(total_limit, 60000)
+        AIHelper:log("ChapterAnalyzer: Large book detected (" .. num_chapters .. " chapters). Compressed total_limit to " .. total_limit)
+    elseif num_chapters > 30 then
+        -- Large book: moderate compression
+        total_limit = math.min(total_limit, 100000)
+        AIHelper:log("ChapterAnalyzer: Medium-large book detected (" .. num_chapters .. " chapters). Compressed total_limit to " .. total_limit)
+    end
+
     -- Calculate budget per chapter
     -- Reserve 20k for the main book_text (last 20k)
     local chapter_total_budget = total_limit - 20000
-    local per_chapter_budget = math.floor(chapter_total_budget / #active_chapters)
+    local per_chapter_budget = math.floor(chapter_total_budget / num_chapters)
     
-    -- Hard limit of 3600 per chapter as requested
-    if per_chapter_budget > 3600 then per_chapter_budget = 3600 end
+    -- Dynamic hard limit based on chapter count
+    local max_per_chapter = num_chapters > 60 and 600 or (num_chapters > 30 and 2000 or 3600)
+    if per_chapter_budget > max_per_chapter then per_chapter_budget = max_per_chapter end
     
     -- Minimum budget for it to be useful
     if per_chapter_budget < 300 then per_chapter_budget = 300 end
@@ -546,29 +675,57 @@ function ChapterAnalyzer:getDetailedChapterSamples(ui, max_chapters, total_limit
     local sample_len = math.floor(per_chapter_budget / 3)
     local samples = {}
     
-    logger.info("ChapterAnalyzer: Detailed sampling for", #active_chapters, "chapters. Budget per chapter:", per_chapter_budget)
-    AIHelper:log("ChapterAnalyzer: Sampling " .. #active_chapters .. " chapters with " .. per_chapter_budget .. " chars each.")
-    
-    for i, chapter in ipairs(active_chapters) do
-        local success, chapter_text = pcall(function()
-            if ui.document.getTextFromXPointer and chapter.xpointer then
-                -- EPUB: Usually returns the full text of the chapter file
-                return ui.document:getTextFromXPointer(chapter.xpointer)
-            end
-            return ""
-        end)
+    if #active_chapters > 0 then
+        logger.info("ChapterAnalyzer: Detailed sampling for", #active_chapters, "chapters. Budget per chapter:", per_chapter_budget)
+        AIHelper:log("ChapterAnalyzer: Sampling " .. #active_chapters .. " chapters with " .. per_chapter_budget .. " chars each.")
         
-        if success and chapter_text and #chapter_text > 100 then
-            local start_txt = chapter_text:sub(1, sample_len)
-            local mid_start = math.max(1, math.floor(#chapter_text / 2) - math.floor(sample_len / 2))
-            local mid_txt = chapter_text:sub(mid_start, mid_start + sample_len)
-            local end_txt = chapter_text:sub(-sample_len)
+        for i, chapter in ipairs(active_chapters) do
+            local success, chapter_text = pcall(function()
+                if ui.document.getTextFromXPointer and chapter.xpointer then
+                    -- EPUB: Usually returns the full text of the chapter file
+                    return ui.document:getTextFromXPointer(chapter.xpointer)
+                end
+                return ""
+            end)
             
-            table.insert(samples, string.format(
-                "CHAPTER [%s]:\n[START]: %s\n[MID]: %s\n[END]: %s",
-                chapter.title or tostring(i),
-                start_txt, mid_txt, end_txt
-            ))
+            if success and chapter_text and #chapter_text > 100 then
+                local start_txt = chapter_text:sub(1, sample_len)
+                local mid_start = math.max(1, math.floor(#chapter_text / 2) - math.floor(sample_len / 2))
+                local mid_txt = chapter_text:sub(mid_start, mid_start + sample_len)
+                local end_txt = chapter_text:sub(-sample_len)
+                
+                table.insert(samples, string.format(
+                    "CHAPTER [%s]:\n[START]: %s\n[MID]: %s\n[END]: %s",
+                    chapter.title or tostring(i),
+                    start_txt, mid_txt, end_txt
+                ))
+            end
+        end
+    else
+        -- NO TOC FALLBACK: Even sampling across the book
+        local page_count = ui.document:getPageCount()
+        if page_count and page_count > 0 then
+            local num_sections = math.min(20, page_count)
+            local step = math.floor(page_count / num_sections)
+            AIHelper:log("ChapterAnalyzer: No TOC found. Using even sampling across " .. num_sections .. " sections.")
+            
+            for i = 1, num_sections do
+                local p = (i - 1) * step + 1
+                local success, section_text = pcall(function()
+                    if ui.document.getPageText then
+                        return ui.document:getPageText(p)
+                    end
+                    return ""
+                end)
+                
+                if success and section_text and #section_text > 100 then
+                    table.insert(samples, string.format(
+                        "SECTION [%d] (Near Page %d):\n%s",
+                        i, p, section_text:sub(1, per_chapter_budget)
+                    ))
+                    table.insert(chapter_titles, "Section " .. i)
+                end
+            end
         end
     end
     

@@ -198,6 +198,8 @@ function Localization:t(key, ...)
             no_author_data_fetch = "No author info available. Fetch from AI?",
             xray_mode_desc = "Adds an 'X-Ray' button to dictionary and selection menus for instant lookups.",
             no_data_prompt = "No X-Ray data found for this book. Would you like to fetch it from AI now?",
+            menu_clear_logs = "Clear Logs",
+            logs_cleared = "Logs cleared!",
             spoiler_free_option = "Spoiler-free Mode (Up to %d%% of the book)",
             spoiler_free_about = "Spoiler-free mode limits AI extraction to the pages you have already read (up to your current page), preventing spoilers from future chapters.\n\nFull Book Mode analyzes the entire book, which may contain spoilers.",
             updater_check = "Check for Updates",
@@ -220,6 +222,12 @@ function Localization:t(key, ...)
             updater_btn_later = "Later",
             updater_cancelled_update = "Update cancelled.",
             updater_cancelled_check = "Update check cancelled.",
+            search_character = "Search Characters...",
+            search_character_title = "Character Search",
+            search_hint = "Enter character name",
+            search_button = "Search",
+            character_not_found = "No character found matching '%s'",
+            multiple_matches = "Multiple matches for '%s'. Which did you mean?",
         }
         translation = fallbacks[key] or key
     end

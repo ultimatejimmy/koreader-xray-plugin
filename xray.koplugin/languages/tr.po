@@ -48,3 +48,77 @@ msgstr " Mevcut Sayfaya Kadar (SPOILERSIZ)"
 
 msgid "updating_ai"
 msgstr "X-Ray Verileri Güncelleniyor..."
+
+# ==============================
+# AUTO-UPDATE & FREQUENCY
+# ==============================
+
+msgid "auto_update_disabled"
+msgstr "Disabled"
+
+msgid "auto_update_freq_about"
+msgstr ""
+"Auto-update checks for new chapter data in the background as you read.\n"
+"\n"
+"LIMITS & PERFORMANCE\n"
+"Frequent background requests can drain BATTERY LIFE and may hit AI PROVIDER RATE LIMITS (especially on Pro models).\n"
+"\n"
+"MODES\n"
+"• Disabled: No background requests\n"
+"• Aggressive: Checks every time you enter a new chapter\n"
+"• Balanced: Checks at most every 5 minutes (recommended)\n"
+"• Economical: Checks at most every 15 minutes\n"
+"• Sparse: Checks at most every 30 minutes\n"
+"\n"
+"Note: If a chapter is skipped due to frequency limits, X-Ray will automatically include it in the next background fetch."
+
+msgid "auto_update_aggressive"
+msgstr "Aggressive: checks every new chapter"
+
+msgid "auto_update_balanced"
+msgstr "Balanced: checks at most every 5 mins"
+
+msgid "auto_update_economical"
+msgstr "Economical: checks at most every 15 mins"
+
+msgid "auto_update_sparse"
+msgstr "Sparse: checks at most every 30 mins"
+
+msgid "menu_auto_update_frequency"
+msgstr "Auto X-Ray Settings"
+
+msgid "search_character"
+msgstr "Karakterleri Ara..."
+
+msgid "search_character_title"
+msgstr "Karakter Araması"
+
+msgid "search_hint"
+msgstr "Karakter adını girin"
+
+msgid "search_button"
+msgstr "Ara"
+
+msgid "character_not_found"
+msgstr "'%s' ile eşleşen karakter bulunamadı"
+
+msgid "multiple_matches"
+msgstr "'%s' için birden fazla eşleşme bulundu. Hangisini kastediyordunuz?"
+
+msgid "error_fetch_title"
+msgstr "Veri Çekme Başarısız"
+
+msgid "error_fetch_desc"
+msgstr "X-Ray verileri alınamadı. Lütfen API anahtarınızı ve bağlantınızı kontrol edin."
+
+msgid "error_author_fetch_title"
+msgstr "Yazar Bilgisi Çekme Başarısız"
+
+msgid "error_author_fetch_desc"
+msgstr "Yazar bilgileri alınamadı."
+
+msgid "menu_clear_logs"
+msgstr "Günlükleri Temizle"
+
+msgid "logs_cleared"
+msgstr "Günlükler temizlendi!"

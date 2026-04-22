@@ -326,15 +326,52 @@ local function _applyUpdate(download_url, new_version)
     local ok_tr, Trapper = pcall(require, "ui/trapper")
 
     local function doDownloadAndInstall()
+        -- 1. Extract current keys before update
+        local config_path = _plugin_dir .. "/xray_config.lua"
+        local saved_keys = {}
+        local ok, cfg = pcall(dofile, config_path)
+        if ok and type(cfg) == "table" then
+            saved_keys.gemini = cfg.gemini_api_key
+            saved_keys.chatgpt = cfg.chatgpt_api_key
+        end
+
+        -- 2. Download the update
         local dl_ok, dl_err = _httpGetToFile(download_url, tmp_zip)
         if not dl_ok then
             return { success = false, stage = "download", err = dl_err }
         end
+
+        -- 3. Extract (overwrites xray_config.lua with the default one)
         local uz_ok, uz_err = _unzip(tmp_zip, parent_dir)
         os.remove(tmp_zip)
         if not uz_ok then
             return { success = false, stage = "unzip", err = uz_err }
         end
+
+        -- 4. Smart Merge: Inject keys back into the NEW config file
+        if (saved_keys.gemini and saved_keys.gemini ~= "") or
+           (saved_keys.chatgpt and saved_keys.chatgpt ~= "") then
+            local nfh = io.open(config_path, "r")
+            if nfh then
+                local content = nfh:read("*a")
+                nfh:close()
+
+                -- Replace empty key placeholders with the saved user keys
+                if saved_keys.gemini and saved_keys.gemini ~= "" then
+                    content = content:gsub('gemini_api_key%s*=%s*""', 'gemini_api_key = "' .. saved_keys.gemini .. '"')
+                end
+                if saved_keys.chatgpt and saved_keys.chatgpt ~= "" then
+                    content = content:gsub('chatgpt_api_key%s*=%s*""', 'chatgpt_api_key = "' .. saved_keys.chatgpt .. '"')
+                end
+
+                local outh = io.open(config_path, "w")
+                if outh then
+                    outh:write(content)
+                    outh:close()
+                end
+            end
+        end
+
         return { success = true }
     end
 
@@ -492,6 +529,18 @@ function M.checkForUpdates(loc)
         return
     end
     M._doCheckForUpdates(current)
+end
+
+function M.checkSilentForUpdates(loc)
+    M.loc = loc
+    local current = _currentVersion()
+    local release = _doFetch()
+    
+    if release and not release.error then
+        if _versionLessThan(current, release.version) then
+            _showUpdateDialog(release, current)
+        end
+    end
 end
 
 return M

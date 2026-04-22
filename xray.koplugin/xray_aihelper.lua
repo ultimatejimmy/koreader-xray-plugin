@@ -5,6 +5,7 @@ local ltn12 = require("ltn12")
 local socket = require("socket")
 local socketutil = require("socketutil")
 local logger = require("logger")
+local XRayLogger = require("xray_logger")
 local Trapper = require("ui/trapper")
 
 -- Optimization: Use rapidjson if available
@@ -34,13 +35,7 @@ local AIHelper = {
 
 -- Custom logger for X-Ray
 function AIHelper:log(message)
-    if not self.path then return end
-    local log_path = self.path .. "/xray.log"
-    local f = io.open(log_path, "a")
-    if f then
-        f:write(os.date("%Y-%m-%d %H:%M:%S") .. " " .. tostring(message) .. "\n")
-        f:close()
-    end
+    XRayLogger:log(message)
 end
 
 function AIHelper:setTrapWidget(trap_widget) self.trap_widget = trap_widget end
@@ -78,14 +73,336 @@ function AIHelper:makeRequest(url, headers, request_body, timeout, maxtime)
     end
 end
 
+-- Build all possible HTTP request parameters (primary and fallback) for a comprehensive fetch.
+-- Returns: { {url, headers, body, provider, model}, ... } or nil, error_code, error_msg
+function AIHelper:buildComprehensiveRequest(title, author, context)
+    local prompt = self:createPrompt(title, author, context, "comprehensive_xray")
+    local primary = self.settings.primary_ai or { provider = "gemini", model = "gemini-2.5-flash" }
+    local secondary = self.settings.secondary_ai or { provider = "gemini", model = "gemini-2.5-flash-lite" }
+
+    local requests = {}
+    for _, ai in ipairs({ primary, secondary }) do
+        local config = self.providers[ai.provider]
+        if config and config.api_key and config.api_key ~= "" then
+            local url, headers, body
+            if ai.provider == "gemini" then
+                local model = ai.model or "gemini-2.5-flash"
+                local system_instruction_text = self.prompts and self.prompts.system_instruction or "Return valid JSON ONLY."
+                url = "https://generativelanguage.googleapis.com/v1beta/models/" .. model .. ":generateContent"
+                headers = { ["Content-Type"] = "application/json", ["x-goog-api-key"] = config.api_key }
+                body = json.encode({
+                    contents = {{ role = "user", parts = {{ text = prompt }} }},
+                    system_instruction = { parts = {{ text = system_instruction_text }} },
+                    safetySettings = {
+                        { category = "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold = "BLOCK_NONE" },
+                        { category = "HARM_CATEGORY_HATE_SPEECH", threshold = "BLOCK_NONE" },
+                        { category = "HARM_CATEGORY_HARASSMENT", threshold = "BLOCK_NONE" },
+                        { category = "HARM_CATEGORY_DANGEROUS_CONTENT", threshold = "BLOCK_NONE" }
+                    },
+                    generationConfig = { temperature = 0.2, maxOutputTokens = 16384 }
+                })
+            else
+                local model = ai.model or "gpt-4o-mini"
+                url = config.endpoint or "https://api.openai.com/v1/chat/completions"
+                headers = { ["Content-Type"] = "application/json", ["Authorization"] = "Bearer " .. config.api_key }
+                body = json.encode({ 
+                    model = model, 
+                    messages = {{ role = "user", content = prompt }}, 
+                    response_format = { type = "json_object" },
+                    max_tokens = 4096
+                })
+            end
+            table.insert(requests, { url = url, headers = headers, body = body, provider = ai.provider, model = ai.model })
+        end
+    end
+    
+    if #requests > 0 then
+        return requests
+    end
+    return nil, "error_api", "No API key configured"
+end
+
+-- Check if at least one API key is configured
+function AIHelper:hasApiKey()
+    if self.providers.gemini and self.providers.gemini.api_key and self.providers.gemini.api_key ~= "" then return true end
+    if self.providers.chatgpt and self.providers.chatgpt.api_key and self.providers.chatgpt.api_key ~= "" then return true end
+    return false
+end
+
+-- Fork a child process to perform the HTTP request. Returns true if started.
+function AIHelper:makeRequestAsync(request_params, result_file)
+    local ok_ffi, ffiutil = pcall(require, "ffi/util")
+    if not ok_ffi then
+        ok_ffi, ffiutil = pcall(require, "ffiutil")
+    end
+    
+    local function child_logic(pid, write_fd)
+        local child_ok, child_err = pcall(function()
+            self:log("AIHelper Child: Started background process")
+            local http_req = require("socket.http")
+            local https_req = require("ssl.https")
+            local ltn12_req = require("ltn12")
+            local socketutil_req = require("socketutil")
+            https_req.cert_verify = false
+            socketutil_req:set_timeout(60, 120)  -- shorter timeout for background
+
+            local requests = request_params
+            if request_params.url then requests = { request_params } end -- Handle single request fallback
+
+            local success_found = false
+            for i, req in ipairs(requests) do
+                self:log(string.format("AIHelper Child: Sending request %d/%d to %s (%s)", i, #requests, req.provider, req.model or "default"))
+                local response_body = {}
+                local request = {
+                    url = req.url,
+                    method = "POST",
+                    headers = req.headers or {},
+                    source = ltn12_req.source.string(req.body or ""),
+                    sink = socketutil_req.table_sink(response_body)
+                }
+                local ok, code, response_headers, status = http_req.request(request)
+                local response_text = table.concat(response_body)
+                local code_num = tonumber(code)
+
+                self:log("AIHelper Child: Request finished with code " .. tostring(code))
+
+                if code_num == 200 then
+                    -- Quick JSON validation before accepting the response
+                    local json_req = require("json")
+                    local valid_json = false
+                    local parse_ok, parsed = pcall(json_req.decode, response_text)
+                    if parse_ok and parsed then
+                        -- Gemini wraps content in candidates[].content.parts[].text
+                        if parsed.candidates and parsed.candidates[1] then
+                            local ai_text = parsed.candidates[1].content and 
+                                parsed.candidates[1].content.parts and 
+                                parsed.candidates[1].content.parts[1] and 
+                                parsed.candidates[1].content.parts[1].text
+                            if ai_text then
+                                local inner_ok, inner = pcall(json_req.decode, ai_text)
+                                valid_json = inner_ok and inner ~= nil
+                                if not valid_json then
+                                    -- Try to find JSON boundaries for truncated responses
+                                    local first_brace = ai_text:find("{", 1, true)
+                                    if first_brace then
+                                        valid_json = true -- Let main thread's fixTruncatedJSON handle it
+                                    end
+                                end
+                            end
+                        -- ChatGPT wraps content in choices[].message.content
+                        elseif parsed.choices and parsed.choices[1] then
+                            local content = parsed.choices[1].message and parsed.choices[1].message.content
+                            if content then
+                                local inner_ok, inner = pcall(json_req.decode, content)
+                                valid_json = inner_ok and inner ~= nil
+                                if not valid_json then
+                                    local first_brace = content:find("{", 1, true)
+                                    if first_brace then
+                                        valid_json = true
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    
+                    if valid_json then
+                        -- Success! Write result to file and exit loop
+                        local f = io.open(result_file, "w")
+                        if f then
+                            f:write(tostring(code) .. "\n")
+                            f:write(req.provider .. "\n")
+                            f:write(response_text)
+                            f:close()
+                            self:log("AIHelper Child: Result written to " .. result_file)
+                            success_found = true
+                            break
+                        else
+                            self:log("AIHelper Child: Failed to open result file " .. result_file)
+                        end
+                    else
+                        self:log(string.format("AIHelper Child: Provider %s returned 200 but JSON is invalid/truncated. Trying fallback.", req.provider))
+                        -- Fall through to try the next provider
+                        if i == #requests then
+                            -- Last provider also failed validation — write it anyway so main thread can attempt repair
+                            local f = io.open(result_file, "w")
+                            if f then
+                                f:write(tostring(code) .. "\n")
+                                f:write(req.provider .. "\n")
+                                f:write(response_text)
+                                f:close()
+                            end
+                        end
+                    end
+                else
+                    self:log(string.format("AIHelper Child: Provider %s failed with code %s", req.provider, tostring(code)))
+                    -- If it's the last one, write the error
+                    if i == #requests then
+                        local f = io.open(result_file, "w")
+                        if f then
+                            f:write(tostring(code) .. "\n")
+                            f:write(req.provider .. "\n")
+                            f:write(response_text)
+                            f:close()
+                        end
+                    end
+                end
+            end
+            socketutil_req:reset_timeout()
+        end)
+        
+        if not child_ok then
+            self:log("AIHelper Child: CRITICAL ERROR: " .. tostring(child_err))
+            local f = io.open(result_file, "w")
+            if f then
+                f:write("ERROR\n")
+                f:write("unknown\n")
+                f:write(tostring(child_err))
+                f:close()
+            end
+        end
+
+        -- Close write_fd if provided by runInSubProcess
+        if write_fd and write_fd > 0 then
+            pcall(function() 
+                local ffi = require("ffi")
+                ffi.cdef[[ int close(int fd); ]]
+                ffi.C.close(write_fd) 
+            end)
+        end
+
+        -- Exit child cleanly
+        local posix_ok, posix = pcall(require, "posix.unistd")
+        if posix_ok and posix and posix._exit then
+            posix._exit(0)
+        else
+            os.exit(0)
+        end
+    end
+
+    -- Method 1: ffiutil.runInSubProcess (Preferred KOReader pattern)
+    if ok_ffi and ffiutil and ffiutil.runInSubProcess then
+        self:log("AIHelper: Trying ffiutil.runInSubProcess")
+        local pid, read_fd = ffiutil.runInSubProcess(child_logic, true)
+        if pid and pid > 0 then
+            self:log("AIHelper: runInSubProcess started PID " .. tostring(pid))
+            -- We don't need the pipe for now as we use the result_file
+            if read_fd and read_fd > 0 then
+                pcall(function() 
+                    local ffi = require("ffi")
+                    ffi.cdef[[ int close(int fd); ]]
+                    ffi.C.close(read_fd) 
+                end)
+            end
+            self._async_child_pid = pid
+            return true
+        end
+    end
+
+    -- Method 2: Manual fork fallbacks
+    local fork = nil
+    if ok_ffi and ffiutil and ffiutil.fork then
+        fork = ffiutil.fork
+    else
+        local ok_posix, posix = pcall(require, "posix.unistd")
+        if not ok_posix then ok_posix, posix = pcall(require, "posix") end
+        if ok_posix and posix and posix.fork then
+            fork = posix.fork
+        else
+            local ok_f, ffi = pcall(require, "ffi")
+            if ok_f then
+                pcall(function()
+                    ffi.cdef[[ int fork(void); ]]
+                    fork = ffi.C.fork
+                end)
+            end
+        end
+    end
+    
+    if fork then
+        local pid = fork()
+        if pid == 0 then
+            child_logic(0, nil)
+            return true -- unreachable
+        elseif pid and pid > 0 then
+            self:log("AIHelper: Manual fork started PID " .. tostring(pid))
+            self._async_child_pid = pid
+            return true
+        end
+    end
+
+    self:log("AIHelper: All background fetch methods failed")
+    return false
+end
+
+-- Check if the async result file exists and parse it. Returns:
+--   nil (still pending)
+--   book_data table (success)
+--   false, error_code, error_msg (failed)
+function AIHelper:checkAsyncResult(result_file)
+    local f = io.open(result_file, "r")
+    if not f then return nil end  -- still pending
+
+    local content = f:read("*a")
+    f:close()
+    os.remove(result_file)
+
+    -- Reap child process to prevent zombies
+    if self._async_child_pid then
+        pcall(function()
+            local posix_sys = require("posix.sys.wait")
+            posix_sys.wait(self._async_child_pid, posix_sys.WNOHANG)
+        end)
+        self._async_child_pid = nil
+    end
+
+    -- Parse: first line = code, second line = provider, rest = response body
+    local first_newline = content:find("\n")
+    if not first_newline then return false, "error_parse", "Malformed async result" end
+    local code_str = content:sub(1, first_newline - 1)
+    local rest = content:sub(first_newline + 1)
+    local second_newline = rest:find("\n")
+    if not second_newline then return false, "error_parse", "Malformed async result" end
+    local provider = rest:sub(1, second_newline - 1)
+    local response_text = rest:sub(second_newline + 1)
+
+    if code_str == "ERROR" then
+        return false, "error_api", response_text
+    end
+
+    local code_num = tonumber(code_str)
+    if code_num ~= 200 or not response_text or #response_text == 0 then
+        return false, "error_api", "HTTP " .. tostring(code_num)
+    end
+
+    -- Parse the response based on provider
+    local success, data = pcall(json.decode, response_text)
+    if not success then return false, "error_parse", "JSON decode failed" end
+
+    local ai_text
+    if provider == "gemini" then
+        if data.candidates and data.candidates[1] and
+           data.candidates[1].content and data.candidates[1].content.parts and
+           data.candidates[1].content.parts[1] then
+            ai_text = data.candidates[1].content.parts[1].text
+        end
+    else
+        if data.choices and data.choices[1] then
+            ai_text = data.choices[1].message.content
+        end
+    end
+
+    if not ai_text then return false, "error_parse", "No text in AI response" end
+
+    local parsed_data, parse_err = self:parseAIResponse(ai_text)
+    if parsed_data then
+        return parsed_data
+    else
+        return false, "error_parse", tostring(parse_err)
+    end
+end
+
 function AIHelper:init(path)
     self.path = path or "plugins/xray.koplugin"
-    local f = io.open(self.path .. "/xray.log", "a")
-    if f then
-        f:write("\n" .. string.rep("=", 40) .. "\n")
-        f:write("--- X-Ray Session Started: " .. os.date("%Y-%m-%d %H:%M:%S") .. " ---\n")
-        f:close()
-    end
     self:loadConfig(); self:loadSettings()
     self:log("AIHelper initialized")
 end
@@ -290,34 +607,75 @@ function AIHelper:createPrompt(title, author, context, section_name)
     if context then
         if context.series then enhanced_title = enhanced_title .. " | Series: " .. context.series end
         if context.book_text then extra_context = extra_context .. "\n\nBOOK TEXT CONTEXT:\n" .. context.book_text end
-        if context.chapter_titles and #context.chapter_titles > 0 then
-            local numbered_chapters = {}
-            for i, t in ipairs(context.chapter_titles) do
-                table.insert(numbered_chapters, string.format("%d. %s", i, t))
+        -- Chapter data is only relevant for comprehensive fetches, not "more characters" or author lookups
+        if section_name == "comprehensive_xray" then
+            if context.chapter_titles and #context.chapter_titles > 0 then
+                local numbered_chapters = {}
+                for i, t in ipairs(context.chapter_titles) do
+                    table.insert(numbered_chapters, string.format("%d. %s", i, t))
+                end
+                extra_context = extra_context .. "\n\nLIST OF CHAPTERS (Provide EXACTLY 1 event for EACH, in order):\n[TOTAL CHAPTER COUNT: " .. #context.chapter_titles .. "]\n" .. table.concat(numbered_chapters, "\n")
             end
-            extra_context = extra_context .. "\n\nLIST OF CHAPTERS (Provide EXACTLY 1 event for EACH, in order):\n" .. table.concat(numbered_chapters, "\n")
+            if context.chapter_samples then extra_context = extra_context .. "\n\nCHAPTER SAMPLES:\n" .. context.chapter_samples end
         end
-        if context.chapter_samples then extra_context = extra_context .. "\n\nCHAPTER SAMPLES:\n" .. context.chapter_samples end
         if context.annotations then extra_context = extra_context .. "\n\nUSER HIGHLIGHTS:\n" .. context.annotations end
-        -- Merge mode: tell AI what we already know so it only returns NEW information
+        -- Merge mode: tell AI what we already know
+        local has_merge_data = false
+        local merge_instructions = "\n\nMERGE MODE INSTRUCTIONS:\nYou are UPDATING an existing X-Ray.\n- For entities (Characters, Locations, Historical Figures) that already exist, synthesize a completely rewritten, cohesive summary combining the EXISTING KNOWLEDGE with any new information found in the text.\n- Write a solid summary that is not repetitive.\n- Descriptions MUST NOT exceed 500 characters.\n- If there is no new information, return the existing description (or a refined version of it under 500 characters)."
+        
         if context.existing_characters and #context.existing_characters > 0 then
             local existing_lines = {}
+            local sample_text = context.book_text or ""
             for _, c in ipairs(context.existing_characters) do
                 if c.name and c.description then
-                    table.insert(existing_lines, "- " .. c.name .. ": " .. c.description)
+                    -- CONTEXT TRIMMING: Only send full descriptions for characters that appear in the sample
+                    -- Otherwise just send the name to allow the AI to mention them if they appear
+                    if sample_text:find(c.name) then
+                        table.insert(existing_lines, "- " .. c.name .. ": " .. c.description)
+                    else
+                        table.insert(existing_lines, "- " .. c.name)
+                    end
                 end
             end
             if #existing_lines > 0 then
-                extra_context = extra_context .. "\n\nMERGE MODE INSTRUCTIONS:\nYou are UPDATING an existing X-Ray, not creating one from scratch.\n- For character descriptions, return ONLY genuinely new facts, plot developments, or relationship changes not already covered below.\n- Do NOT rephrase or restate existing information in different words.\n- Keep descriptions cumulative and general — do not make them overly specific to a single scene or chapter.\n- If a character has no new information, return an empty description for them.\n\nEXISTING CHARACTER KNOWLEDGE:\n" .. table.concat(existing_lines, "\n")
+                if not has_merge_data then extra_context = extra_context .. merge_instructions; has_merge_data = true end
+                extra_context = extra_context .. "\n\nEXISTING CHARACTER KNOWLEDGE (Context Optimized):\n" .. table.concat(existing_lines, "\n")
             end
         end
-        if context.existing_locations and #context.existing_locations > 0 then
-            local existing_locs = {}
-            for _, l in ipairs(context.existing_locations) do
-                if l.name then table.insert(existing_locs, l.name) end
+        
+        if context.existing_historical_figures and #context.existing_historical_figures > 0 then
+            local existing_lines = {}
+            local sample_text = context.book_text or ""
+            for _, h in ipairs(context.existing_historical_figures) do
+                if h.name and h.biography then
+                    if sample_text:find(h.name) then
+                        table.insert(existing_lines, "- " .. h.name .. ": " .. h.biography)
+                    else
+                        table.insert(existing_lines, "- " .. h.name)
+                    end
+                end
             end
-            if #existing_locs > 0 then
-                extra_context = extra_context .. "\n\nEXISTING LOCATIONS (skip these unless new info is available): " .. table.concat(existing_locs, ", ")
+            if #existing_lines > 0 then
+                if not has_merge_data then extra_context = extra_context .. merge_instructions; has_merge_data = true end
+                extra_context = extra_context .. "\n\nEXISTING HISTORICAL FIGURE KNOWLEDGE (Context Optimized):\n" .. table.concat(existing_lines, "\n")
+            end
+        end
+        
+        if context.existing_locations and #context.existing_locations > 0 then
+            local existing_lines = {}
+            local sample_text = context.book_text or ""
+            for _, l in ipairs(context.existing_locations) do
+                if l.name and l.description then
+                    if sample_text:find(l.name) then
+                        table.insert(existing_lines, "- " .. l.name .. ": " .. l.description)
+                    else
+                        table.insert(existing_lines, "- " .. l.name)
+                    end
+                end
+            end
+            if #existing_lines > 0 then
+                if not has_merge_data then extra_context = extra_context .. merge_instructions; has_merge_data = true end
+                extra_context = extra_context .. "\n\nEXISTING LOCATION KNOWLEDGE (Context Optimized):\n" .. table.concat(existing_lines, "\n")
             end
         end
     end
@@ -391,7 +749,7 @@ function AIHelper:callGemini(prompt, config, current_model)
     local request_body = json.encode({
         contents = {{ role = "user", parts = {{ text = prompt }} }},
         system_instruction = { parts = {{ text = system_instruction_text }} },
-        generationConfig = { temperature = 0.2, maxOutputTokens = 8192 }
+        generationConfig = { temperature = 0.2, maxOutputTokens = 16384 }
     })
     self:log("AIHelper: Sending Gemini request (" .. #request_body .. " bytes)")
     local ok, code, response_text, status = self:makeRequest(url, { ["Content-Type"] = "application/json", ["x-goog-api-key"] = config.api_key }, request_body)
@@ -439,7 +797,7 @@ function AIHelper:callChatGPT(prompt, config, current_model)
     end
 
     self:log("AIHelper: ChatGPT Prompt prepared")
-    local request_body = json.encode({ model = model, messages = {{ role = "user", content = prompt }}, response_format = { type = "json_object" } })
+    local request_body = json.encode({ model = model, messages = {{ role = "user", content = prompt }}, response_format = { type = "json_object" }, max_tokens = 8192 })
     self:log("AIHelper: Sending ChatGPT request (" .. #request_body .. " bytes)")
     local ok, code, response_text = self:makeRequest(config.endpoint or "https://api.openai.com/v1/chat/completions", { ["Content-Type"] = "application/json", ["Authorization"] = "Bearer " .. config.api_key }, request_body)
     

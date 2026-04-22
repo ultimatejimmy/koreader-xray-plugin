@@ -6,6 +6,9 @@ on:
       - '**' # Matches any tag including those with slashes
   workflow_dispatch: # Allows manual triggering from the Actions tab
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # Opt-in to Node 24 to clear deprecation warnings
+
 jobs:
   build:
     name: Create Release
@@ -15,6 +18,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for all tags and branches
 
       - name: Create Plugin Archive
         run: |
@@ -25,6 +30,7 @@ jobs:
       - name: Create Draft Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.ref_name }}
           files: xray.koplugin.zip
           draft: true
           prerelease: ${{ contains(github.ref_name, '-beta') }}

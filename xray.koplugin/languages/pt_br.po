@@ -45,3 +45,72 @@ msgstr " Até a página atual (SEM SPOILERS)"
 
 msgid "updating_ai"
 msgstr "Atualizando dados do X-Ray..."
+
+# ==============================
+# AUTO-UPDATE & FREQUENCY
+# ==============================
+
+msgid "auto_update_disabled"
+msgstr "Disabled"
+
+msgid "auto_update_freq_about"
+msgstr ""
+"Auto-update checks for new chapter data in the background as you read.\n"
+"\n"
+"LIMITS & PERFORMANCE\n"
+"Frequent background requests can drain BATTERY LIFE and may hit AI PROVIDER RATE LIMITS (especially on Pro models).\n"
+"\n"
+"MODES\n"
+"• Disabled: No background requests\n"
+"• Aggressive: Checks every time you enter a new chapter\n"
+"• Balanced: Checks at most every 5 minutes (recommended)\n"
+"• Economical: Checks at most every 15 minutes\n"
+"• Sparse: Checks at most every 30 minutes\n"
+"\n"
+"Note: If a chapter is skipped due to frequency limits, X-Ray will automatically include it in the next background fetch."
+
+msgid "auto_update_aggressive"
+msgstr "Aggressive: checks every new chapter"
+
+msgid "auto_update_balanced"
+msgstr "Balanced: checks at most every 5 mins"
+
+msgid "auto_update_economical"
+msgstr "Economical: checks at most every 15 mins"
+
+msgid "auto_update_sparse"
+msgstr "Sparse: checks at most every 30 mins"
+
+msgid "menu_auto_update_frequency"
+msgstr "Auto X-Ray Settings"
+
+msgid "search_character"
+msgstr "Pesquisar personagens..."
+
+msgid "search_character_title"
+msgstr "Busca de personagens"
+
+msgid "search_hint"
+msgstr "Digite o nome do personagem"
+
+msgid "search_button"
+msgstr "Pesquisar"
+
+msgid "character_not_found"
+msgstr "Nenhum personagem encontrado correspondente a '%s'"
+
+msgid "multiple_matches"
+msgstr "Várias correspondências para '%s'. Qual você quis dizer?"
+
+
+msgid "error_fetch_title"
+msgstr "Falha na obtenção"
+
+msgid "error_fetch_desc"
+msgstr "Falha ao obter dados do X-Ray. Verifique sua chave de API e conexão."
+
+msgid "error_author_fetch_title"
+msgstr "Falha ao obter autor"
+
+msgid "error_author_fetch_desc"
+msgstr "Não foi possível obter informações do autor."

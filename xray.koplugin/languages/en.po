@@ -62,6 +62,12 @@ msgstr "AI Settings"
 msgid "menu_clear_cache"
 msgstr "Clear Cache"
 
+msgid "menu_clear_logs"
+msgstr "Clear Logs"
+
+msgid "logs_cleared"
+msgstr "Logs cleared!"
+
 msgid "menu_xray_mode"
 msgstr "X-Ray Mode Settings"
 
@@ -799,14 +805,46 @@ msgstr " You haven't progressed much yet (%%%d)\n\nContinue anyway?"
 msgid "progress_error"
 msgstr " Could not get reading progress!\n\nAnalyze full book instead?"
 
-msgid "menu_update_xray"
-msgstr "Update X-Ray Data (Merge)"
-
-msgid "menu_fetch_more_chars"
-msgstr "Fetch More Characters"
-
 msgid "updating_ai"
 msgstr "Updating X-Ray Data..."
+
+# ==============================
+# AUTO-UPDATE & FREQUENCY
+# ==============================
+
+msgid "auto_update_disabled"
+msgstr "Disabled"
+
+msgid "auto_update_freq_about"
+msgstr ""
+"Auto-update checks for new chapter data in the background as you read.\n"
+"\n"
+"LIMITS & PERFORMANCE\n"
+"Frequent background requests can drain BATTERY LIFE and may hit AI PROVIDER RATE LIMITS (especially on Pro models).\n"
+"\n"
+"MODES\n"
+"• Disabled: No background requests\n"
+"• Aggressive: Checks every time you enter a new chapter\n"
+"• Balanced: Checks at most every 5 minutes (recommended)\n"
+"• Economical: Checks at most every 15 minutes\n"
+"• Sparse: Checks at most every 30 minutes\n"
+"\n"
+"Note: If a chapter is skipped due to frequency limits, X-Ray will automatically include it in the next background fetch."
+
+msgid "auto_update_aggressive"
+msgstr "Aggressive: checks every new chapter"
+
+msgid "auto_update_balanced"
+msgstr "Balanced: checks at most every 5 mins"
+
+msgid "auto_update_economical"
+msgstr "Economical: checks at most every 15 mins"
+
+msgid "auto_update_sparse"
+msgstr "Sparse: checks at most every 30 mins"
+
+msgid "menu_auto_update_frequency"
+msgstr "Auto X-Ray Settings"
 
 msgid "error_info"
 msgstr " Error Occurred!"
@@ -852,3 +890,34 @@ msgstr "Spoiler setting saved: Full Book Mode"
 
 msgid "spoiler_free_about"
 msgstr "Spoiler-free mode limits AI extraction to the pages you have already read (up to your current page), preventing spoilers from future chapters.\n\nFull Book Mode analyzes the entire book, which may contain spoilers."
+
+msgid "search_character"
+msgstr "Search Characters..."
+
+msgid "search_character_title"
+msgstr "Character Search"
+
+msgid "search_hint"
+msgstr "Enter character name"
+
+msgid "search_button"
+msgstr "Search"
+
+msgid "character_not_found"
+msgstr "No character found matching '%s'"
+
+msgid "multiple_matches"
+msgstr "Multiple matches for '%s'. Which did you mean?"
+
+
+msgid "error_fetch_title"
+msgstr "Fetch Failed"
+
+msgid "error_fetch_desc"
+msgstr "Failed to fetch X-Ray data. Please check your API key and connection."
+
+msgid "error_author_fetch_title"
+msgstr "Author Fetch Failed"
+
+msgid "error_author_fetch_desc"
+msgstr "Failed to fetch author info."
