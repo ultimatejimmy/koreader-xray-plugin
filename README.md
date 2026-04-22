@@ -10,12 +10,13 @@ This plugin brings Kindle-style X-Ray features to KOReader. It uses AI to track 
 ## What it does
 
 - **AI-Powered Insights**: Uses Google Gemini or OpenAI ChatGPT to scan your books and generate descriptions, summaries, and more.
-- **Character Tracking**: View bios and roles so you never forget who someone is.
-- **Plot Timeline**: Keeps track of major events chapter by chapter.
+- **Character Tracking**: View bios and roles so you never forget who someone is. Includes a **Character Disambiguation Picker** for ambiguous names.
+- **Plot Timeline**: Keeps track of major events chapter by chapter, strictly sorted by physical page location for accuracy.
 - **Historical Context**: Pulls real-world info for historical figures and locations.
 - **Spoiler Protection**: "Spoiler-free" mode only reads up to your current page so future twists aren't ruined.
-- **Auto Fetching while you read**: Automatically fetches data when you get to a new chapter, to ensure you always have up-to-date, spoiler-free X-Ray data available.
+- **Auto Fetching while you read**: Automatically fetches data in the background when you get to a new chapter.
 - **X-Ray Mode**: Get insights while you read by highlighting character names and places and tapping the "X-Ray" button.
+- **Silent Weekly Updates**: Automatically checks for new plugin versions in the background once a week.
 - **Offline First**: You only need internet to fetch the data. After that, it's saved locally.
 - **Multilingual**: Available in English, Spanish, Portuguese, and Turkish.
 
@@ -23,8 +24,9 @@ This plugin brings Kindle-style X-Ray features to KOReader. It uses AI to track 
 
 For full setup instructions and a deep dive into features, check out the **[GitHub Wiki](https://github.com/ultimatejimmy/koreader-xray-plugin/wiki)**.
 
-- **[Get Started](https://github.com/ultimatejimmy/koreader-xray-plugin/wiki/Get-Started)**: Installation and API key setup.
-- **[Core Features](https://github.com/ultimatejimmy/koreader-xray-plugin/wiki/Core-Features)**: Characters, Timeline, and Lookups.
-- **[AI Providers](https://github.com/ultimatejimmy/koreader-xray-plugin/wiki/AI-Providers-and-Models)**: Using Gemini vs ChatGPT.
-- **[Spoiler Protection](https://github.com/ultimatejimmy/koreader-xray-plugin/wiki/Spoiler-Protection)**: How we keep the story safe.
+- **[Get Started](https://github.com/ultimatejimmy/koreader-xray-plugin/wiki/1.-Get-Started)**: Installation and API key setup.
+- **[Core Features](https://github.com/ultimatejimmy/koreader-xray-plugin/wiki/2.-Core-Features)**: Characters, Timeline, and Lookups.
+- **[Fetching](https://github.com/ultimatejimmy/koreader-xray-plugin/wiki/5.-Fetching)**: Manual and automatic background fetching.
+- **[AI Providers](https://github.com/ultimatejimmy/koreader-xray-plugin/wiki/3.-AI-Providers-&-Models)**: Using Gemini vs ChatGPT.
+- **[Spoiler Protection](https://github.com/ultimatejimmy/koreader-xray-plugin/wiki/4.-Spoiler-Protection)**: How we keep the story safe.
 - **[Advanced Usage](https://github.com/ultimatejimmy/koreader-xray-plugin/wiki/Advanced-Usage)**: Gestures, lookups, and manual config.
