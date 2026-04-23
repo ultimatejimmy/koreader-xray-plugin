@@ -1,73 +1,12 @@
-msgid "menu_xray_mode"
-msgstr "Ajustes do Modo X-Ray"
-
-msgid "xray_mode_desc"
-msgstr "Adiciona um botão 'X-Ray' aos menus de dicionário e seleção para consultas instantâneas."
-
-msgid "xray_mode_toggle"
-msgstr "Modo de Seleção X-Ray"
-
-msgid "xray_enabled_label"
-msgstr "Ativado"
-
-msgid "xray_disabled_label"
-msgstr "Desativado"
-
-msgid "no_data_prompt"
-msgstr "Não foram encontrados dados de X-Ray para este livro. Deseja obter da IA agora?"
-
-msgid "close"
-msgstr "Fechar"
-
-msgid "spoiler_free_menu_option"
-msgstr "Sem spoilers"
-
-msgid "spoiler_free_saved"
-msgstr "Configuração salva: Modo sem spoilers"
-
-msgid "full_book_saved"
-msgstr "Configuração salva: Modo livro completo"
-
-msgid "spoiler_free_about"
-msgstr "O modo sem spoilers limita a extração de IA às páginas que você já leu (até sua página atual), evitando spoilers de capítulos futuros.\n\nO modo de livro completo analisa todo o livro, o que pode conter spoilers."
-
-msgid "menu_update_xray"
-msgstr "Atualizar dados do X-Ray (Mesclar)"
-
-msgid "menu_fetch_more_chars"
-msgstr "Buscar mais personagens"
-
-msgid "menu_fetch_full"
-msgstr " Buscar dados de IA (Livro completo)"
-
-msgid "menu_fetch_progress"
-msgstr " Até a página atual (SEM SPOILERS)"
-
-msgid "updating_ai"
-msgstr "Atualizando dados do X-Ray..."
-
-# ==============================
-# AUTO-UPDATE & FREQUENCY
-# ==============================
-
-msgid "auto_update_disabled"
-msgstr "Disabled"
-
-msgid "auto_update_freq_about"
+msgid ""
 msgstr ""
-"Auto-update checks for new chapter data in the background as you read.\n"
-"\n"
-"LIMITS & PERFORMANCE\n"
-"Frequent background requests can drain BATTERY LIFE and may hit AI PROVIDER RATE LIMITS (especially on Pro models).\n"
-"\n"
-"MODES\n"
-"• Disabled: No background requests\n"
-"• Aggressive: Checks every time you enter a new chapter\n"
-"• Balanced: Checks at most every 5 minutes (recommended)\n"
-"• Economical: Checks at most every 15 minutes\n"
-"• Sparse: Checks at most every 30 minutes\n"
-"\n"
-"Note: If a chapter is skipped due to frequency limits, X-Ray will automatically include it in the next background fetch."
+"Language-Team: Portuguese (Brazil)\n"
+"Language: pt_br\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "ai_fetch_complete"
+msgstr "Successfully fetched from %s!\n\nBook: %s\nAuthor: %s\n\nCharacters: %d\nLocations: %d\nThemes: %d\nTimeline Events: %d\nHistorical Figures: %d\n\n%s\n\nSUMMARY:\n%s"
 
 msgid "auto_update_aggressive"
 msgstr "Aggressive: checks every new chapter"
@@ -75,14 +14,179 @@ msgstr "Aggressive: checks every new chapter"
 msgid "auto_update_balanced"
 msgstr "Balanced: checks at most every 5 mins"
 
+msgid "auto_update_disabled"
+msgstr "Disabled"
+
 msgid "auto_update_economical"
 msgstr "Economical: checks at most every 15 mins"
+
+msgid "auto_update_freq_about"
+msgstr "Auto-update checks for new chapter data in the background as you read.\n\nLIMITS & PERFORMANCE\nFrequent background requests can drain BATTERY LIFE and may hit AI PROVIDER RATE LIMITS (especially on Pro models).\n\nMODES\n• Disabled: No background requests\n• Aggressive: Checks every time you enter a new chapter\n• Balanced: Checks at most every 5 minutes (recommended)\n• Economical: Checks at most every 15 minutes\n• Sparse: Checks at most every 30 minutes\n\nNote: If a chapter is skipped due to frequency limits, X-Ray will automatically include it in the next background fetch."
 
 msgid "auto_update_sparse"
 msgstr "Sparse: checks at most every 30 mins"
 
+msgid "cache_cleared"
+msgstr "Cache cleared!\n\nYou can now fetch new data:\nMenu → X-Ray → Fetch AI Data"
+
+msgid "cache_save_failed"
+msgstr "Failed to save cache"
+
+msgid "cache_saved"
+msgstr "Saved to cache!"
+
+msgid "cancel"
+msgstr "Cancel"
+
+msgid "character_not_found"
+msgstr "Nenhum personagem encontrado correspondente a '%s'"
+
+msgid "close"
+msgstr "Fechar"
+
+msgid "current_language"
+msgstr "en"
+
+msgid "error_author_fetch_desc"
+msgstr "Não foi possível obter informações do autor."
+
+msgid "error_author_fetch_title"
+msgstr "Falha ao obter autor"
+
+msgid "error_fetch_desc"
+msgstr "Falha ao obter dados do X-Ray. Verifique sua chave de API e conexão."
+
+msgid "error_fetch_title"
+msgstr "Falha na obtenção"
+
+msgid "fetch_button"
+msgstr "Fetch"
+
+msgid "fetch_successful"
+msgstr "Fetch successful"
+
+msgid "fetching_ai"
+msgstr "Analisando livro para gerar dados X-Ray..."
+
+msgid "fetching_ai", self.ai_provider or "AI"
+msgstr "fetching_ai", self.ai_provider or "AI"
+
+msgid "fetching_author"
+msgstr "Fetching author info from %s..."
+
+msgid "fetching_author", "AI"
+msgstr "fetching_author", "AI"
+
+msgid "fetching_wait"
+msgstr "⏳ Por favor, aguarde...\nPode levar de 10 a 50 segundos."
+
+msgid "full_book_option"
+msgstr "Full Book Mode"
+
+msgid "language_changed"
+msgstr "Language changed: English"
+
+msgid "logs_cleared"
+msgstr "Logs limpos!"
+
+msgid "menu_about"
+msgstr "Sobre"
+
+msgid "menu_ai_settings"
+msgstr "Configurações de IA"
+
+msgid "menu_author_info"
+msgstr "Info do Autor"
+
 msgid "menu_auto_update_frequency"
 msgstr "Auto X-Ray Settings"
+
+msgid "menu_characters"
+msgstr "Personagens"
+
+msgid "menu_chatgpt_key"
+msgstr "Chave API ChatGPT"
+
+msgid "menu_clear_cache"
+msgstr "Limpar Cache"
+
+msgid "menu_clear_logs"
+msgstr "Limpar Logs"
+
+msgid "menu_fetch_author"
+msgstr "Fetch Author Info (AI)"
+
+msgid "menu_fetch_more_chars"
+msgstr "Buscar mais personagens"
+
+msgid "menu_fetch_xray"
+msgstr "Buscar Dados X-Ray"
+
+msgid "menu_gemini_key"
+msgstr "Chave API Google Gemini"
+
+msgid "menu_historical_figures"
+msgstr "Figuras Históricas"
+
+msgid "menu_language"
+msgstr "Idioma"
+
+msgid "menu_locations"
+msgstr "Locais"
+
+msgid "menu_timeline"
+msgstr "Linha do Tempo"
+
+msgid "menu_update_xray"
+msgstr "Atualizar dados do X-Ray (Mesclar)"
+
+msgid "menu_xray"
+msgstr "X-Ray"
+
+msgid "menu_xray_mode"
+msgstr "Ajustes do Modo X-Ray"
+
+msgid "multiple_matches"
+msgstr "Várias correspondências para '%s'. Qual você quis dizer?"
+
+msgid "no_api_key"
+msgstr "Chave API não configurada!"
+
+msgid "no_author_data_fetch"
+msgstr "No author info available.\n\nWould you like to fetch it from AI?"
+
+msgid "no_character_data"
+msgstr "Sem dados de personagens ainda.\n\nUse 'Buscar Dados X-Ray' primeiro."
+
+msgid "no_data_prompt"
+msgstr "Não foram encontrados dados de X-Ray para este livro. Deseja obter da IA agora?"
+
+msgid "no_historical_data"
+msgstr "No historical figure data yet.\n\nPlease use 'Fetch X-Ray Data' first.\n\nAI will detect real historical\nfigures mentioned in the book."
+
+msgid "no_location_data"
+msgstr "No location data yet. Please use 'Fetch X-Ray Data' first."
+
+msgid "no_timeline_data"
+msgstr "No timeline data yet.\n\nPlease use 'Fetch X-Ray Data' first.\n\nAI will show key events in\nchronological order."
+
+msgid "ok"
+msgstr "OK"
+
+msgid "path"
+msgstr "plugins/xray.koplugin"
+
+msgid "please_restart"
+msgstr "Feche e abra o livro para aplicar as mudanças."
+
+msgid "quick_menu_title"
+msgstr "Menu Rápido X-Ray"
+
+msgid "save"
+msgstr "Salvar"
+
+msgid "search_button"
+msgstr "Pesquisar"
 
 msgid "search_character"
 msgstr "Pesquisar personagens..."
@@ -93,24 +197,96 @@ msgstr "Busca de personagens"
 msgid "search_hint"
 msgstr "Digite o nome do personagem"
 
-msgid "search_button"
-msgstr "Pesquisar"
+msgid "spoiler_free_about"
+msgstr "O modo sem spoilers limita a extração de IA às páginas que você já leu (até sua página atual), evitando spoilers de capítulos futuros.\n\nO modo de livro completo analisa todo o livro, o que pode conter spoilers."
 
-msgid "character_not_found"
-msgstr "Nenhum personagem encontrado correspondente a '%s'"
+msgid "spoiler_free_menu_option"
+msgstr "Sem spoilers"
 
-msgid "multiple_matches"
-msgstr "Várias correspondências para '%s'. Qual você quis dizer?"
+msgid "spoiler_free_option"
+msgstr "Spoiler-free Mode (Up to %d%% of the book)"
 
+msgid "spoiler_preference_title"
+msgstr "Spoiler Preference"
 
-msgid "error_fetch_title"
-msgstr "Falha na obtenção"
+msgid "this_chapter"
+msgstr "Este Capítulo"
 
-msgid "error_fetch_desc"
-msgstr "Falha ao obter dados do X-Ray. Verifique sua chave de API e conexão."
+msgid "this_page"
+msgstr "This Page"
 
-msgid "error_author_fetch_title"
-msgstr "Falha ao obter autor"
+msgid "updater_available_header"
+msgstr "X-Ray %s is available!\nYou have %s."
 
-msgid "error_author_fetch_desc"
-msgstr "Não foi possível obter informações do autor."
+msgid "updater_btn_cancel"
+msgstr "Cancel"
+
+msgid "updater_btn_download"
+msgstr "Baixar e instalar"
+
+msgid "updater_btn_later"
+msgstr "Later"
+
+msgid "updater_btn_open_browser"
+msgstr "Open in browser"
+
+msgid "updater_btn_restart"
+msgstr "Reiniciar"
+
+msgid "updater_cancelled_check"
+msgstr "Update check cancelled."
+
+msgid "updater_cancelled_update"
+msgstr "Update cancelled."
+
+msgid "updater_check"
+msgstr "Verificar Atualizações"
+
+msgid "updater_checking"
+msgstr "Verificando..."
+
+msgid "updater_download_prompt"
+msgstr "\n\nDownload and install now?"
+
+msgid "updater_downloading"
+msgstr "Baixando X-Ray %s..."
+
+msgid "updater_err_download"
+msgstr "Download error: %s"
+
+msgid "updater_err_extract"
+msgstr "Extraction error: %s"
+
+msgid "updater_error_checking"
+msgstr "Error checking for updates."
+
+msgid "updater_error_checking_detail"
+msgstr "Error checking for updates: %s"
+
+msgid "updater_no_asset"
+msgstr "No automatic update file was found.\n\nOpen the releases page on GitHub?"
+
+msgid "updater_success_restart"
+msgstr "X-Ray %s successfully installed.\n\nRestart KOReader to apply the update?"
+
+msgid "updater_up_to_date"
+msgstr "X-Ray está atualizado (%s)."
+
+msgid "updater_whats_new"
+msgstr "What's new:"
+
+msgid "updating_ai"
+msgstr "Atualizando dados do X-Ray..."
+
+msgid "updating_ai", self.ai_provider or "AI"
+msgstr "updating_ai", self.ai_provider or "AI"
+
+msgid "xray_disabled_label"
+msgstr "Desativado"
+
+msgid "xray_enabled_label"
+msgstr "Ativado"
+
+msgid "xray_mode_desc"
+msgstr "Adiciona um botão 'X-Ray' aos menus de dicionário e seleção para consultas instantâneas."
+

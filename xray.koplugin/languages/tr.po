@@ -1,124 +1,292 @@
-msgid "menu_xray_mode"
-msgstr "X-Ray Modu Ayarları"
+msgid ""
+msgstr ""
+"Language-Team: Turkish\n"
+"Language: tr\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 
-msgid "xray_mode_desc"
-msgstr "Anında arama yapmak için sözlük ve seçim menülerine bir 'X-Ray' düğmesi ekler."
+msgid "ai_fetch_complete"
+msgstr "%s üzerinden başarıyla çekildi!\n\nKitap: %s\nYazar: %s\n\nKarakterler: %d\nMekanlar: %d\nTemalar: %d\nZaman Çizelgesi Olayları: %d\nTarihi Kişiler: %d\n\n%s\n\nÖZET:\n%s"
 
-msgid "xray_mode_toggle"
-msgstr "X-Ray Seçim Modu"
+msgid "auto_update_aggressive"
+msgstr "Agresif: her yeni bölümde kontrol eder"
 
-msgid "xray_enabled_label"
-msgstr "Etkin"
+msgid "auto_update_balanced"
+msgstr "Dengeli: en fazla 5 dk'da bir kontrol eder"
 
-msgid "xray_disabled_label"
+msgid "auto_update_disabled"
 msgstr "Devre Dışı"
 
-msgid "no_data_prompt"
-msgstr "Bu kitap için X-Ray verisi bulunamadı. Şimdi AI'dan çekmek ister misiniz?"
+msgid "auto_update_economical"
+msgstr "Ekonomik: en fazla 15 dk'da bir kontrol eder"
+
+msgid "auto_update_freq_about"
+msgstr "Otomatik güncelleme, siz okurken arka planda yeni bölüm verilerini kontrol eder.\n\nSINIRLAR VE PERFORMANS\nSık arka plan istekleri PİL ÖMRÜNÜ tüketebilir ve AI SAĞLAYICI HIZ SINIRLARINA takılabilir (özellikle Pro modellerde).\n\nMODLAR\n• Devre Dışı: Arka plan isteği yapılmaz\n• Agresif: Her yeni bölüme girdiğinizde kontrol eder\n• Dengeli: En fazla 5 dakikada bir kontrol eder (önerilen)\n• Ekonomik: En fazla 15 dakikada bir kontrol eder\n• Seyrek: En fazla 30 dakikada bir kontrol eder\n\nNot: Frekans sınırları nedeniyle bir bölüm atlanırsa, X-Ray bir sonraki arka plan çekiminde onu otomatik olarak dahil edecektir."
+
+msgid "auto_update_sparse"
+msgstr "Seyrek: en fazla 30 dk'da bir kontrol eder"
+
+msgid "cache_cleared"
+msgstr "Önbellek temizlendi!\n\nŞimdi yeni verileri çekebilirsiniz:\nMenü → X-Ray → AI Verilerini Çek"
+
+msgid "cache_save_failed"
+msgstr "Önbelleğe kaydetme başarısız"
+
+msgid "cache_saved"
+msgstr "Önbelleğe kaydedildi!"
+
+msgid "cancel"
+msgstr "İptal"
+
+msgid "character_not_found"
+msgstr "Karakter bulunamadı: %s\n\nİpucu: İsmin bir kısmını yazın"
 
 msgid "close"
 msgstr "Kapat"
 
-msgid "spoiler_free_menu_option"
-msgstr "Spoilersiz"
+msgid "current_language"
+msgstr "en"
 
-msgid "spoiler_free_saved"
-msgstr "Spoiler ayarı kaydedildi: Spoilersiz Mod"
+msgid "error_author_fetch_desc"
+msgstr "Yazar bilgisi alınamadı."
 
-msgid "full_book_saved"
-msgstr "Spoiler ayarı kaydedildi: Tam Kitap Modu"
+msgid "error_author_fetch_title"
+msgstr "Yazar Çekme Hatası"
 
-msgid "spoiler_free_about"
-msgstr "Spoilersiz mod, yapay zeka çıkarımını halihazırda okuduğunuz sayfalara (mevcut sayfanıza kadar) sınırlayarak gelecek bölümlerden spoiler almanızı önler.\n\nTam Kitap Modu, spoiler içerebilecek tüm kitabı analiz eder."
+msgid "error_fetch_desc"
+msgstr "X-Ray verileri çekilemedi. API anahtarınızı ve bağlantınızı kontrol edin."
 
-msgid "spoiler_free_option"
-msgstr "Spoilersiz Mod (Kitabın %%%d kadarı)"
+msgid "error_fetch_title"
+msgstr "Veri Çekme Hatası"
 
-msgid "menu_update_xray"
-msgstr "X-Ray Verilerini Güncelle (Birleştir)"
+msgid "fetch_button"
+msgstr "Çek"
 
-msgid "menu_fetch_more_chars"
-msgstr "Daha Fazla Karakter Getir"
+msgid "fetch_successful"
+msgstr "Veri çekme başarılı"
 
-msgid "menu_fetch_full"
-msgstr " AI Verilerini Çek (Tam Kitap)"
+msgid "fetching_ai"
+msgstr "X-Ray verilerini oluşturmak için kitap analiz ediliyor..."
 
-msgid "menu_fetch_progress"
-msgstr " Mevcut Sayfaya Kadar (SPOILERSIZ)"
+msgid "fetching_ai", self.ai_provider or "AI"
+msgstr "fetching_ai", self.ai_provider or "AI"
 
-msgid "updating_ai"
-msgstr "X-Ray Verileri Güncelleniyor..."
+msgid "fetching_author"
+msgstr "Yazar bilgisi %s üzerinden çekiliyor..."
 
-# ==============================
-# AUTO-UPDATE & FREQUENCY
-# ==============================
+msgid "fetching_author", "AI"
+msgstr "fetching_author", "AI"
 
-msgid "auto_update_disabled"
-msgstr "Disabled"
+msgid "fetching_wait"
+msgstr "⏳ Lütfen bekleyin...\nBu işlem 10-50 saniye sürebilir."
 
-msgid "auto_update_freq_about"
-msgstr ""
-"Auto-update checks for new chapter data in the background as you read.\n"
-"\n"
-"LIMITS & PERFORMANCE\n"
-"Frequent background requests can drain BATTERY LIFE and may hit AI PROVIDER RATE LIMITS (especially on Pro models).\n"
-"\n"
-"MODES\n"
-"• Disabled: No background requests\n"
-"• Aggressive: Checks every time you enter a new chapter\n"
-"• Balanced: Checks at most every 5 minutes (recommended)\n"
-"• Economical: Checks at most every 15 minutes\n"
-"• Sparse: Checks at most every 30 minutes\n"
-"\n"
-"Note: If a chapter is skipped due to frequency limits, X-Ray will automatically include it in the next background fetch."
+msgid "full_book_option"
+msgstr "Tam Kitap Modu"
 
-msgid "auto_update_aggressive"
-msgstr "Aggressive: checks every new chapter"
+msgid "language_changed"
+msgstr "Dil değiştirildi: Türkçe"
 
-msgid "auto_update_balanced"
-msgstr "Balanced: checks at most every 5 mins"
+msgid "logs_cleared"
+msgstr "Günlükler temizlendi!"
 
-msgid "auto_update_economical"
-msgstr "Economical: checks at most every 15 mins"
+msgid "menu_about"
+msgstr "Hakkında"
 
-msgid "auto_update_sparse"
-msgstr "Sparse: checks at most every 30 mins"
+msgid "menu_ai_settings"
+msgstr "AI Ayarları"
+
+msgid "menu_author_info"
+msgstr "Yazar Bilgisi"
 
 msgid "menu_auto_update_frequency"
-msgstr "Auto X-Ray Settings"
+msgstr "Otomatik X-Ray Ayarları"
+
+msgid "menu_characters"
+msgstr "Karakterler"
+
+msgid "menu_chatgpt_key"
+msgstr "ChatGPT API Anahtarı"
+
+msgid "menu_clear_cache"
+msgstr "Önbelleği Temizle"
+
+msgid "menu_clear_logs"
+msgstr "Günlükleri Temizle"
+
+msgid "menu_fetch_author"
+msgstr "Yazar Bilgisini Çek (AI)"
+
+msgid "menu_fetch_more_chars"
+msgstr "Fetch More Characters"
+
+msgid "menu_fetch_xray"
+msgstr "X-Ray Verilerini Çek"
+
+msgid "menu_gemini_key"
+msgstr "Google Gemini API Anahtarı"
+
+msgid "menu_historical_figures"
+msgstr "Tarihi Kişiler"
+
+msgid "menu_language"
+msgstr "Dil"
+
+msgid "menu_locations"
+msgstr "Mekanlar"
+
+msgid "menu_timeline"
+msgstr "Zaman Çizelgesi"
+
+msgid "menu_update_xray"
+msgstr "Update X-Ray Data (Merge)"
+
+msgid "menu_xray"
+msgstr "X-Ray"
+
+msgid "menu_xray_mode"
+msgstr "X-Ray Modu Ayarları"
+
+msgid "multiple_matches"
+msgstr "'%s' için birden fazla eşleşme bulundu. Hangisini kastediyordunuz?"
+
+msgid "no_api_key"
+msgstr "AI API anahtarı ayarlanmamış!\n\nAPI anahtarını şuradan girin:\nMenü → X-Ray → AI Ayarları"
+
+msgid "no_author_data_fetch"
+msgstr "Yazar bilgisi mevcut değil.\n\nAI üzerinden çekmek ister misiniz?"
+
+msgid "no_character_data"
+msgstr "Henüz karakter verisi yok.\n\nLütfen önce 'X-Ray Verilerini Çek' seçeneğini kullanın."
+
+msgid "no_data_prompt"
+msgstr "Bu kitap için X-Ray verisi bulunamadı. Şimdi AI'dan çekmek ister misiniz?"
+
+msgid "no_historical_data"
+msgstr "Henüz tarihi kişi verisi yok.\n\nLütfen önce 'X-Ray Verilerini Çek' seçeneğini kullanın.\n\nAI, kitapta geçen gerçek tarihi kişileri tespit edecektir."
+
+msgid "no_location_data"
+msgstr "Henüz mekan verisi yok. Lütfen önce 'X-Ray Verilerini Çek' seçeneğini kullanın."
+
+msgid "no_timeline_data"
+msgstr "Henüz zaman çizelgesi verisi yok.\n\nLütfen önce 'X-Ray Verilerini Çek' seçeneğini kullanın.\n\nAI, önemli olayları kronolojik sırada gösterecektir."
+
+msgid "ok"
+msgstr "Tamam"
+
+msgid "path"
+msgstr "plugins/xray.koplugin"
+
+msgid "please_restart"
+msgstr "Değişikliklerin etkili olması için lütfen kitabı\nkapatıp tekrar açın."
+
+msgid "quick_menu_title"
+msgstr "X-Ray Hızlı Erişim"
+
+msgid "save"
+msgstr "Kaydet"
+
+msgid "search_button"
+msgstr "Ara"
 
 msgid "search_character"
-msgstr "Karakterleri Ara..."
+msgstr "Karakter ara..."
 
 msgid "search_character_title"
 msgstr "Karakter Araması"
 
 msgid "search_hint"
-msgstr "Karakter adını girin"
+msgstr "İsim yazın (örn. Stavrogin)"
 
-msgid "search_button"
-msgstr "Ara"
+msgid "spoiler_free_about"
+msgstr "Spoilersiz mod, AI çıkarımını zaten okuduğunuz sayfalarla (mevcut sayfanıza kadar) sınırlayarak gelecek bölümlerden spoiler yemenizi önler.\n\nTam Kitap Modu tüm kitabı analiz eder ve spoiler içerebilir."
 
-msgid "character_not_found"
-msgstr "'%s' ile eşleşen karakter bulunamadı"
+msgid "spoiler_free_menu_option"
+msgstr "Spoilersiz"
 
-msgid "multiple_matches"
-msgstr "'%s' için birden fazla eşleşme bulundu. Hangisini kastediyordunuz?"
+msgid "spoiler_free_option"
+msgstr "Spoilersiz Mod (Kitabın %%%d kadarı)"
 
-msgid "error_fetch_title"
-msgstr "Veri Çekme Başarısız"
+msgid "spoiler_preference_title"
+msgstr "Spoiler Tercihi"
 
-msgid "error_fetch_desc"
-msgstr "X-Ray verileri alınamadı. Lütfen API anahtarınızı ve bağlantınızı kontrol edin."
+msgid "this_chapter"
+msgstr "Bu Bölüm"
 
-msgid "error_author_fetch_title"
-msgstr "Yazar Bilgisi Çekme Başarısız"
+msgid "this_page"
+msgstr "This Page"
 
-msgid "error_author_fetch_desc"
-msgstr "Yazar bilgileri alınamadı."
+msgid "updater_available_header"
+msgstr "X-Ray %s is available!\nYou have %s."
 
-msgid "menu_clear_logs"
-msgstr "Günlükleri Temizle"
+msgid "updater_btn_cancel"
+msgstr "Cancel"
 
-msgid "logs_cleared"
-msgstr "Günlükler temizlendi!"
+msgid "updater_btn_download"
+msgstr "Download and install"
+
+msgid "updater_btn_later"
+msgstr "Later"
+
+msgid "updater_btn_open_browser"
+msgstr "Open in browser"
+
+msgid "updater_btn_restart"
+msgstr "Restart"
+
+msgid "updater_cancelled_check"
+msgstr "Update check cancelled."
+
+msgid "updater_cancelled_update"
+msgstr "Update cancelled."
+
+msgid "updater_check"
+msgstr "Check for Updates"
+
+msgid "updater_checking"
+msgstr "Checking for updates..."
+
+msgid "updater_download_prompt"
+msgstr "\n\nDownload and install now?"
+
+msgid "updater_downloading"
+msgstr "Downloading X-Ray %s..."
+
+msgid "updater_err_download"
+msgstr "Download error: %s"
+
+msgid "updater_err_extract"
+msgstr "Extraction error: %s"
+
+msgid "updater_error_checking"
+msgstr "Error checking for updates."
+
+msgid "updater_error_checking_detail"
+msgstr "Error checking for updates: %s"
+
+msgid "updater_no_asset"
+msgstr "No automatic update file was found.\n\nOpen the releases page on GitHub?"
+
+msgid "updater_success_restart"
+msgstr "X-Ray %s successfully installed.\n\nRestart KOReader to apply the update?"
+
+msgid "updater_up_to_date"
+msgstr "X-Ray is up to date (%s)."
+
+msgid "updater_whats_new"
+msgstr "What's new:"
+
+msgid "updating_ai"
+msgstr "X-Ray verileri güncelleniyor..."
+
+msgid "updating_ai", self.ai_provider or "AI"
+msgstr "updating_ai", self.ai_provider or "AI"
+
+msgid "xray_disabled_label"
+msgstr "Devre Dışı"
+
+msgid "xray_enabled_label"
+msgstr "Etkin"
+
+msgid "xray_mode_desc"
+msgstr "Anında arama yapmak için sözlük ve seçim menülerine bir 'X-Ray' düğmesi ekler."
+

@@ -1,741 +1,12 @@
-# Spanish translation for X-Ray Plugin
-# Copyright (C) 2025
-# This file is distributed under the same license as the X-Ray package.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: X-Ray 1.1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-17 12:00+0000\n"
-"PO-Revision-Date: 2025-11-17 12:00+0000\n"
-"Last-Translator: 0zd3m1r\n"
 "Language-Team: Spanish\n"
 "Language: es\n"
-"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
-# ==============================
-# MENU ITEMS
-# ==============================
-
-msgid "menu_xray"
-msgstr "X-Ray"
-
-msgid "menu_characters"
-msgstr "Personajes"
-
-msgid "menu_chapter_characters"
-msgstr "Personajes en este capítulo"
-
-msgid "menu_character_notes"
-msgstr "Mis notas de personajes"
-
-msgid "menu_timeline"
-msgstr "Cronología"
-
-msgid "menu_historical_figures"
-msgstr "Personajes históricos"
-
-msgid "menu_locations"
-msgstr "Lugares"
-
-msgid "menu_author_info"
-msgstr "Información del autor"
-
-msgid "menu_summary"
-msgstr "Resumen"
-
-msgid "menu_themes"
-msgstr "Temas"
-
-msgid "menu_fetch_ai"
-msgstr "Obtener datos de X-Ray"
-
-msgid "menu_fetch_xray"
-msgstr "Obtener datos de X-Ray"
-
-msgid "menu_ai_settings"
-msgstr "Configuración de IA"
-
-msgid "menu_clear_cache"
-msgstr "Borrar caché"
-
-msgid "menu_xray_mode"
-msgstr "Ajustes del Modo X-Ray"
-
-msgid "xray_mode_desc"
-msgstr "Añade un botón 'X-Ray' a los menús de diccionario y selección para consultas instantáneas."
-
-msgid "xray_mode_toggle"
-msgstr "Modo de Selección X-Ray"
-
-msgid "xray_enabled_label"
-msgstr "Activado"
-
-msgid "xray_disabled_label"
-msgstr "Desactivado"
-
-msgid "no_data_prompt"
-msgstr "No se encontraron datos de X-Ray para este libro. ¿Desea obtenerlos de la IA ahora?"
-
-msgid "close"
-msgstr "Cerrar"
-
-msgid "menu_language"
-msgstr "Idioma"
-
-msgid "menu_about"
-msgstr "Acerca de"
-
-# ==============================
-# AI SETTINGS & PROVIDERS
-# ==============================
-
-msgid "menu_gemini_key"
-msgstr "Clave API de Google Gemini"
-
-msgid "menu_gemini_model"
-msgstr "Seleccionar modelo Gemini"
-
-msgid "menu_chatgpt_key"
-msgstr "Clave API de ChatGPT"
-
-msgid "menu_provider_select"
-msgstr "Seleccionar proveedor de IA"
-
-msgid "gemini_model_title"
-msgstr "Seleccionar modelo Gemini"
-
-msgid "gemini_model_flash"
-msgstr "Más rápido + gratis"
-
-msgid "gemini_model_pro"
-msgstr "Balanceado + poderoso"
-
-msgid "gemini_model_flash_15"
-msgstr "Rápido + eficiente"
-
-msgid "unknown_model"
-msgstr "Modelo desconocido."
-
-msgid "model_selected"
-msgstr "Modelo seleccionado"
-
-msgid "gemini_model_flash_info"
-msgstr "Modelo: Gemini 2.5 Flash\n\n¡Modelo más rápido y gratuito selecionado!\n\nCaracterísticas:\n• Respuestas ultrarrápida\n• Uso gratuito"
-
-msgid "gemini_model_pro_info"
-msgstr "Modelo: Gemini 2.5 Pro\n\n¡Modelo poderoso selecionado!\n\nCaracterísticas:\n• Alta calidad\n• Velocidad equilibrada\n• Análisis complejo"
-
-msgid "gemini_model_3_pro_info"
-msgstr "Modelo: Gemini 3 Pro\n\n¡Modelo más nuevo y potente selecionado!"
-
-# ==============================
-# STATUS MESSAGES
-# ==============================
-
-msgid "xray_mode_active"
-msgstr "Activo"
-
-msgid "xray_mode_inactive"
-msgstr "Inactivo"
-
-msgid "events"
-msgstr "eventos"
-
-# ==============================
-# INFO MESSAGES
-# ==============================
-
-msgid "no_character_data"
-msgstr "Aún no hay datos de personajes.\n\nUsa primero 'Obtener datos de X-Ray'."
-
-msgid "no_location_data"
-msgstr "Aún no hay datos de lugares. Usa primero 'Obtener datos de X-Ray'."
-
-msgid "no_author_data"
-msgstr "Aún no hay información del autor. Usa primero 'Obtener datos de IA'."
-
-msgid "no_timeline_data"
-msgstr "Aún no hay datos de la cronología.\n\nUsa primero 'Obtener datos de X-Ray'.\n\nLa IA mostrará los eventos clave en orden cronológico."
-
-msgid "no_historical_data"
-msgstr "Aún no hay datos de personajes históricos.\n\nUsa primero 'Obtener datos de X-Ray'.\n\nLa IA detectará personajes históricos reales mencionados en el libro."
-
-# ==============================
-# AUTO-LOAD & CACHE
-# ==============================
-
-msgid "xray_ready"
-msgstr "X-Ray listo y activo!"
-
-msgid "characters_loaded"
-msgstr "personajes"
-
-msgid "locations_loaded"
-msgstr "lugares"
-
-msgid "themes_loaded"
-msgstr "temas"
-
-msgid "no_cache_found"
-msgstr "Caché no encontrado"
-
-msgid "checking_cache"
-msgstr "¡Cargado desde la caché!"
-
-msgid "cache_verify"
-msgstr "Ya existen datos para este libro.\nSi deseas volver a obtenerlos, primero debes borrar el caché.\n\nRuta: Menú → X-Ray → Borrar caché"
-
-msgid "cache_saved"
-msgstr "¡Guardado en la caché!"
-
-msgid "cache_save_failed"
-msgstr "Error al guardar la caché"
-
-msgid "cache_clear_confirm"
-msgstr "Confirmación de borrado de caché\n\nSi borras la caché:\n\n• Toda la información de personajes será eliminada\n• La cronología será eliminada\n• Los personajes históricos serán eliminados\n• La información de lugares y temas será eliminada\n• La información del autor será eliminada\n\nDeberás volver a obtener los datos desde la IA.\n\n¿Estás seguro de que deseas borrar la caché?"
-
-msgid "yes_clear"
-msgstr "Sí, borrar"
-
-msgid "cancel"
-msgstr "Cancelar"
-
-msgid "cache_cleared"
-msgstr "¡Caché borrada!\n\nAhora puedes obtener nuevos datos:\nMenú → X-Ray → Obtener datos de IA"
-
-msgid "cache_not_found"
-msgstr "Caché no encontrada o no se pudo borrar"
-
-# ==============================
-# CHARACTER DETAILS
-# ==============================
-
-msgid "character_name"
-msgstr "Personaje:"
-
-msgid "description"
-msgstr "Descripción:"
-
-msgid "role"
-msgstr "Rol:"
-
-msgid "gender"
-msgstr "Género:"
-
-msgid "occupation"
-msgstr "Ocupación:"
-
-msgid "not_specified"
-msgstr "No especificado"
-
-msgid "no_description"
-msgstr "Sin descripción"
-
-msgid "unnamed_character"
-msgstr "Personaje sin nombre"
-
-msgid "unknown_character"
-msgstr "Personaje desconocido"
-
-msgid "gender_male"
-msgstr "Masculino"
-
-msgid "gender_female"
-msgstr "Femenino"
-
-# ==============================
-# AI FETCH & STATUS
-# ==============================
-
-msgid "book_title"
-msgstr "Libro:"
-
-msgid "characters_count"
-msgstr "Personajes:"
-
-msgid "locations_count"
-msgstr "Lugares:"
-
-msgid "themes_count"
-msgstr "Temas:"
-
-msgid "events_count"
-msgstr "Eventos:"
-
-msgid "historical_count"
-msgstr "Personajes históricos:"
-
-msgid "cache_age"
-msgstr "Edad de la caché:"
-
-msgid "days_old"
-msgstr "días"
-
-msgid "unlimited_valid"
-msgstr "¡Válido indefinidamente!"
-
-msgid "fetch_new_data"
-msgstr "Para obtener nuevos datos:\nMenú → X-Ray → Borrar caché"
-
-msgid "no_api_key"
-msgstr "¡Clave API de IA no configurada!\n\nIngresa la clave API en:\nMenú → X-Ray → Configuración de IA"
-
-msgid "fetching_ai"
-msgstr "Analizando libro para generar datos de X-Ray..."
-
-msgid "fetching_model"
-msgstr "Modelo: "
-
-msgid "fetching_wait"
-msgstr "⏳ Por favor, espera...\nEste proceso puede tardar entre 10 y 50 segundos."
-
-msgid "dont_touch"
-msgstr "No toque la pantalla."
-
-msgid "ai_fetch_failed"
-msgstr "¡Error al obtener datos desde la IA!\n\nPosibles razones:\n• Clave de API inválida\n• Sin conexión a internet\n• Límite de la IA excedido"
 
 msgid "ai_fetch_complete"
-msgstr ""
-"¡Datos obtenidos exitosamente desde %s!\n"
-"\n"
-"Libro: %s\n"
-"Autor: %s\n"
-"\n"
-"Personajes: %d\n"
-"Lugares: %d\n"
-"Temas: %d\n"
-"Eventos: %d\n"
-"Personajes Históricos: %d\n"
-"\n"
-"%s\n"
-"\n"
-"RESUMEN:\n"
-"%s"
-
-msgid "menu_fetch_author"
-msgstr "Obtener información del autor (IA)"
-
-msgid "fetching_author"
-msgstr "Obteniendo información del autor desde %s..."
-
-msgid "no_author_data_fetch"
-msgstr "No hay información del autor disponible.\n\n¿Desea obtenerla de la IA?"
-
-# ==============================
-# X-RAY MODE & SEARCH
-# ==============================
-
-msgid "xray_mode_no_data"
-msgstr "¡Obtenga datos primero para usar el modo X-Ray!\n\nMenú → X-Ray → Obtener datos de IA"
-
-msgid "xray_mode_enabled"
-msgstr "¡Modo X-Ray activado!\n\nNota: La función de selección de texto está deshabilitada actualmente.\n\nPara buscar personajes:\nMenú → X-Ray → Personajes → Buscar"
-
-msgid "xray_mode_disabled"
-msgstr "Modo X-Ray desactivado"
-
-msgid "search_character"
-msgstr "Buscar personaje..."
-
-msgid "search_character_title"
-msgstr "Buscar Personaje"
-
-msgid "search_hint"
-msgstr "Escriba el nombre (p. ej., Stavrogin)"
-
-msgid "search_button"
-msgstr "Buscar"
-
-msgid "character_not_found"
-msgstr "Personaje no encontrado: %s\n\Sugerencia: escriba parte del nombre"
-
-# ==============================
-# TIMELINE & CHAPTER
-# ==============================
-
-msgid "timeline_event"
-msgstr "Evento #%d"
-
-msgid "chapter"
-msgstr "Capítulo:"
-
-msgid "characters_involved"
-msgstr "Personajes:"
-
-msgid "importance"
-msgstr "Importancia:"
-
-msgid "analyzing_chapter"
-msgstr "Analizando capítulo...\n\nPor favor, espere"
-
-msgid "chapter_text_error"
-msgstr "No se pudo recuperar el texto del capítulo"
-
-msgid "no_characters_in_chapter"
-msgstr "No se han encontrado personajes en este capítulo.\n\nCapítulo: %s"
-
-msgid "mentions"
-msgstr "menciones"
-
-msgid "this_chapter"
-msgstr "Este Capítulo"
-
-msgid "chapter_chars_title"
-msgstr "Personajes"
-
-# ==============================
-# CHARACTER NOTES
-# ==============================
-
-msgid "character_notes_title"
-msgstr "Notas de personajes (%d notas)"
-
-msgid "add_note"
-msgstr "Agregar nota"
-
-msgid "note_saved"
-msgstr "¡Nota guardada!\n\n%s"
-
-msgid "note_deleted"
-msgstr "¡Nota eliminada!\n\n%s"
-
-msgid "add_note_title"
-msgstr "Agregar nota para %s"
-
-msgid "note_hint"
-msgstr "Tu nota sobre el personaje..."
-
-msgid "save"
-msgstr "Guardar"
-
-msgid "delete"
-msgstr "Eliminar"
-
-# ==============================
-# QUICK MENU
-# ==============================
-
-msgid "quick_menu_title"
-msgstr "Acceso rápido a X-Ray"
-
-msgid "fetch_data"
-msgstr "Obtener datos de IA"
-
-# ==============================
-# API KEYS
-# ==============================
-
-msgid "gemini_key_title"
-msgstr "Clave API de Google Gemini"
-
-msgid "gemini_key_hint"
-msgstr "Clave API"
-
-msgid "gemini_key_desc"
-msgstr "Clave gratuita:\nhttps://makersuite.google.com/app/apikey\n\nO edita config.lua:\ngemini_api_key = \"AIzaSy...\""
-
-msgid "testing_key"
-msgstr "Comprobando clave API..."
-
-msgid "gemini_key_saved"
-msgstr "¡Clave API Gemini guardada!"
-
-msgid "key_test_failed"
-msgstr "¡Clave API guardada pero la prueba falló!\n\nError: %s\n\nPor favor, verifique su clave API."
-
-msgid "chatgpt_key_title"
-msgstr "Clave API de ChatGPT"
-
-msgid "chatgpt_key_hint"
-msgstr "sk-..."
-
-msgid "chatgpt_key_desc"
-msgstr "Clave de API:\nhttps://platform.openai.com/api-keys\n\nO edita config.lua:\nchatgpt_api_key = \"sk-...\""
-
-msgid "chatgpt_key_saved"
-msgstr "¡Clave API de ChatGPT guardada!"
-
-# ==============================
-# PROVIDER SELECTION
-# ==============================
-
-msgid "provider_select_title"
-msgstr "Seleccione Proveedor de IA"
-
-msgid "gemini_selected"
-msgstr "Google Gemini seleccionado"
-
-msgid "chatgpt_selected"
-msgstr "ChatGPT seleccionado"
-
-msgid "set_key_first"
-msgstr "Configure primero la clave API"
-
-# ==============================
-# EXTRA TITLES
-# ==============================
-
-msgid "fetch_successful"
-msgstr "Éxito al obtener datos"
-
-msgid "fetch_button"
-msgstr "Obtener"
-
-msgid "summary_title"
-msgstr "Resumen del libro"
-
-msgid "themes_title"
-msgstr "Temas del libro"
-
-msgid "hist_bio"
-msgstr "Biografía"
-
-msgid "hist_importance"
-msgstr "Importancia en el libro"
-
-msgid "hist_context"
-msgstr "Contexto en el libro"
-
-# ==============================
-# ABOUT
-# ==============================
-
-msgid "about_title"
-msgstr "Complemento X-Ray"
-
-msgid "about_text"
-msgstr ""
-"Complemento X-Ray\n"
-"═══════════════════════════════\n"
-"\n"
-"¿QUÉ HACE?\n"
-"Mejora tus libros al igual que Amazon Kindle X-Ray.\n"
-"Utiliza IA para identificar automáticamente personajes, lugares,\n"
-"contexto histórico y más.\n"
-"\n"
-"═══════════════════════════════\n"
-"\n"
-"CARACTERÍSTICAS:\n"
-"\n"
-"Menús inteligentes\n"
-"• Contadores en tiempo real en cada ítem del menú\n"
-"• Ej: Personajes (12), Lugares (8)\n"
-"\n"
-"Soporte multi-idioma\n"
-"• Interfaz en español e inglés\n"
-"• Obtención de datos de IA específica por idioma\n"
-"• Fácil de añadir nuevos idiomas\n"
-"\n"
-"Análisis histórico avanzado\n"
-"• Captura referencias directas\n"
-"• Detecta referencias indirectas\n"
-"• Encuentra contextos filosóficos e intelectuales\n"
-"\n"
-"═══════════════════════════════\n"
-"\n"
-"INICIO RÁPIDO:\n"
-"1. Añade tu clave de API\n"
-"2. Ejecuta \"Obtener datos de IA\"\n"
-"3. Explora personajes, capítulos y eventos\n"
-"\n"
-"═══════════════════════════════\n"
-"\n"
-"¡Feliz lectura!"
-
-# ==============================
-# LANGUAGE SELECTION
-# ==============================
-
-msgid "language_title"
-msgstr "Seleccionar idioma"
-
-msgid "language_turkish"
-msgstr "Türkçe"
-
-msgid "language_english"
-msgstr "English"
-
-msgid "lang_changed_tr"
-msgstr "Idioma: Turco"
-
-msgid "lang_changed_en"
-msgstr "Idioma: Inglés"
-
-msgid "language_changed"
-msgstr "Idioma cambiado: Español"
-
-msgid "please_restart"
-msgstr "Por favor, cierre el libro y vuelva a abrirlo \npara que los cambios surtan efecto."
-
-# ==============================
-# PRESERVED FROM ORIGINAL PO (MISSING IN LUA)
-# ==============================
-
-msgid "language_name"
-msgstr "Español"
-
-msgid "wifi_required"
-msgstr "¡Se requiere conexión a Internet!\n\n¿Desea activar el Wi‑Fi para obtener datos de IA?"
-
-msgid "network_offline_prompt"
-msgstr "¡Se requiere conexión a Internet!\n\n¿Desea activar el Wi‑Fi para obtener datos de IA?"
-
-msgid "turn_on_wifi"
-msgstr "Activar Wi-Fi"
-
-msgid "fetch_cancelled"
-msgstr "La recuperación ha sido cancelada."
-
-msgid "wifi_connecting"
-msgstr "Conectando a Wi‑Fi...\n\nPor favor, espere."
-
-msgid "wifi_connected"
-msgstr "¡Conexión exitosa!\n\nObteniendo datos de IA..."
-
-msgid "error_503"
-msgstr "¡La API de Gemini está sobrecarregada!\n\nEl modelo está recibiendo demasiadas solicitudes actualmente.\n\nPor favor, inténtelo de nuevo en unos minutos.\n\nSugerencia: Pruebe un modelo diferente en config.lua"
-
-msgid "error_429"
-msgstr "¡Demasiadas solicitudes!\n\nHa alcanzado el límite de uso de la API.\n\nPor favor, espere unos minutos y vuelva a intentarlo."
-
-msgid "error_404"
-msgstr "¡Modelo no encontrado!\n\nEl modelo seleccionado no existe.\n\nCambie el modelo en config.lua."
-
-msgid "error_400"
-msgstr "¡Solicitud incorrecta!\n\nVerifique su clave API o la configuración del modelo."
-
-msgid "ai_fallback_unnamed_character"
-msgstr "Personaje sin nombre"
-
-msgid "ai_fallback_no_description"
-msgstr "Sin descripción"
-
-msgid "ai_fallback_not_specified"
-msgstr "No especificado"
-
-msgid "ai_fallback_unnamed_location"
-msgstr "Lugar sin nombre"
-
-msgid "ai_fallback_unnamed_person"
-msgstr "Persona sin nombre"
-
-msgid "ai_fallback_no_biography"
-msgstr "Sin biografía"
-
-msgid "ai_fallback_chapter"
-msgstr "Capítulo"
-
-msgid "ai_fallback_no_event_description"
-msgstr "Sin descripción del evento"
-
-msgid "ai_fallback_unknown_book"
-msgstr "Libro desconocido"
-
-msgid "ai_fallback_unknown_author"
-msgstr "Autor desconocido"
-
-msgid "ok"
-msgstr "OK"
-
-msgid "menu_fetch_full"
-msgstr " Obtener datos de IA (Libro Completo)"
-
-msgid "menu_fetch_progress"
-msgstr " Hasta la página actual (sin spoilers)"
-
-msgid "progress_warning_low"
-msgstr " Aún no ha avanzado mucho (%%%d)\n\n¿Desea continuar de todos modos?"
-
-msgid "progress_error"
-msgstr " ¡No se pudo obtener el progreso de lectura!\n\n¿Desea analizar el libro completo en su lugar?"
-
-msgid "error_info"
-msgstr " ¡Ha ocurrido un error!"
-
-msgid "error_no_network"
-msgstr " ¡Sin conexión a Internet!\n\nPor favor, verifique su conexión Wi‑Fi."
-
-msgid "error_network_timeout"
-msgstr " ¡La conexión ha caducado!\n\nVerifique su conexión a Internet y vuelva a intentarlo."
-
-msgid "error_invalid_api_key"
-msgstr " ¡Clave de API inválida!\n\nPor favor, verifique su clave de API."
-
-msgid "error_unknown"
-msgstr " ¡Error desconocido!\n\nPor favor, inténtelo de nuevo."
-
-msgid "error_filtered"
-msgstr "Contenido filtrado."
-
-msgid "spoiler_preference_title"
-msgstr "Preferencia de spoilers"
-
-msgid "spoiler_free_option"
-msgstr "Modo sin spoilers (Hasta el %d%% del libro)"
-
-msgid "full_book_option"
-msgstr "Modo libro completo"
-
-msgid "spoiler_free_mode"
-msgstr "Modo sin spoilers: %d%%"
-
-msgid "full_book_mode_active"
-msgstr "Modo libro completo"
-
-msgid "spoiler_free_menu_option"
-msgstr "Sin spoilers"
-
-msgid "spoiler_free_saved"
-msgstr "Configuración guardada: Modo sin spoilers"
-
-msgid "full_book_saved"
-msgstr "Configuración guardada: Modo libro completo"
-
-msgid "spoiler_free_about"
-msgstr "El modo sin spoilers limita la extracción de IA a las páginas que ya ha leído (hasta su página actual), evitando spoilers de futuros capítulos.\n\nEl modo de libro completo analiza todo el libro, lo que puede contener spoilers."
-
-msgid "menu_update_xray"
-msgstr "Actualizar datos de X-Ray (Combinar)"
-
-msgid "menu_fetch_more_chars"
-msgstr "Obtener más personajes"
-
-msgid "menu_fetch_full"
-msgstr " Obtener datos de IA (Libro completo)"
-
-msgid "menu_fetch_progress"
-msgstr " Hasta la página actual (SIN SPOILERS)"
-
-msgid "updating_ai"
-msgstr "Actualizando datos de X-Ray..."
-
-# ==============================
-# AUTO-UPDATE & FREQUENCY
-# ==============================
-
-msgid "auto_update_disabled"
-msgstr "Disabled"
-
-msgid "auto_update_freq_about"
-msgstr ""
-"Auto-update checks for new chapter data in the background as you read.\n"
-"\n"
-"LIMITS & PERFORMANCE\n"
-"Frequent background requests can drain BATTERY LIFE and may hit AI PROVIDER RATE LIMITS (especially on Pro models).\n"
-"\n"
-"MODES\n"
-"• Disabled: No background requests\n"
-"• Aggressive: Checks every time you enter a new chapter\n"
-"• Balanced: Checks at most every 5 minutes (recommended)\n"
-"• Economical: Checks at most every 15 minutes\n"
-"• Sparse: Checks at most every 30 minutes\n"
-"\n"
-"Note: If a chapter is skipped due to frequency limits, X-Ray will automatically include it in the next background fetch."
+msgstr "¡Datos obtenidos exitosamente desde %s!\n\nLibro: %s\nAutor: %s\n\nPersonajes: %d\nLugares: %d\nTemas: %d\nEventos: %d\nPersonajes Históricos: %d\n\n%s\n\nRESUMEN:\n%s"
 
 msgid "auto_update_aggressive"
 msgstr "Aggressive: checks every new chapter"
@@ -743,14 +14,179 @@ msgstr "Aggressive: checks every new chapter"
 msgid "auto_update_balanced"
 msgstr "Balanced: checks at most every 5 mins"
 
+msgid "auto_update_disabled"
+msgstr "Disabled"
+
 msgid "auto_update_economical"
 msgstr "Economical: checks at most every 15 mins"
+
+msgid "auto_update_freq_about"
+msgstr "Auto-update checks for new chapter data in the background as you read.\n\nLIMITS & PERFORMANCE\nFrequent background requests can drain BATTERY LIFE and may hit AI PROVIDER RATE LIMITS (especially on Pro models).\n\nMODES\n• Disabled: No background requests\n• Aggressive: Checks every time you enter a new chapter\n• Balanced: Checks at most every 5 minutes (recommended)\n• Economical: Checks at most every 15 minutes\n• Sparse: Checks at most every 30 minutes\n\nNote: If a chapter is skipped due to frequency limits, X-Ray will automatically include it in the next background fetch."
 
 msgid "auto_update_sparse"
 msgstr "Sparse: checks at most every 30 mins"
 
+msgid "cache_cleared"
+msgstr "¡Caché borrada!\n\nAhora puedes obtener nuevos datos:\nMenú → X-Ray → Obtener datos de IA"
+
+msgid "cache_save_failed"
+msgstr "Error al guardar la caché"
+
+msgid "cache_saved"
+msgstr "¡Guardado en la caché!"
+
+msgid "cancel"
+msgstr "Cancelar"
+
+msgid "character_not_found"
+msgstr "No se encontró ningún personaje que coincida con '%s'"
+
+msgid "close"
+msgstr "Cerrar"
+
+msgid "current_language"
+msgstr "en"
+
+msgid "error_author_fetch_desc"
+msgstr "No se pudo obtener la información del autor."
+
+msgid "error_author_fetch_title"
+msgstr "Error al obtener autor"
+
+msgid "error_fetch_desc"
+msgstr "Error al obtener datos de X-Ray. Comprueba tu clave API y la conexión."
+
+msgid "error_fetch_title"
+msgstr "Error al obtener datos"
+
+msgid "fetch_button"
+msgstr "Obtener"
+
+msgid "fetch_successful"
+msgstr "Éxito al obtener datos"
+
+msgid "fetching_ai"
+msgstr "Analizando libro para generar datos de X-Ray..."
+
+msgid "fetching_ai", self.ai_provider or "AI"
+msgstr "fetching_ai", self.ai_provider or "AI"
+
+msgid "fetching_author"
+msgstr "Obteniendo información del autor desde %s..."
+
+msgid "fetching_author", "AI"
+msgstr "fetching_author", "AI"
+
+msgid "fetching_wait"
+msgstr "⏳ Por favor, espera...\nEste proceso puede tardar entre 10 y 50 segundos."
+
+msgid "full_book_option"
+msgstr "Modo libro completo"
+
+msgid "language_changed"
+msgstr "Idioma cambiado: Español"
+
+msgid "logs_cleared"
+msgstr "¡Registros limpiados!"
+
+msgid "menu_about"
+msgstr "Acerca de"
+
+msgid "menu_ai_settings"
+msgstr "Configuración de IA"
+
+msgid "menu_author_info"
+msgstr "Información del autor"
+
 msgid "menu_auto_update_frequency"
 msgstr "Auto X-Ray Settings"
+
+msgid "menu_characters"
+msgstr "Personajes"
+
+msgid "menu_chatgpt_key"
+msgstr "Clave API de ChatGPT"
+
+msgid "menu_clear_cache"
+msgstr "Borrar caché"
+
+msgid "menu_clear_logs"
+msgstr "Limpiar registros"
+
+msgid "menu_fetch_author"
+msgstr "Obtener información del autor (IA)"
+
+msgid "menu_fetch_more_chars"
+msgstr "Obtener más personajes"
+
+msgid "menu_fetch_xray"
+msgstr "Obtener datos de X-Ray"
+
+msgid "menu_gemini_key"
+msgstr "Clave API de Google Gemini"
+
+msgid "menu_historical_figures"
+msgstr "Personajes históricos"
+
+msgid "menu_language"
+msgstr "Idioma"
+
+msgid "menu_locations"
+msgstr "Lugares"
+
+msgid "menu_timeline"
+msgstr "Cronología"
+
+msgid "menu_update_xray"
+msgstr "Actualizar datos de X-Ray (Combinar)"
+
+msgid "menu_xray"
+msgstr "X-Ray"
+
+msgid "menu_xray_mode"
+msgstr "Ajustes del Modo X-Ray"
+
+msgid "multiple_matches"
+msgstr "Varias coincidencias para '%s'. ¿Cuál quisiste decir?"
+
+msgid "no_api_key"
+msgstr "¡Clave API de IA no configurada!\n\nIngresa la clave API en:\nMenú → X-Ray → Configuración de IA"
+
+msgid "no_author_data_fetch"
+msgstr "No hay información del autor disponible.\n\n¿Desea obtenerla de la IA?"
+
+msgid "no_character_data"
+msgstr "Aún no hay datos de personajes.\n\nUsa primero 'Obtener datos de X-Ray'."
+
+msgid "no_data_prompt"
+msgstr "No se encontraron datos de X-Ray para este libro. ¿Desea obtenerlos de la IA ahora?"
+
+msgid "no_historical_data"
+msgstr "Aún no hay datos de personajes históricos.\n\nUsa primero 'Obtener datos de X-Ray'.\n\nLa IA detectará personajes históricos reales mencionados en el libro."
+
+msgid "no_location_data"
+msgstr "Aún no hay datos de lugares. Usa primero 'Obtener datos de X-Ray'."
+
+msgid "no_timeline_data"
+msgstr "Aún no hay datos de la cronología.\n\nUsa primero 'Obtener datos de X-Ray'.\n\nLa IA mostrará los eventos clave en orden cronológico."
+
+msgid "ok"
+msgstr "OK"
+
+msgid "path"
+msgstr "plugins/xray.koplugin"
+
+msgid "please_restart"
+msgstr "Por favor, cierre el libro y vuelva a abrirlo \npara que los cambios surtan efecto."
+
+msgid "quick_menu_title"
+msgstr "Acceso rápido a X-Ray"
+
+msgid "save"
+msgstr "Guardar"
+
+msgid "search_button"
+msgstr "Buscar"
 
 msgid "search_character"
 msgstr "Buscar personajes..."
@@ -761,24 +197,96 @@ msgstr "Búsqueda de personajes"
 msgid "search_hint"
 msgstr "Ingrese el nombre del personaje"
 
-msgid "search_button"
-msgstr "Buscar"
+msgid "spoiler_free_about"
+msgstr "El modo sin spoilers limita la extracción de IA a las páginas que ya ha leído (hasta su página actual), evitando spoilers de futuros capítulos.\n\nEl modo de libro completo analiza todo el libro, lo que puede contener spoilers."
 
-msgid "character_not_found"
-msgstr "No se encontró ningún personaje que coincida con '%s'"
+msgid "spoiler_free_menu_option"
+msgstr "Sin spoilers"
 
-msgid "multiple_matches"
-msgstr "Varias coincidencias para '%s'. ¿Cuál quisiste decir?"
+msgid "spoiler_free_option"
+msgstr "Modo sin spoilers (Hasta el %d%% del libro)"
 
+msgid "spoiler_preference_title"
+msgstr "Preferencia de spoilers"
 
-msgid "error_fetch_title"
-msgstr "Error al obtener datos"
+msgid "this_chapter"
+msgstr "Este Capítulo"
 
-msgid "error_fetch_desc"
-msgstr "Error al obtener datos de X-Ray. Comprueba tu clave API y la conexión."
+msgid "this_page"
+msgstr "This Page"
 
-msgid "error_author_fetch_title"
-msgstr "Error al obtener autor"
+msgid "updater_available_header"
+msgstr "¡X-Ray %s está disponible!\nTienes la %s."
 
-msgid "error_author_fetch_desc"
-msgstr "No se pudo obtener la información del autor."
+msgid "updater_btn_cancel"
+msgstr "Cancelar"
+
+msgid "updater_btn_download"
+msgstr "Descargar e instalar"
+
+msgid "updater_btn_later"
+msgstr "Más tarde"
+
+msgid "updater_btn_open_browser"
+msgstr "Open in browser"
+
+msgid "updater_btn_restart"
+msgstr "Reiniciar"
+
+msgid "updater_cancelled_check"
+msgstr "Update check cancelled."
+
+msgid "updater_cancelled_update"
+msgstr "Update cancelled."
+
+msgid "updater_check"
+msgstr "Buscar actualizaciones"
+
+msgid "updater_checking"
+msgstr "Buscando actualizaciones..."
+
+msgid "updater_download_prompt"
+msgstr "\n\n¿Descargar e instalar ahora?"
+
+msgid "updater_downloading"
+msgstr "Descargando X-Ray %s..."
+
+msgid "updater_err_download"
+msgstr "Download error: %s"
+
+msgid "updater_err_extract"
+msgstr "Extraction error: %s"
+
+msgid "updater_error_checking"
+msgstr "Error checking for updates."
+
+msgid "updater_error_checking_detail"
+msgstr "Error checking for updates: %s"
+
+msgid "updater_no_asset"
+msgstr "No automatic update file was found.\n\nOpen the releases page on GitHub?"
+
+msgid "updater_success_restart"
+msgstr "X-Ray %s instalado con éxito.\n\n¿Reiniciar KOReader para aplicar?"
+
+msgid "updater_up_to_date"
+msgstr "X-Ray está actualizado (%s)."
+
+msgid "updater_whats_new"
+msgstr "What's new:"
+
+msgid "updating_ai"
+msgstr "Actualizando datos de X-Ray..."
+
+msgid "updating_ai", self.ai_provider or "AI"
+msgstr "updating_ai", self.ai_provider or "AI"
+
+msgid "xray_disabled_label"
+msgstr "Desactivado"
+
+msgid "xray_enabled_label"
+msgstr "Activado"
+
+msgid "xray_mode_desc"
+msgstr "Añade un botón 'X-Ray' a los menús de diccionario y selección para consultas instantáneas."
+
