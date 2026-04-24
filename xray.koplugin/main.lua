@@ -1619,8 +1619,6 @@ function XRayPlugin:finalizeXRayData(final_book_data, title, author, book_text, 
         self:log(string.format("XRayPlugin: Silent merge complete - Chars: %d, Locs: %d, Events: %d, Cache: %s",
             #self.characters, #self.locations, #self.timeline,
             cache_saved and "saved" or "failed"))
-        -- Testing notification: brief toast
-        UIManager:show(InfoMessage:new{ text = self.loc:t("bg_update_complete") or "✓ X-Ray background update complete.", timeout = 2 })
     else
         local fetch_complete = self.loc:t("ai_fetch_complete_msg") or "AI Fetch Complete!"
         local cache_success = self.loc:t("cache_save_success") or "✓ Cache updated."
