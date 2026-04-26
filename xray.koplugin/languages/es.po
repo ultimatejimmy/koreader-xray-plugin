@@ -32,9 +32,6 @@ msgstr "Background fetching frequency:"
 msgid "auto_update_sparse"
 msgstr "Sparse: checks at most every 30 mins"
 
-msgid "bg_update_complete"
-msgstr "✓ Actualización de X-Ray en segundo plano completada."
-
 msgid "cache_cleared"
 msgstr "¡Caché borrada!\n\nAhora puedes obtener nuevos datos:\nMenú → X-Ray → Obtener datos de IA"
 

@@ -32,9 +32,6 @@ msgstr "Background fetching frequency:"
 msgid "auto_update_sparse"
 msgstr "Seyrek: en fazla 30 dk'da bir kontrol eder"
 
-msgid "bg_update_complete"
-msgstr "✓ Arka plan X-Ray güncellemesi tamamlandı."
-
 msgid "cache_cleared"
 msgstr "Önbellek temizlendi!\n\nŞimdi yeni verileri çekebilirsiniz:\nMenü → X-Ray → AI Verilerini Çek"
 

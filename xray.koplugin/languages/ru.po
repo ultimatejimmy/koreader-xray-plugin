@@ -32,9 +32,6 @@ msgstr "Частота фонового получения:"
 msgid "auto_update_sparse"
 msgstr "Редкий: раз в 30 мин"
 
-msgid "bg_update_complete"
-msgstr "✓ Фоновое обновление X-Ray завершено."
-
 msgid "cache_cleared"
 msgstr "Кэш очищен!\n\nТеперь вы можете получить новые данные:\nМеню → X-Ray → Получить данные ИИ"
 

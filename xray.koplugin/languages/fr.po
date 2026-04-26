@@ -32,9 +32,6 @@ msgstr "Fréquence de récupération en arrière-plan :"
 msgid "auto_update_sparse"
 msgstr "Clairsemé : vérifie max toutes les 30 min"
 
-msgid "bg_update_complete"
-msgstr "✓ Mise à jour X-Ray en arrière-plan terminée."
-
 msgid "cache_cleared"
 msgstr "Cache vidé !\n\nVous pouvez maintenant récupérer de nouvelles données :\nMenu → X-Ray → Récupérer les données IA"
 

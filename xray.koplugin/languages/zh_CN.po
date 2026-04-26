@@ -32,9 +32,6 @@ msgstr "后台获取频率："
 msgid "auto_update_sparse"
 msgstr "稀疏：最多每 30 分钟"
 
-msgid "bg_update_complete"
-msgstr "✓ X-Ray 后台更新完成。"
-
 msgid "cache_cleared"
 msgstr "缓存已清除！\n\n现在可以获取新数据：\n菜单 → X-Ray → 获取 AI 数据"
 
