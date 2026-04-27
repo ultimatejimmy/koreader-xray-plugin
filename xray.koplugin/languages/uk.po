@@ -32,9 +32,6 @@ msgstr "Частота фонового отримання:"
 msgid "auto_update_sparse"
 msgstr "Рідкісний: не частіше ніж раз на 30 хв"
 
-msgid "bg_update_complete"
-msgstr "✓ Фонове оновлення X-Ray завершено."
-
 msgid "cache_cleared"
 msgstr "Кеш очищено!\n\nТепер ви можете отримати нові дані:\nМеню → X-Ray → Отримати дані ШІ"
 
@@ -80,6 +77,9 @@ msgstr "uk"
 msgid "dont_ask_again"
 msgstr "Більше не запитувати для цієї книги"
 
+msgid "entity_not_found"
+msgstr "'%s' не знайдено як персонаж або місце."
+
 msgid "error_author_fetch_desc"
 msgstr "Не вдалося отримати інформацію про автора."
 
@@ -100,6 +100,9 @@ msgstr "Видобуваємо додаткових персонажів..."
 
 msgid "fetch_button"
 msgstr "Отримати"
+
+msgid "fetch_single_word_prompt"
+msgstr "Дані X-Ray для '%s' не знайдено. Бажаєте виконати пошук?"
 
 msgid "fetch_successful"
 msgstr "Дані успішно отримано"
@@ -145,6 +148,9 @@ msgstr "Мову змінено. Відкрийте меню знову, щоб 
 
 msgid "logs_cleared"
 msgstr "Логи очищено!"
+
+msgid "looking_up_msg"
+msgstr "Пошук '%s'..."
 
 msgid "menu_about"
 msgstr "Про додаток"

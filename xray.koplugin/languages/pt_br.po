@@ -6,31 +6,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "ai_fetch_complete"
-msgstr "Successfully fetched from %s!\n\nBook: %s\nAuthor: %s\n\nCharacters: %d\nLocations: %d\nThemes: %d\nTimeline Events: %d\nHistorical Figures: %d\n\n%s\n\nSUMMARY:\n%s"
+msgstr "Dados obtidos de %s com sucesso!\n\nLivro: %s\nAutor: %s\n\nPersonagens: %d\nLocais: %d\nTemas: %d\nEventos: %d\nFiguras Históricas: %d\n\n%s\n\nRESUMO:\n%s"
 
 msgid "ai_fetch_complete_msg"
-msgstr "AI Fetch Complete!"
+msgstr "Obtenção de dados de IA concluída!"
 
 msgid "auto_update_aggressive"
-msgstr "Aggressive: checks every new chapter"
+msgstr "Agressivo: verifica a cada novo capítulo"
 
 msgid "auto_update_balanced"
-msgstr "Balanced: checks at most every 5 mins"
+msgstr "Equilibrado: verifica a cada 5 min no máximo"
 
 msgid "auto_update_disabled"
-msgstr "Disabled"
+msgstr "Desativado"
 
 msgid "auto_update_economical"
-msgstr "Economical: checks at most every 15 mins"
+msgstr "Econômico: verifica a cada 15 min no máximo"
 
 msgid "auto_update_freq_about"
-msgstr "Auto-update checks for new chapter data in the background as you read.\n\nLIMITS & PERFORMANCE\nFrequent background requests can drain BATTERY LIFE and may hit AI PROVIDER RATE LIMITS (especially on Pro models).\n\nMODES\n• Disabled: No background requests\n• Aggressive: Checks every time you enter a new chapter\n• Balanced: Checks at most every 5 minutes (recommended)\n• Economical: Checks at most every 15 minutes\n• Sparse: Checks at most every 30 minutes\n\nNote: If a chapter is skipped due to frequency limits, X-Ray will automatically include it in the next background fetch."
+msgstr "A atualização automática verifica novos dados de capítulos em segundo plano enquanto você lê.\n\nLIMITES E DESEMPENHO\nSolicitações frequentes em segundo plano podem esgotar a BATERIA e atingir os LIMITES de taxa do provedor de IA (especialmente em modelos Pro).\n\nMODOS\n• Desativado: Sem solicitações em segundo plano\n• Agressivo: Verifica toda vez que você entra em um novo capítulo\n• Equilibrado: Verifica no máximo a cada 5 minutos (recomendado)\n• Econômico: Verifica no máximo a cada 15 minutos\n• Esparso: Verifica no máximo a cada 30 minutos\n\nNota: Se um capítulo for pulado devido a limites de frequência, o X-Ray o incluirá automaticamente na próxima busca em segundo plano."
 
 msgid "auto_update_freq_label"
-msgstr "Background fetching frequency:"
+msgstr "Frequência de busca em segundo plano:"
 
 msgid "auto_update_sparse"
-msgstr "Sparse: checks at most every 30 mins"
+msgstr "Esparso: verifica a cada 30 min no máximo"
 
 msgid "cache_cleared"
 msgstr "Cache cleared!\n\nYou can now fetch new data:\nMenu → X-Ray → Fetch AI Data"
@@ -87,7 +87,7 @@ msgid "error_author_fetch_title"
 msgstr "Falha ao obter autor"
 
 msgid "error_extract_text"
-msgstr "Error: Could not extract book text."
+msgstr "Erro: Não foi possível extrair o texto do livro."
 
 msgid "error_fetch_desc"
 msgstr "Falha ao obter dados do X-Ray. Verifique sua chave de API e conexão."
@@ -96,28 +96,28 @@ msgid "error_fetch_title"
 msgstr "Falha na obtenção"
 
 msgid "extracting_more_characters"
-msgstr "Extracting additional characters..."
+msgstr "Extraindo personagens adicionais..."
 
 msgid "fetch_button"
-msgstr "Fetch"
+msgstr "Obter"
 
 msgid "fetch_single_word_prompt"
 msgstr "Nenhum dado de X-Ray encontrado para '%s'. Gostaria de buscar?"
 
 msgid "fetch_successful"
-msgstr "Fetch successful"
+msgstr "Busca bem-sucedida"
 
 msgid "fetching_ai"
 msgstr "Analisando livro para gerar dados X-Ray..."
 
 msgid "fetching_author"
-msgstr "Fetching author info from %s..."
+msgstr "Buscando informações do autor em %s..."
 
 msgid "fetching_wait"
 msgstr "⏳ Por favor, aguarde...\nPode levar de 10 a 50 segundos."
 
 msgid "full_book_option"
-msgstr "Full Book Mode"
+msgstr "Modo Livro Completo"
 
 msgid "label_description"
 msgstr "DESCRIÇÃO"
@@ -162,7 +162,7 @@ msgid "menu_author_info"
 msgstr "Info do Autor"
 
 msgid "menu_auto_update_frequency"
-msgstr "Auto X-Ray Settings"
+msgstr "Configurações de Auto X-Ray"
 
 msgid "menu_characters"
 msgstr "Personagens"
@@ -177,7 +177,7 @@ msgid "menu_clear_logs"
 msgstr "Limpar Logs"
 
 msgid "menu_config_header"
-msgstr "--- Current Configuration ---"
+msgstr "--- Configuração Atual ---"
 
 msgid "menu_custom_model_title"
 msgstr "Modelo %s personalizado"
@@ -186,10 +186,10 @@ msgid "menu_enter_custom_model"
 msgstr "Inserir modelo personalizado..."
 
 msgid "menu_enter_ui_key"
-msgstr "Enter UI override key: "
+msgstr "Chave de substituição de UI: "
 
 msgid "menu_fetch_author"
-msgstr "Fetch Author Info (AI)"
+msgstr "Obter Info do Autor (IA)"
 
 msgid "menu_fetch_more_chars"
 msgstr "Buscar mais personagens"
@@ -261,7 +261,7 @@ msgid "no_api_key"
 msgstr "Chave API não configurada!"
 
 msgid "no_author_data_fetch"
-msgstr "No author info available.\n\nWould you like to fetch it from AI?"
+msgstr "Informações do autor indisponíveis.\n\nGostaria de obtê-las via IA?"
 
 msgid "no_character_data"
 msgstr "Sem dados de personagens ainda.\n\nUse 'Buscar Dados X-Ray' primeiro."
@@ -270,13 +270,13 @@ msgid "no_data_prompt"
 msgstr "Não foram encontrados dados de X-Ray para este livro. Deseja obter da IA agora?"
 
 msgid "no_historical_data"
-msgstr "No historical figure data yet.\n\nPlease use 'Fetch X-Ray Data' first.\n\nAI will detect real historical\nfigures mentioned in the book."
+msgstr "Sem dados de figuras históricas ainda.\n\nUse 'Buscar Dados X-Ray' primeiro.\n\nA IA detectará figuras históricas reais mencionadas no livro."
 
 msgid "no_location_data"
-msgstr "No location data yet. Please use 'Fetch X-Ray Data' first."
+msgstr "Sem dados de locais ainda. Use 'Buscar Dados X-Ray' primeiro."
 
 msgid "no_timeline_data"
-msgstr "No timeline data yet.\n\nPlease use 'Fetch X-Ray Data' first.\n\nAI will show key events in\nchronological order."
+msgstr "Sem dados de linha do tempo ainda.\n\nUse 'Buscar Dados X-Ray' primeiro.\n\nA IA mostrará os principais eventos em ordem cronológica."
 
 msgid "ok"
 msgstr "OK"
@@ -312,43 +312,43 @@ msgid "spoiler_free_menu_option"
 msgstr "Sem spoilers"
 
 msgid "spoiler_free_option"
-msgstr "Spoiler-free Mode (Up to %d%% of the book)"
+msgstr "Modo sem spoilers (Até %d%% do livro)"
 
 msgid "spoiler_preference_desc"
-msgstr "Select your spoiler preference for X-Ray data:"
+msgstr "Selecione sua preferência de spoilers para os dados do X-Ray:"
 
 msgid "spoiler_preference_title"
-msgstr "Spoiler Preference"
+msgstr "Preferência de Spoilers"
 
 msgid "this_chapter"
 msgstr "Este Capítulo"
 
 msgid "this_page"
-msgstr "This Page"
+msgstr "Esta Página"
 
 msgid "updater_available_header"
-msgstr "X-Ray %s is available!\nYou have %s."
+msgstr "X-Ray %s está disponível!\nSua versão é %s."
 
 msgid "updater_btn_cancel"
-msgstr "Cancel"
+msgstr "Cancelar"
 
 msgid "updater_btn_download"
 msgstr "Baixar e instalar"
 
 msgid "updater_btn_later"
-msgstr "Later"
+msgstr "Depois"
 
 msgid "updater_btn_open_browser"
-msgstr "Open in browser"
+msgstr "Abrir no navegador"
 
 msgid "updater_btn_restart"
 msgstr "Reiniciar"
 
 msgid "updater_cancelled_check"
-msgstr "Update check cancelled."
+msgstr "Verificação de atualização cancelada."
 
 msgid "updater_cancelled_update"
-msgstr "Update cancelled."
+msgstr "Atualização cancelada."
 
 msgid "updater_check"
 msgstr "Verificar Atualizações"
@@ -357,34 +357,34 @@ msgid "updater_checking"
 msgstr "Verificando..."
 
 msgid "updater_download_prompt"
-msgstr "\n\nDownload and install now?"
+msgstr "\n\nBaixar e instalar agora?"
 
 msgid "updater_downloading"
 msgstr "Baixando X-Ray %s..."
 
 msgid "updater_err_download"
-msgstr "Download error: %s"
+msgstr "Erro de download: %s"
 
 msgid "updater_err_extract"
-msgstr "Extraction error: %s"
+msgstr "Erro de extração: %s"
 
 msgid "updater_error_checking"
-msgstr "Error checking for updates."
+msgstr "Erro ao verificar atualizações."
 
 msgid "updater_error_checking_detail"
-msgstr "Error checking for updates: %s"
+msgstr "Erro ao verificar atualizações: %s"
 
 msgid "updater_no_asset"
-msgstr "No automatic update file was found.\n\nOpen the releases page on GitHub?"
+msgstr "Nenhum arquivo de atualização automática encontrado.\n\nAbrir a página de lançamentos no GitHub?"
 
 msgid "updater_success_restart"
-msgstr "X-Ray %s successfully installed.\n\nRestart KOReader to apply the update?"
+msgstr "X-Ray %s instalado com sucesso.\n\nReiniciar o KOReader para aplicar a atualização?"
 
 msgid "updater_up_to_date"
 msgstr "X-Ray está atualizado (%s)."
 
 msgid "updater_whats_new"
-msgstr "What's new:"
+msgstr "O que há de novo:"
 
 msgid "updating_ai"
 msgstr "Atualizando dados do X-Ray..."
