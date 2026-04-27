@@ -450,38 +450,31 @@ function XRayPlugin:getSubMenuItems()
     self.current_xray_menu_table = {
         {
             text = self.loc:t("menu_characters") or "Characters",
-            keep_menu_open = true,
             callback = function() self:showCharacters() end,
         },
         {
             text = self.loc:t("menu_timeline") or "Timeline",
-            keep_menu_open = true,
             callback = function() self:showTimeline() end,
         },
         {
             text = self.loc:t("menu_historical_figures") or "Historical Figures",
-            keep_menu_open = true,
             callback = function() self:showHistoricalFigures() end,
         },
         {
             text = self.loc:t("menu_locations") or "Locations",
-            keep_menu_open = true,
             callback = function() self:showLocations() end,
         },
         {
             text = self.loc:t("menu_author_info"),
-            keep_menu_open = true,
             callback = function() self:showAuthorInfo() end,
             separator = true,
         },
         {
             text = self.loc:t("menu_fetch_xray") or "Fetch X-Ray Data",
-            keep_menu_open = true,
             callback = function() self:fetchFromAI() end,
         },
         {
             text = self.loc:t("menu_update_xray") or "Update X-Ray Data (Merge)",
-            keep_menu_open = true,
             callback = function() self:updateFromAI() end,
             separator = true,
         },
@@ -538,7 +531,6 @@ function XRayPlugin:getSubMenuItems()
                         },
                         {
                             text = self.loc:t("menu_view_config") or "View All Config Values", 
-                            keep_menu_open = true,
                             callback = function() self:showConfigSummary() end,
                         },
                     }
@@ -551,17 +543,14 @@ function XRayPlugin:getSubMenuItems()
             sub_item_table = {
                 {
                     text = self.loc:t("menu_clear_cache"),
-                    keep_menu_open = true,
                     callback = function() self:clearCache() end,
                 },
                 {
                     text = self.loc:t("menu_clear_logs") or "Clear Logs",
-                    keep_menu_open = true,
                     callback = function() self:clearLogs() end,
                 },
                 {
                     text = self.loc:t("updater_check") or "Check for Updates",
-                    keep_menu_open = true,
                     callback = function()
                         local updater = require("xray_updater")
                         updater.checkForUpdates(self.loc)
@@ -571,7 +560,6 @@ function XRayPlugin:getSubMenuItems()
         },
         {
             text = self.loc:t("menu_about"),
-            keep_menu_open = true,
             callback = function() self:showAbout() end,
         },
     }
@@ -879,11 +867,6 @@ function XRayPlugin:closeAllMenus()
     if self.timeline_menu then UIManager:close(self.timeline_menu); self.timeline_menu = nil end
     if self.hf_menu then UIManager:close(self.hf_menu); self.hf_menu = nil end
     if self.xray_menu then UIManager:close(self.xray_menu); self.xray_menu = nil end
-    
-    -- Safe way to close the native reader menu if it's still open behind us
-    if self.ui and self.ui.menu then
-        pcall(function() UIManager:close(self.ui.menu) end)
-    end
 end
 
 function XRayPlugin:showCharacters()
