@@ -87,10 +87,20 @@ function XRayPlugin:init()
                 return {
                     text = "X-Ray",
                     callback = function()
-                        -- Close the native highlight dialog immediately so it doesn't linger
-                        if _reader_highlight_instance and _reader_highlight_instance.onClose then
-                            pcall(function() _reader_highlight_instance:onClose() end)
+                        -- Directly tell the UIManager to close this specific dialog instance
+                        if _reader_highlight_instance then
+                            pcall(function() 
+                                if _reader_highlight_instance.onClose then _reader_highlight_instance:onClose() end
+                            end)
+                            UIManager:close(_reader_highlight_instance)
                         end
+                        
+                        -- Execute nuclear clear
+                        self:closeAllMenus()
+                        
+                        -- Stage 2: Delayed clear to catch any post-close re-assertions
+                        UIManager:scheduleIn(0.1, function() self:closeAllMenus() end)
+                        
                         self.lookup_manager:handleLookup(_reader_highlight_instance.selected_text.text)
                     end,
                 }
@@ -895,6 +905,31 @@ function XRayPlugin:closeAllMenus()
     if self.timeline_menu then UIManager:close(self.timeline_menu); self.timeline_menu = nil end
     if self.hf_menu then UIManager:close(self.hf_menu); self.hf_menu = nil end
     if self.xray_menu then UIManager:close(self.xray_menu); self.xray_menu = nil end
+    
+    pcall(function()
+        local Event = require("ui/event")
+        
+        -- Source-verified: Close all open DictQuickLookup windows via their window_list
+        -- (from frontend/ui/widget/dictquicklookup.lua DictQuickLookup:onHoldClose)
+        local ok, DictQuickLookup = pcall(require, "ui/widget/dictquicklookup")
+        if ok and DictQuickLookup and DictQuickLookup.window_list then
+            for i = #DictQuickLookup.window_list, 1, -1 do
+                local window = DictQuickLookup.window_list[i]
+                if window and window.onClose then
+                    pcall(function() window:onClose() end)
+                end
+            end
+        end
+        
+        -- Source-verified: Call ReaderHighlight:clear() which does the full cleanup:
+        -- document:clearSelection(), is_word_selection=false, hold_pos=nil, selected_text=nil
+        -- (from frontend/apps/reader/modules/readerhighlight.lua)
+        if self.ui.highlight and self.ui.highlight.clear then
+            pcall(function() self.ui.highlight:clear() end)
+        end
+        
+        self.ui:handleEvent(Event:new("ClearSelection"))
+    end)
 end
 
 function XRayPlugin:showCharacters()
@@ -1205,7 +1240,26 @@ function XRayPlugin:showMentionsMenu(entity)
                 self:closeAllMenus()
                 UIManager:nextTick(function()
                     local Event = require("ui/event")
+                    -- Phase 1: Broadcast clear to ALL widgets immediately
+                    UIManager:broadcastEvent(Event:new("ClearSelection"))
+                    
+                    -- Phase 2: Direct method calls
+                    if self.ui.onClearSelection then pcall(function() self.ui:onClearSelection() end) end
+                    if self.ui.view and self.ui.view.clearSelection then pcall(function() self.ui.view:clearSelection() end) end
+                    
+                    -- Phase 3: Targeted close events
+                    self.ui:handleEvent(Event:new("DismissMenus"))
+                    if self.ui.dictionary then self.ui:handleEvent(Event:new("CloseDictionary")) end
+                    if self.ui.highlight then self.ui:handleEvent(Event:new("CloseHighlight")) end
+                    
+                    -- Phase 4: Execute jump
                     self.ui:handleEvent(Event:new("GotoPage", pg))
+                    
+                    -- Phase 5: Delayed cleanup (in case the jump re-triggered anything)
+                    UIManager:scheduleIn(0.5, function()
+                        UIManager:broadcastEvent(Event:new("ClearSelection"))
+                        if self.ui.onClearSelection then pcall(function() self.ui:onClearSelection() end) end
+                    end)
                 end)
             end,
         })
