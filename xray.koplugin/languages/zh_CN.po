@@ -168,7 +168,7 @@ msgid "mentions_scanning"
 msgstr "正在搜索 %s 的提及..."
 
 msgid "mentions_setting_desc"
-msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the "
+msgstr "提及扫描允许您查找书中每个角色或地点的出现。这在后台自动发生，以确保阅读器保持响应。\n\n禁用此功能将隐藏“查找提及”按钮。"
 
 msgid "mentions_setting_title"
 msgstr "Mentions Settings"

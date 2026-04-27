@@ -168,7 +168,7 @@ msgid "mentions_scanning"
 msgstr "Scanning for mentions of %s..."
 
 msgid "mentions_setting_desc"
-msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the "
+msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the 'Find Mentions' button."
 
 msgid "mentions_setting_title"
 msgstr "Mentions Settings"

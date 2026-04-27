@@ -168,7 +168,7 @@ msgid "mentions_scanning"
 msgstr "Suche nach Erwahnungen von %s..."
 
 msgid "mentions_setting_desc"
-msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the "
+msgstr "Das Scannen nach Erwähnungen ermöglicht es Ihnen, jedes Vorkommen eines Charakters oder Ortes im Buch zu finden. Dies geschieht automatisch im Hintergrund, um sicherzustellen, dass der Reader reaktionsschnell bleibt.\n\nDurch Deaktivieren dieser Option wird die Schaltfläche 'Erwähnungen suchen' ausgeblendet."
 
 msgid "mentions_setting_title"
 msgstr "Mentions Settings"

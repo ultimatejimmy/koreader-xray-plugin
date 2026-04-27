@@ -168,7 +168,7 @@ msgid "mentions_scanning"
 msgstr "Поиск упоминаний %s..."
 
 msgid "mentions_setting_desc"
-msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the "
+msgstr "Сканирование упоминаний позволяет найти каждое упоминание персонажа или места в книге. Это происходит автоматически в фоновом режиме, чтобы обеспечить отзывчивость ридера.\n\nОтключение этой функции скроет кнопку «Найти упоминания»."
 
 msgid "mentions_setting_title"
 msgstr "Mentions Settings"
