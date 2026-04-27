@@ -419,7 +419,7 @@ function ChapterAnalyzer:getTextFromPageRange(ui, start_page, end_page, max_len)
 end
 
 -- Get text for analysis (up to max_len characters before current position)
-function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, current_page, start_page)
+function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, current_page, start_page, target_xp)
     if not ui or not ui.document then
         AIHelper:log("ChapterAnalyzer: getTextForAnalysis - no document")
         return nil
@@ -433,7 +433,41 @@ function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, curr
     local is_reflowable = ui.rolling ~= nil
     
     if is_reflowable then
-        local current_xp = ui.document:getXPointer()
+        local current_xp = nil
+        
+        -- Priority 1: Exact target XPointer (e.g., from a highlighted word)
+        if target_xp then
+            current_xp = target_xp
+            AIHelper:log("ChapterAnalyzer: Using exact target_xp for context boundary")
+        end
+        
+        -- Priority 2: Use getPageXPointer if provided and supported
+        if not current_xp and current_page and ui.document.getPageXPointer then
+            local total_pages = ui.document:getPageCount() or current_page
+            local safe_pos = math.min(current_page, total_pages)
+            -- If we are at the very end of the book, getPageXPointer might not get the absolute end, 
+            -- but safe_pos guarantees it won't throw out of bounds.
+            current_xp = ui.document:getPageXPointer(safe_pos)
+        end
+        -- Fallback to jumping if getPageXPointer is not available but we have a target pos
+        if not current_xp and current_page then
+            local total_pages = ui.document:getPageCount() or current_page
+            local safe_pos = math.min(current_page, total_pages)
+            
+            -- Save current position to jump back
+            local current_real_xp = ui.document:getXPointer()
+            if current_real_xp then
+                ui.document:gotoPage(safe_pos)
+                current_xp = ui.document:getXPointer()
+                ui.document:gotoXPointer(current_real_xp)
+            end
+        end
+        
+        -- Ultimate fallback to current screen top
+        if not current_xp then 
+            current_xp = ui.document:getXPointer()
+        end
+        
         if not current_xp then 
             AIHelper:log("ChapterAnalyzer: getTextForAnalysis - could not get XPointer")
             return nil 

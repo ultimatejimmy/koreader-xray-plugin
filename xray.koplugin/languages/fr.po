@@ -77,6 +77,9 @@ msgstr "en"
 msgid "dont_ask_again"
 msgstr "Ne plus demander pour ce livre"
 
+msgid "entity_not_found"
+msgstr "'%s' n'a pas été trouvé comme personnage ou lieu."
+
 msgid "error_author_fetch_desc"
 msgstr "Échec de la récupération des infos auteur."
 
@@ -98,6 +101,9 @@ msgstr "Extraction de personnages supplémentaires..."
 msgid "fetch_button"
 msgstr "Récupérer"
 
+msgid "fetch_single_word_prompt"
+msgstr "Aucune donnée X-Ray trouvée pour '%s'. Voulez-vous la rechercher ?"
+
 msgid "fetch_successful"
 msgstr "Récupération réussie"
 
@@ -110,14 +116,8 @@ msgstr "Récupération des infos auteur depuis %s..."
 msgid "fetching_wait"
 msgstr "⏳ Veuillez patienter...\nCe processus peut prendre 10 à 50 secondes."
 
-msgid "find_mentions"
-msgstr "Trouver les mentions"
-
 msgid "full_book_option"
 msgstr "Mode Livre Complet"
-
-msgid "label_aliases"
-msgstr "ALIASES"
 
 msgid "label_description"
 msgstr "DÉTAILS"
@@ -149,35 +149,8 @@ msgstr "Langue modifiée. Rouvrez le menu pour voir les changements."
 msgid "logs_cleared"
 msgstr "Logs effacés !"
 
-msgid "mentions_disabled"
-msgstr "Disabled"
-
-msgid "mentions_enabled"
-msgstr "Enabled"
-
-msgid "mentions_none"
-msgstr "Aucune mention trouvee pour '%s' pour l'instant."
-
-msgid "mentions_preference_desc"
-msgstr "Select your preference for character and location mentions:"
-
-msgid "mentions_refresh"
-msgstr "Actualiser les mentions"
-
-msgid "mentions_scanning"
-msgstr "Analyse... %1 sur %2 chapitres"
-
-msgid "mentions_setting_desc"
-msgstr "L'analyse des mentions vous permet de trouver chaque occurrence d'un personnage ou d'un lieu dans le livre. Cela se produit automatiquement en arrière-plan pour garantir que le lecteur reste réactif.\n\nLa désactivation de cette option masquera le bouton 'Rechercher des mentions'."
-
-msgid "mentions_setting_title"
-msgstr "Mentions Settings"
-
-msgid "mentions_title"
-msgstr "Mentions : %s"
-
-msgid "mentions_wait_scan"
-msgstr "Veuillez attendre la fin de l'analyse avant de naviguer..."
+msgid "looking_up_msg"
+msgstr "Recherche de '%s'..."
 
 msgid "menu_about"
 msgstr "À propos"
@@ -238,9 +211,6 @@ msgstr "Lieux"
 
 msgid "menu_maintenance"
 msgstr "Maintenance"
-
-msgid "menu_mentions_settings"
-msgstr "Mentions Settings"
 
 msgid "menu_primary_ai_model"
 msgstr "Modèle IA principal"
@@ -431,3 +401,33 @@ msgstr "Ajoute un bouton 'X-Ray' aux menus de dictionnaire et de sélection pour
 msgid "yes"
 msgstr "Oui"
 
+
+msgid "mentions_disabled"
+msgstr "Disabled"
+
+msgid "mentions_enabled"
+msgstr "Enabled"
+
+msgid "mentions_none"
+msgstr "No mentions found for '%s' yet."
+
+msgid "mentions_preference_desc"
+msgstr "Select your preference for character and location mentions:"
+
+msgid "mentions_refresh"
+msgstr "Refresh Mentions"
+
+msgid "mentions_scanning"
+msgstr "Scanning... %1 of %2 chapters"
+
+msgid "mentions_setting_desc"
+msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the 'Find Mentions' button."
+
+msgid "mentions_setting_title"
+msgstr "Mentions Settings"
+
+msgid "mentions_title"
+msgstr "Mentions: %s"
+
+msgid "mentions_wait_scan"
+msgstr "Wait for scan to finish before navigating..."

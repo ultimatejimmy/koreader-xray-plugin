@@ -77,6 +77,9 @@ msgstr "en"
 msgid "dont_ask_again"
 msgstr "Don't ask again"
 
+msgid "entity_not_found"
+msgstr "'%s' was not found as a character or location."
+
 msgid "error_author_fetch_desc"
 msgstr "Failed to fetch author info."
 
@@ -98,6 +101,9 @@ msgstr "Extracting additional characters..."
 msgid "fetch_button"
 msgstr "Fetch"
 
+msgid "fetch_single_word_prompt"
+msgstr "No X-Ray data found for '%s'. Would you like to look it up?"
+
 msgid "fetch_successful"
 msgstr "Fetch successful"
 
@@ -110,14 +116,8 @@ msgstr "Fetching author info from %s..."
 msgid "fetching_wait"
 msgstr "⏳ Please wait...\nThis process may take 10-50 seconds."
 
-msgid "find_mentions"
-msgstr "Find Mentions"
-
 msgid "full_book_option"
 msgstr "Full Book Mode"
-
-msgid "label_aliases"
-msgstr "ALIASES"
 
 msgid "label_description"
 msgstr "DESCRIPTION"
@@ -149,35 +149,8 @@ msgstr "Language changed. Reopen the menu to see the changes."
 msgid "logs_cleared"
 msgstr "Logs cleared!"
 
-msgid "mentions_disabled"
-msgstr "Disabled"
-
-msgid "mentions_enabled"
-msgstr "Enabled"
-
-msgid "mentions_none"
-msgstr "No mentions found for '%s' yet."
-
-msgid "mentions_preference_desc"
-msgstr "Select your preference for character and location mentions:"
-
-msgid "mentions_refresh"
-msgstr "Refresh Mentions"
-
-msgid "mentions_scanning"
-msgstr "Scanning... %1 of %2 chapters"
-
-msgid "mentions_setting_desc"
-msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the 'Find Mentions' button."
-
-msgid "mentions_setting_title"
-msgstr "Mentions Settings"
-
-msgid "mentions_title"
-msgstr "Mentions: %s"
-
-msgid "mentions_wait_scan"
-msgstr "Wait for scan to finish before navigating..."
+msgid "looking_up_msg"
+msgstr "Looking up '%s'..."
 
 msgid "menu_about"
 msgstr "About"
@@ -238,9 +211,6 @@ msgstr "Locations"
 
 msgid "menu_maintenance"
 msgstr "Maintenance"
-
-msgid "menu_mentions_settings"
-msgstr "Mentions Settings"
 
 msgid "menu_primary_ai_model"
 msgstr "Primary AI Model"
@@ -419,6 +389,36 @@ msgstr "What's new:"
 msgid "updating_ai"
 msgstr "Updating X-Ray Data..."
 
+msgid "mentions_disabled"
+msgstr "Disabled"
+
+msgid "mentions_enabled"
+msgstr "Enabled"
+
+msgid "mentions_none"
+msgstr "No mentions found for '%s' yet."
+
+msgid "mentions_preference_desc"
+msgstr "Select your preference for character and location mentions:"
+
+msgid "mentions_refresh"
+msgstr "Refresh Mentions"
+
+msgid "mentions_scanning"
+msgstr "Scanning... %1 of %2 chapters"
+
+msgid "mentions_setting_desc"
+msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the 'Find Mentions' button."
+
+msgid "mentions_setting_title"
+msgstr "Mentions Settings"
+
+msgid "mentions_title"
+msgstr "Mentions: %s"
+
+msgid "mentions_wait_scan"
+msgstr "Wait for scan to finish before navigating..."
+
 msgid "xray_disabled_label"
 msgstr "Disabled"
 
@@ -431,3 +431,33 @@ msgstr "Adds an 'X-Ray' button to dictionary and selection menus for instant loo
 msgid "yes"
 msgstr "Yes"
 
+
+msgid "mentions_disabled"
+msgstr "Disabled"
+
+msgid "mentions_enabled"
+msgstr "Enabled"
+
+msgid "mentions_none"
+msgstr "No mentions found for '%s' yet."
+
+msgid "mentions_preference_desc"
+msgstr "Select your preference for character and location mentions:"
+
+msgid "mentions_refresh"
+msgstr "Refresh Mentions"
+
+msgid "mentions_scanning"
+msgstr "Scanning... %1 of %2 chapters"
+
+msgid "mentions_setting_desc"
+msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the 'Find Mentions' button."
+
+msgid "mentions_setting_title"
+msgstr "Mentions Settings"
+
+msgid "mentions_title"
+msgstr "Mentions: %s"
+
+msgid "mentions_wait_scan"
+msgstr "Wait for scan to finish before navigating..."

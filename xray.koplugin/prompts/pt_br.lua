@@ -137,5 +137,34 @@ FORMATO JSON REQUERIDO:
         no_description = "Sem Descrição",
         unnamed_person = "Pessoa Sem Nome",
         no_biography = "Biografia Não Disponível"
-    }
+    },
+ 
+    -- Targeted Single Word Lookup
+    single_word_lookup = [[O usuário destacou a palavra "%s".
+TAREFA: Determine se esta palavra é um Personagem, Local ou Figura Histórica no livro.
+ 
+IMPORTANTE: Use APENAS o "BOOK TEXT CONTEXT" fornecido para tomar sua decisão. Não use conhecimento externo e não alucine.
+Se a palavra NÃO for um personagem, local ou figura histórica no texto, defina `is_valid` como false.
+ 
+FORMATO JSON OBRIGATÓRIO:
+{
+  "is_valid": true,
+  "type": "character",
+  "item": {
+    "name": "Nome completo",
+    "role": "Papel",
+    "gender": "Masculino/Feminino/Desconhecido",
+    "occupation": "Ocupação",
+    "description": "Breve descrição (máx. 250 caracteres)"
+  },
+  "error_message": ""
+}
+ 
+Nota: se o tipo for "location", o item deve ter "name" e "description". Se o tipo for "historical_figure", o item deve ter "name", "biography" e "role".
+ 
+Se `is_valid` for false:
+{
+  "is_valid": false,
+  "error_message": "Breve explicação de por que isso não é um personagem nem um local."
+}]]
 }

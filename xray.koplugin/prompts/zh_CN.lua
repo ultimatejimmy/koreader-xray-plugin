@@ -137,5 +137,34 @@ return {
         no_description = "无描述",
         unnamed_person = "未命名人物",
         no_biography = "暂无简介"
-    }
+    },
+ 
+    -- Targeted Single Word Lookup
+    single_word_lookup = [[用户选中了单词 "%s"。
+任务：判断该单词是否为书中的人物、地点或历史人物。
+ 
+重要提示：仅使用提供的 "BOOK TEXT CONTEXT" 进行判断。不要使用外部知识或凭空臆造。
+如果该单词在文本中不是人物、地点或历史人物，请将 `is_valid` 设置为 false。
+ 
+要求的 JSON 格式：
+{
+  "is_valid": true,
+  "type": "character",
+  "item": {
+    "name": "全名",
+    "role": "角色/定位",
+    "gender": "男/女/未知",
+    "occupation": "职业",
+    "description": "简短描述（最多 250 个字符）"
+  },
+  "error_message": ""
+}
+ 
+注意：如果类型是 "location"，则 item 应包含 "name" 和 "description"。如果类型是 "historical_figure"，则 item 应包含 "name"、"biography" 和 "role"。
+ 
+如果 `is_valid` 为 false：
+{
+  "is_valid": false,
+  "error_message": "简要说明为什么这不是人物或地点。"
+}]]
 }

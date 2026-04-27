@@ -687,16 +687,16 @@ function AIHelper:loadLanguage()
     end
 end
 
-function AIHelper:createPrompt(title, author, context, section_name)
+function AIHelper:createPrompt(title, author, context, section_name, targeted_word)
     if not self.prompts then self:loadLanguage() end
     section_name = section_name or "character_section"
     local template = self.prompts[section_name] or self.prompts.character_section
-    local enhanced_title, enhanced_author, extra_context = title, author or "Unknown", ""
+    local enhanced_title, enhanced_author, extra_context = title or "Unknown", author or "Unknown", ""
     if context then
         if context.series then enhanced_title = enhanced_title .. " | Series: " .. context.series end
         if context.book_text then extra_context = extra_context .. "\n\nBOOK TEXT CONTEXT:\n" .. context.book_text end
-        -- Chapter data is only relevant for comprehensive fetches, not "more characters" or author lookups
-        if section_name == "comprehensive_xray" then
+        -- Chapter data is relevant for comprehensive fetches and targeted single-word lookups
+        if section_name == "comprehensive_xray" or section_name == "single_word_lookup" then
             if context.chapter_titles and #context.chapter_titles > 0 then
                 local numbered_chapters = {}
                 for i, t in ipairs(context.chapter_titles) do
@@ -769,13 +769,15 @@ function AIHelper:createPrompt(title, author, context, section_name)
     end
     local p = (context and context.reading_percent) or 100
     local success, final_prompt
-    if section_name == "more_characters" then
+    if section_name == "single_word_lookup" then
+        success, final_prompt = pcall(string.format, template, targeted_word or "???")
+    elseif section_name == "more_characters" then
         local exclude = context.exclude_characters or ""
         success, final_prompt = pcall(string.format, template, enhanced_title, enhanced_author, p, exclude, p)
     else
         success, final_prompt = pcall(string.format, template, enhanced_title, enhanced_author, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p)
     end
-    if not success then final_prompt = string.format("Book: %s - Author: %s. Extract %s data.", enhanced_title, enhanced_author, section_name) end
+    if not success then final_prompt = string.format("Extract %s data.", section_name) end
     if #extra_context > 0 then final_prompt = final_prompt .. extra_context end
 
     -- Strip invalid UTF-8 introduced by byte-based truncation of multi-byte
@@ -833,6 +835,11 @@ end
 
 function AIHelper:getBookDataComprehensive(title, author, provider_name, context)
     local prompt = self:createPrompt(title, author, context, "comprehensive_xray")
+    return self:executeUnifiedRequest(prompt)
+end
+
+function AIHelper:lookupSingleWord(text, context)
+    local prompt = self:createPrompt(nil, nil, context, "single_word_lookup", text)
     return self:executeUnifiedRequest(prompt)
 end
 
@@ -1004,6 +1011,9 @@ end
 
 function AIHelper:validateAndCleanData(data)
     if not data then return nil end
+    -- Pass-through for single-word lookup results
+    if data.is_valid ~= nil then return data end
+    
     local strings = self:getFallbackStrings()
     local function ensureString(v, d) return (type(v) == "string" and #v > 0) and v or d or "" end
     

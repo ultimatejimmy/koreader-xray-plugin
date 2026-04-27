@@ -77,6 +77,9 @@ msgstr "uk"
 msgid "dont_ask_again"
 msgstr "Більше не запитувати для цієї книги"
 
+msgid "entity_not_found"
+msgstr "'%s' не знайдено як персонаж або місце."
+
 msgid "error_author_fetch_desc"
 msgstr "Не вдалося отримати інформацію про автора."
 
@@ -98,6 +101,9 @@ msgstr "Видобуваємо додаткових персонажів..."
 msgid "fetch_button"
 msgstr "Отримати"
 
+msgid "fetch_single_word_prompt"
+msgstr "Дані X-Ray для '%s' не знайдено. Бажаєте виконати пошук?"
+
 msgid "fetch_successful"
 msgstr "Дані успішно отримано"
 
@@ -110,14 +116,8 @@ msgstr "Отримуємо інформацію про автора з %s..."
 msgid "fetching_wait"
 msgstr "⏳ Зачекайте, будь ласка...\nЦей процес може зайняти 10–50 секунд."
 
-msgid "find_mentions"
-msgstr "Знайти згадки"
-
 msgid "full_book_option"
 msgstr "Режим усієї книги"
-
-msgid "label_aliases"
-msgstr "ПСЕВДОНІМИ"
 
 msgid "label_description"
 msgstr "ОПИС"
@@ -149,35 +149,8 @@ msgstr "Мову змінено. Відкрийте меню знову, щоб 
 msgid "logs_cleared"
 msgstr "Логи очищено!"
 
-msgid "mentions_disabled"
-msgstr "Disabled"
-
-msgid "mentions_enabled"
-msgstr "Enabled"
-
-msgid "mentions_none"
-msgstr "Згадок про «%s» поки не знайдено."
-
-msgid "mentions_preference_desc"
-msgstr "Select your preference for character and location mentions:"
-
-msgid "mentions_refresh"
-msgstr "Оновити згадки"
-
-msgid "mentions_scanning"
-msgstr "Сканування... %1 із %2 розділів"
-
-msgid "mentions_setting_desc"
-msgstr "Сканування згадок дозволяє знайти кожну згадку персонажа або місця в книзі. Це відбувається автоматично у фоновому режимі, щоб забезпечити чуйність рідера.\n\nВимкнення цієї функції приховає кнопку «Знайти згадки»."
-
-msgid "mentions_setting_title"
-msgstr "Mentions Settings"
-
-msgid "mentions_title"
-msgstr "Згадки: %s"
-
-msgid "mentions_wait_scan"
-msgstr "Зачекайте завершення сканування перед переходом..."
+msgid "looking_up_msg"
+msgstr "Пошук '%s'..."
 
 msgid "menu_about"
 msgstr "Про додаток"
@@ -238,9 +211,6 @@ msgstr "Локації"
 
 msgid "menu_maintenance"
 msgstr "Обслуговування"
-
-msgid "menu_mentions_settings"
-msgstr "Mentions Settings"
 
 msgid "menu_primary_ai_model"
 msgstr "Основна модель ШІ"
@@ -431,3 +401,33 @@ msgstr "Додає кнопку 'X-Ray' у меню словника та вид
 msgid "yes"
 msgstr "Так"
 
+
+msgid "mentions_disabled"
+msgstr "Disabled"
+
+msgid "mentions_enabled"
+msgstr "Enabled"
+
+msgid "mentions_none"
+msgstr "No mentions found for '%s' yet."
+
+msgid "mentions_preference_desc"
+msgstr "Select your preference for character and location mentions:"
+
+msgid "mentions_refresh"
+msgstr "Refresh Mentions"
+
+msgid "mentions_scanning"
+msgstr "Scanning... %1 of %2 chapters"
+
+msgid "mentions_setting_desc"
+msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the 'Find Mentions' button."
+
+msgid "mentions_setting_title"
+msgstr "Mentions Settings"
+
+msgid "mentions_title"
+msgstr "Mentions: %s"
+
+msgid "mentions_wait_scan"
+msgstr "Wait for scan to finish before navigating..."

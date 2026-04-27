@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Project: KOReader X-Ray
 
 ## General Instructions:
@@ -27,10 +31,3 @@ After approval, write high-level, tested code.
 ## End User testing
 - I do all user testing my my Kindle Paperwhite 1 (gen 5) from 2012 and my Pixel 8a.
 - internet connection speed is normal
-
-## Release notes
-- No emoji in release notes
-- make sure to sound human and not like a robot or ai
-- release should be concise and in a markdown format. use bullet points, bolding and italics where appropriate
-- don't get too technical with the release notes. Keep it user friendly.
-- Provide suggestions for updating the readme and wiki with new features.

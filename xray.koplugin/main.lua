@@ -116,7 +116,8 @@ function XRayPlugin:init()
                             self.ui:handleEvent(Event:new("ClearSelection"))
                         end
                         
-                        self.lookup_manager:handleLookup(_reader_highlight_instance.selected_text.text)
+                        local sel = _reader_highlight_instance.selected_text
+                        self.lookup_manager:handleLookup(sel.text, sel.pos0, sel.pos1)
                     end,
                 }
             end)
@@ -135,7 +136,7 @@ function XRayPlugin:onDictButtonsReady(dict_popup, dict_buttons)
         callback = function()
             -- Close the native dictionary popup immediately so it doesn't linger
             if dict_popup then pcall(function() UIManager:close(dict_popup) end) end
-            self.lookup_manager:handleLookup(dict_popup.word)
+            self.lookup_manager:handleLookup(dict_popup.word, dict_popup.pos0, dict_popup.pos1)
         end,
     }
 
@@ -1914,6 +1915,106 @@ local function sanitizeMetadata(val)
     if type(val) == "string" then return val
     elseif type(val) == "table" then return table.concat(val, ", ")
     else return "Unknown" end
+end
+
+function XRayPlugin:fetchSingleWord(text, pos0, pos1)
+    require("ui/network/manager"):runWhenOnline(function()
+        local current_page = self.ui:getCurrentPage()
+        local reading_percent = math.floor((current_page / (self.ui.document:getPageCount() or 1)) * 100)
+        local spoiler_setting = self.ai_helper.settings and self.ai_helper.settings.spoiler_setting or "spoiler_free"
+        
+        local limit_percent = reading_percent
+        if spoiler_setting == "full_book" then limit_percent = 100 end
+
+        local wait_msg = InfoMessage:new{
+            text = self.loc:t("looking_up_msg", text:sub(1, 30)),
+            timeout = 60
+        }
+        UIManager:show(wait_msg)
+
+        UIManager:scheduleIn(0.5, function()
+            if not self.chapter_analyzer then self.chapter_analyzer = require("xray_chapteranalyzer"):new() end
+            
+            -- 1. Distributed chapter samples (Start/Mid/End of each chapter up to current)
+            -- We use a moderate budget (60k) to balance context depth with fetch speed.
+            local samples, chapter_titles = self.chapter_analyzer:getDetailedChapterSamples(self.ui, 100, 60000, limit_percent == 100)
+            
+            -- 2. Recent book text (Up to the highlighted word if pos1 is available)
+            local start_context_page = math.max(1, current_page - 15)
+            local book_text = self.chapter_analyzer:getTextForAnalysis(self.ui, 20000, nil, current_page + 1, start_context_page, pos1)
+            
+            -- Fallback injection if the extraction completely missed the word due to DOM/Chapter boundaries
+            if book_text and text and not book_text:lower():find(text:lower(), 1, true) then
+                book_text = book_text .. "\n\n[CURRENT PAGE HIGHLIGHT]: " .. text
+            end
+            
+            self:log("fetchSingleWord: extracted book_text length: " .. tostring(book_text and #book_text or 0))
+            
+            local context = {
+                reading_percent = limit_percent,
+                chapter_samples = samples,
+                book_text = book_text
+            }
+
+            local result, error_code, error_msg = self.ai_helper:lookupSingleWord(text, context)
+            UIManager:close(wait_msg)
+
+            if not result then
+                UIManager:show(InfoMessage:new{ text = error_msg or "Lookup failed.", timeout = 5 })
+                return
+            end
+
+            if result.is_valid then
+                local item = result.item
+                local item_type = result.type
+                
+                -- Merge into our tables
+                local target_list
+                if item_type == "character" then
+                    target_list = self.characters
+                elseif item_type == "location" then
+                    target_list = self.locations
+                elseif item_type == "historical_figure" then
+                    target_list = self.historical_figures
+                end
+
+                if target_list then
+                    -- Check if already exists (case-insensitive)
+                    local found = false
+                    for _, existing in ipairs(target_list) do
+                        if (existing.name or ""):lower() == (item.name or ""):lower() then
+                            -- Update description/role
+                            for k, v in pairs(item) do existing[k] = v end
+                            found = true
+                            break
+                        end
+                    end
+                    if not found then table.insert(target_list, item) end
+                    
+                    -- Sort and save cache
+                    self:sortDataByFrequency(target_list, book_text, "name")
+                    if not self.cache_manager then self.cache_manager = require("xray_cachemanager"):new() end
+                    
+                    -- Prepare data for cache save
+                    local book_data = {
+                        characters = self.characters,
+                        locations = self.locations,
+                        historical_figures = self.historical_figures,
+                        timeline = self.timeline,
+                        author_info = self.author_info,
+                        last_fetch_page = self.book_data and self.book_data.last_fetch_page
+                    }
+                    self.cache_manager:saveCache(self.ui.document.file, book_data)
+                    
+                    -- Show result
+                    self.lookup_manager:showResult(item, item_type)
+                end
+            else
+                local err = result.error_message or self.loc:t("entity_not_found", text:sub(1, 20))
+                UIManager:show(InfoMessage:new{ text = err, timeout = 5 })
+            end
+        end)
+    end)
 end
 
 function XRayPlugin:continueWithFetch(reading_percent, is_update, last_fetch_page, is_silent)

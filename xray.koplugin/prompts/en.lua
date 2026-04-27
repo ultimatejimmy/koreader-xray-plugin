@@ -128,6 +128,35 @@ REQUIRED JSON FORMAT:
   ]
 }]],
 
+    -- Targeted Single Word Lookup
+    single_word_lookup = [[The user highlighted the word "%s".
+TASK: Determine if this word represents a Character, Location, or Historical Figure in the book.
+
+CRITICAL: Use ONLY the provided "BOOK TEXT CONTEXT" to make this determination. Do not use outside knowledge or hallucinate.
+If the word is NOT a character, location, or historical figure in the text, set `is_valid` to false.
+
+REQUIRED JSON FORMAT:
+{
+  "is_valid": true,
+  "type": "character",
+  "item": {
+    "name": "Full Name",
+    "role": "Role",
+    "gender": "Male/Female/Unknown",
+    "occupation": "Occupation",
+    "description": "Short description (MAX 250 chars)"
+  },
+  "error_message": ""
+}
+
+Note: If type is "location", the item should have "name" and "description". If type is "historical_figure", the item should have "name", "biography", and "role".
+
+If `is_valid` is false:
+{
+  "is_valid": false,
+  "error_message": "Short explanation why this is not a character or location."
+}]],
+
     -- Fallback strings
     fallback = {
         unknown_book = "Unknown Book",

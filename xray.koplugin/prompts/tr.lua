@@ -137,5 +137,34 @@ GEREKLİ JSON FORMATI:
         no_description = "Açıklama Yok",
         unnamed_person = "İsimsiz Kişi",
         no_biography = "Biyografi Mevcut Değil"
-    }
+    },
+ 
+    -- Targeted Single Word Lookup
+    single_word_lookup = [[Kullanıcı "%s" kelimesini vurguladı.
+GÖREV: Bu kelimenin kitaptaki bir Karakter, Konum veya Tarihi Figür olup olmadığını belirleyin.
+ 
+ÖNEMLİ: Kararınızı vermek için YALNIZCA sağlanan "BOOK TEXT CONTEXT" metnini kullanın. Dış bilgi kullanmayın veya uydurmayın.
+Kelime metinde bir karakter, konum veya tarihi figür DEĞİLSE, `is_valid` değerini false yapın.
+ 
+GEREKLİ JSON FORMATI:
+{
+  "is_valid": true,
+  "type": "character",
+  "item": {
+    "name": "Tam ad",
+    "role": "Rol",
+    "gender": "Erkek/Kadın/Bilinmiyor",
+    "occupation": "Meslek",
+    "description": "Kısa açıklama (maks. 250 karakter)"
+  },
+  "error_message": ""
+}
+ 
+Not: eğer tür "location" ise, öğede "name" ve "description" olmalıdır. Eğer tür "historical_figure" ise, öğede "name", "biography" ve "role" olmalıdır.
+ 
+Eğer `is_valid` false ise:
+{
+  "is_valid": false,
+  "error_message": "Bunun neden bir karakter veya konum olmadığına dair kısa bir açıklama."
+}]]
 }

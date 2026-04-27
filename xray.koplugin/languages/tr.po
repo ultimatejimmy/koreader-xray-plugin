@@ -9,7 +9,7 @@ msgid "ai_fetch_complete"
 msgstr "%s üzerinden başarıyla çekildi!\n\nKitap: %s\nYazar: %s\n\nKarakterler: %d\nMekanlar: %d\nTemalar: %d\nZaman Çizelgesi Olayları: %d\nTarihi Kişiler: %d\n\n%s\n\nÖZET:\n%s"
 
 msgid "ai_fetch_complete_msg"
-msgstr "AI Fetch Complete!"
+msgstr "YZ Veri Çekme Tamamlandı!"
 
 msgid "auto_update_aggressive"
 msgstr "Agresif: her yeni bölümde kontrol eder"
@@ -27,7 +27,7 @@ msgid "auto_update_freq_about"
 msgstr "Otomatik güncelleme, siz okurken arka planda yeni bölüm verilerini kontrol eder.\n\nSINIRLAR VE PERFORMANS\nSık arka plan istekleri PİL ÖMRÜNÜ tüketebilir ve AI SAĞLAYICI HIZ SINIRLARINA takılabilir (özellikle Pro modellerde).\n\nMODLAR\n• Devre Dışı: Arka plan isteği yapılmaz\n• Agresif: Her yeni bölüme girdiğinizde kontrol eder\n• Dengeli: En fazla 5 dakikada bir kontrol eder (önerilen)\n• Ekonomik: En fazla 15 dakikada bir kontrol eder\n• Seyrek: En fazla 30 dakikada bir kontrol eder\n\nNot: Frekans sınırları nedeniyle bir bölüm atlanırsa, X-Ray bir sonraki arka plan çekiminde onu otomatik olarak dahil edecektir."
 
 msgid "auto_update_freq_label"
-msgstr "Background fetching frequency:"
+msgstr "Arka plan çekim sıklığı:"
 
 msgid "auto_update_sparse"
 msgstr "Seyrek: en fazla 30 dk'da bir kontrol eder"
@@ -39,7 +39,7 @@ msgid "cache_save_failed"
 msgstr "Önbelleğe kaydetme başarısız"
 
 msgid "cache_save_success"
-msgstr "✓ Cache updated."
+msgstr "✓ Önbellek güncellendi."
 
 msgid "cache_saved"
 msgstr "Önbelleğe kaydedildi!"
@@ -77,6 +77,9 @@ msgstr "en"
 msgid "dont_ask_again"
 msgstr "Bu kitap için bir daha sorma"
 
+msgid "entity_not_found"
+msgstr "'%s' bir karakter veya konum olarak bulunamadı."
+
 msgid "error_author_fetch_desc"
 msgstr "Yazar bilgisi alınamadı."
 
@@ -84,7 +87,7 @@ msgid "error_author_fetch_title"
 msgstr "Yazar Çekme Hatası"
 
 msgid "error_extract_text"
-msgstr "Error: Could not extract book text."
+msgstr "Hata: Kitap metni çıkarılamadı."
 
 msgid "error_fetch_desc"
 msgstr "X-Ray verileri çekilemedi. API anahtarınızı ve bağlantınızı kontrol edin."
@@ -93,10 +96,13 @@ msgid "error_fetch_title"
 msgstr "Veri Çekme Hatası"
 
 msgid "extracting_more_characters"
-msgstr "Extracting additional characters..."
+msgstr "Ek karakterler çıkarılıyor..."
 
 msgid "fetch_button"
 msgstr "Çek"
+
+msgid "fetch_single_word_prompt"
+msgstr "'%s' için X-Ray verisi bulunamadı. Aramak ister misiniz?"
 
 msgid "fetch_successful"
 msgstr "Veri çekme başarılı"
@@ -110,14 +116,8 @@ msgstr "Yazar bilgisi %s üzerinden çekiliyor..."
 msgid "fetching_wait"
 msgstr "⏳ Lütfen bekleyin...\nBu işlem 10-50 saniye sürebilir."
 
-msgid "find_mentions"
-msgstr "Sozleri bul"
-
 msgid "full_book_option"
 msgstr "Tam Kitap Modu"
-
-msgid "label_aliases"
-msgstr "TAKMA ADLAR"
 
 msgid "label_description"
 msgstr "AÇIKLAMA"
@@ -149,35 +149,8 @@ msgstr "Dil değiştirildi. Değişiklikleri görmek için menüyü tekrar açı
 msgid "logs_cleared"
 msgstr "Günlükler temizlendi!"
 
-msgid "mentions_disabled"
-msgstr "Disabled"
-
-msgid "mentions_enabled"
-msgstr "Enabled"
-
-msgid "mentions_none"
-msgstr "'%s' icin henuz soz bulunamadı."
-
-msgid "mentions_preference_desc"
-msgstr "Select your preference for character and location mentions:"
-
-msgid "mentions_refresh"
-msgstr "Sozleri yenile"
-
-msgid "mentions_scanning"
-msgstr "Taranıyor... %1 / %2 bölüm"
-
-msgid "mentions_setting_desc"
-msgstr "Bahsetme taramas, kitaptaki bir karakterin veya konumun her geA iYini bulmanza olanak tanr. Bu, okuyucunun yant vermeye devam etmesini saYlamak iA in arka planda otomatik olarak gerA ekleYir.\n\nBunu devre d brakmak 'Bahsetmeleri Bul' dAmesini gizleyecektir."
-
-msgid "mentions_setting_title"
-msgstr "Mentions Settings"
-
-msgid "mentions_title"
-msgstr "Sozler: %s"
-
-msgid "mentions_wait_scan"
-msgstr "Devam etmeden önce taramanın bitmesini bekleyin..."
+msgid "looking_up_msg"
+msgstr "'%s' aranıyor..."
 
 msgid "menu_about"
 msgstr "Hakkında"
@@ -204,7 +177,7 @@ msgid "menu_clear_logs"
 msgstr "Günlükleri Temizle"
 
 msgid "menu_config_header"
-msgstr "--- Current Configuration ---"
+msgstr "--- Mevcut Yapılandırma ---"
 
 msgid "menu_custom_model_title"
 msgstr "Özel %s Modeli"
@@ -213,13 +186,13 @@ msgid "menu_enter_custom_model"
 msgstr "Özel model girin..."
 
 msgid "menu_enter_ui_key"
-msgstr "Enter UI override key: "
+msgstr "UI geçersiz kılma anahtarını girin: "
 
 msgid "menu_fetch_author"
 msgstr "Yazar Bilgisini Çek (AI)"
 
 msgid "menu_fetch_more_chars"
-msgstr "Fetch More Characters"
+msgstr "Daha Fazla Karakter Getir"
 
 msgid "menu_fetch_xray"
 msgstr "X-Ray Verilerini Çek"
@@ -238,9 +211,6 @@ msgstr "Mekanlar"
 
 msgid "menu_maintenance"
 msgstr "Bakım"
-
-msgid "menu_mentions_settings"
-msgstr "Mentions Settings"
 
 msgid "menu_primary_ai_model"
 msgstr "Birincil YZ Modeli"
@@ -345,7 +315,7 @@ msgid "spoiler_free_option"
 msgstr "Spoilersiz Mod (Kitabın %%%d kadarı)"
 
 msgid "spoiler_preference_desc"
-msgstr "Select your spoiler preference for X-Ray data:"
+msgstr "X-Ray verileri için spoiler tercihinizi seçin:"
 
 msgid "spoiler_preference_title"
 msgstr "Spoiler Tercihi"
@@ -354,10 +324,10 @@ msgid "this_chapter"
 msgstr "Bu Bölüm"
 
 msgid "this_page"
-msgstr "This Page"
+msgstr "Bu Sayfa"
 
 msgid "updater_available_header"
-msgstr "X-Ray %s is available!\nYou have %s."
+msgstr "X-Ray %s mevcut!\nSizde %s var."
 
 msgid "updater_btn_cancel"
 msgstr "Cancel"
@@ -369,16 +339,16 @@ msgid "updater_btn_later"
 msgstr "Later"
 
 msgid "updater_btn_open_browser"
-msgstr "Open in browser"
+msgstr "Tarayıcıda aç"
 
 msgid "updater_btn_restart"
 msgstr "Restart"
 
 msgid "updater_cancelled_check"
-msgstr "Update check cancelled."
+msgstr "Güncelleme kontrolü iptal edildi."
 
 msgid "updater_cancelled_update"
-msgstr "Update cancelled."
+msgstr "Güncelleme iptal edildi."
 
 msgid "updater_check"
 msgstr "Check for Updates"
@@ -393,16 +363,16 @@ msgid "updater_downloading"
 msgstr "Downloading X-Ray %s..."
 
 msgid "updater_err_download"
-msgstr "Download error: %s"
+msgstr "İndirme hatası: %s"
 
 msgid "updater_err_extract"
-msgstr "Extraction error: %s"
+msgstr "Çıkarma hatası: %s"
 
 msgid "updater_error_checking"
-msgstr "Error checking for updates."
+msgstr "Güncellemeler kontrol edilirken hata oluştu."
 
 msgid "updater_error_checking_detail"
-msgstr "Error checking for updates: %s"
+msgstr "Güncelleme kontrolü hatası: %s"
 
 msgid "updater_no_asset"
 msgstr "No automatic update file was found.\n\nOpen the releases page on GitHub?"
@@ -414,7 +384,7 @@ msgid "updater_up_to_date"
 msgstr "X-Ray is up to date (%s)."
 
 msgid "updater_whats_new"
-msgstr "What's new:"
+msgstr "Yenilikler:"
 
 msgid "updating_ai"
 msgstr "X-Ray verileri güncelleniyor..."
@@ -431,3 +401,33 @@ msgstr "Anında arama yapmak için sözlük ve seçim menülerine bir 'X-Ray' d�
 msgid "yes"
 msgstr "Evet"
 
+
+msgid "mentions_disabled"
+msgstr "Disabled"
+
+msgid "mentions_enabled"
+msgstr "Enabled"
+
+msgid "mentions_none"
+msgstr "No mentions found for '%s' yet."
+
+msgid "mentions_preference_desc"
+msgstr "Select your preference for character and location mentions:"
+
+msgid "mentions_refresh"
+msgstr "Refresh Mentions"
+
+msgid "mentions_scanning"
+msgstr "Scanning... %1 of %2 chapters"
+
+msgid "mentions_setting_desc"
+msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the 'Find Mentions' button."
+
+msgid "mentions_setting_title"
+msgstr "Mentions Settings"
+
+msgid "mentions_title"
+msgstr "Mentions: %s"
+
+msgid "mentions_wait_scan"
+msgstr "Wait for scan to finish before navigating..."

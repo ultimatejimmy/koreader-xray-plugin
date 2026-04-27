@@ -137,5 +137,34 @@ ERFORDERLICHES JSON-FORMAT:
         no_description = "Keine Beschreibung",
         unnamed_person = "Unbenannte Person",
         no_biography = "Keine Biografie verfügbar"
-    }
+    },
+ 
+    -- Targeted Single Word Lookup
+    single_word_lookup = [[Der Benutzer hat das Wort "%s" hervorgehoben.
+AUFGABE: Bestimmen Sie, ob es sich bei diesem Wort um einen Charakter, einen Ort oder eine historische Figur im Buch handelt.
+ 
+WICHTIG: Verwenden Sie NUR den bereitgestellten "BOOK TEXT CONTEXT", um Ihre Entscheidung zu treffen. Verwenden Sie kein externes Wissen und halluzinieren Sie nicht.
+Wenn das Wort im Text KEIN Charakter, Ort oder historische Figur ist, setzen Sie `is_valid` auf false.
+ 
+ERFORDERLICHES JSON-FORMAT:
+{
+  "is_valid": true,
+  "type": "character",
+  "item": {
+    "name": "Vollständiger Name",
+    "role": "Rolle",
+    "gender": "Männlich/Weiblich/Unbekannt",
+    "occupation": "Beruf",
+    "description": "Kurze Beschreibung (max. 250 Zeichen)"
+  },
+  "error_message": ""
+}
+ 
+Hinweis: Wenn der Typ "location" ist, muss das Element "name" und "description" enthalten. Wenn der Typ "historical_figure" ist, muss das Element "name", "biography" und "role" enthalten.
+ 
+Wenn `is_valid` false ist:
+{
+  "is_valid": false,
+  "error_message": "Kurze Erklärung, warum dies kein Charakter oder Ort ist."
+}]]
 }

@@ -169,7 +169,8 @@ function LookupManager:showResult(item, item_type)
 end
 
 -- Handle the UI part of the lookup, with a disambiguation picker for multiple hits
-function LookupManager:handleLookup(text)
+function LookupManager:handleLookup(text, pos0, pos1)
+    logger.info("XRayPlugin: handleLookup called for:", text)
     if not text or text == "" then return end
 
     local all = self:lookupAll(text)
@@ -219,31 +220,28 @@ function LookupManager:handleLookup(text)
 
     else
         -- No match found
-        local has_data = (self.plugin.characters        and #self.plugin.characters        > 0) or
-                         (self.plugin.historical_figures and #self.plugin.historical_figures > 0) or
-                         (self.plugin.locations          and #self.plugin.locations          > 0)
-
-        if not has_data then
-            local ConfirmBox = require("ui/widget/confirmbox")
-            local no_data_dialog
-            no_data_dialog = ConfirmBox:new{
-                text       = self.plugin.loc:t("no_data_prompt"),
-                ok_text    = self.plugin.loc:t("fetch_button") or "Fetch",
-                cancel_text = self.plugin.loc:t("close") or "Close",
-                ok_callback = function()
-                    self.plugin:fetchFromAI()
-                end,
-                cancel_callback = function()
-                    UIManager:close(no_data_dialog)
-                end,
-            }
-            UIManager:show(no_data_dialog)
-        else
-            UIManager:show(InfoMessage:new{
-                text    = string.format("No X-Ray data found for '%s'", text:sub(1, 30)),
-                timeout = 3,
-            })
+        local ConfirmBox = require("ui/widget/confirmbox")
+        local no_data_dialog
+        
+        local text_to_show = text:sub(1, 30)
+        local prompt_text = self.plugin.loc:t("fetch_single_word_prompt", text_to_show)
+        if not prompt_text or prompt_text == "fetch_single_word_prompt" then
+            prompt_text = string.format("No X-Ray data found for '%s'. Would you like to look it up?", text_to_show)
         end
+        
+        no_data_dialog = ConfirmBox:new{
+            text       = prompt_text,
+            ok_text    = self.plugin.loc:t("fetch_button") or "Fetch",
+            cancel_text = self.plugin.loc:t("close") or "Close",
+            ok_callback = function()
+                UIManager:close(no_data_dialog)
+                self.plugin:fetchSingleWord(text, pos0, pos1)
+            end,
+            cancel_callback = function()
+                UIManager:close(no_data_dialog)
+            end,
+        }
+        UIManager:show(no_data_dialog)
     end
 end
 
