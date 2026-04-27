@@ -87,6 +87,10 @@ function XRayPlugin:init()
                 return {
                     text = "X-Ray",
                     callback = function()
+                        -- Close the native highlight dialog immediately so it doesn't linger
+                        if _reader_highlight_instance and _reader_highlight_instance.onClose then
+                            pcall(function() _reader_highlight_instance:onClose() end)
+                        end
                         self.lookup_manager:handleLookup(_reader_highlight_instance.selected_text.text)
                     end,
                 }
@@ -104,6 +108,8 @@ function XRayPlugin:onDictButtonsReady(dict_popup, dict_buttons)
     local xray_button = {
         text = "X-Ray",
         callback = function()
+            -- Close the native dictionary popup immediately so it doesn't linger
+            if dict_popup then pcall(function() UIManager:close(dict_popup) end) end
             self.lookup_manager:handleLookup(dict_popup.word)
         end,
     }
