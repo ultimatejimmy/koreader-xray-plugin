@@ -925,13 +925,15 @@ function XRayPlugin:closeAllMenus()
     -- 1. Close all custom plugin modals instantly
     local menus = {
         self.mentions_menu, self.char_menu, self.loc_menu,
-        self.timeline_menu, self.hf_menu, self.xray_menu
+        self.timeline_menu, self.hf_menu, self.xray_menu,
+        self.active_details_dialog
     }
     for _, m in ipairs(menus) do
         if m then UIManager:close(m) end
     end
     self.mentions_menu = nil; self.char_menu = nil; self.loc_menu = nil
     self.timeline_menu = nil; self.hf_menu = nil; self.xray_menu = nil
+    self.active_details_dialog = nil
     
     local function executeClear()
         -- 2. Dismiss native KOReader top menu stack
@@ -1026,24 +1028,29 @@ function XRayPlugin:showCharacterDetails(character)
     local mentions_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.mentions_enabled ~= false
     local detail_dialog
     if mentions_enabled then
-        detail_dialog = ConfirmBox:new{
+        self.active_details_dialog = ConfirmBox:new{
             text = table.concat(lines, "\n"),
             icon = "info",
             ok_text = self.loc:t("find_mentions") or "Find Mentions",
             cancel_text = self.loc:t("close") or "Close",
             ok_callback = function()
+                self.active_details_dialog = nil
                 self:showMentionsForEntity(character)
+            end,
+            cancel_callback = function()
+                self.active_details_dialog = nil
             end,
         }
     else
-        detail_dialog = ConfirmBox:new{
+        self.active_details_dialog = ConfirmBox:new{
             text = table.concat(lines, "\n"),
             icon = "info",
             ok_text = self.loc:t("close") or "Close",
-            ok_callback = function() end,
+            ok_callback = function() self.active_details_dialog = nil end,
+            cancel_callback = function() self.active_details_dialog = nil end,
         }
     end
-    UIManager:show(detail_dialog)
+    UIManager:show(self.active_details_dialog)
 end
 
 function XRayPlugin:showLocationDetails(loc_item)
@@ -1052,24 +1059,29 @@ function XRayPlugin:showLocationDetails(loc_item)
     local mentions_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.mentions_enabled ~= false
     local loc_dialog
     if mentions_enabled then
-        loc_dialog = ConfirmBox:new{
+        self.active_details_dialog = ConfirmBox:new{
             text = name .. "\n\n" .. desc,
             icon = "info",
             ok_text = self.loc:t("find_mentions") or "Find Mentions",
             cancel_text = self.loc:t("close") or "Close",
             ok_callback = function()
+                self.active_details_dialog = nil
                 self:showMentionsForEntity(loc_item)
+            end,
+            cancel_callback = function()
+                self.active_details_dialog = nil
             end,
         }
     else
-        loc_dialog = ConfirmBox:new{
+        self.active_details_dialog = ConfirmBox:new{
             text = name .. "\n\n" .. desc,
             icon = "info",
             ok_text = self.loc:t("close") or "Close",
-            ok_callback = function() end,
+            ok_callback = function() self.active_details_dialog = nil end,
+            cancel_callback = function() self.active_details_dialog = nil end,
         }
     end
-    UIManager:show(loc_dialog)
+    UIManager:show(self.active_details_dialog)
 end
 
 -- Run a full background mentions scan for all characters and locations.
@@ -1096,7 +1108,13 @@ function XRayPlugin:buildMentionsInBackground(is_from_fetch)
     for _, l in ipairs(self.locations or {}) do
         if l.name and l.mentions and #l.mentions > 0 then
             table.insert(queue, { entity = l, name = l.name })
-            l.mentions = nil  -- reset only activated entities for a fresh scan
+            l.mentions = nil
+        end
+    end
+    for _, h in ipairs(self.historical_figures or {}) do
+        if h.name and h.mentions and #h.mentions > 0 then
+            table.insert(queue, { entity = h, name = h.name })
+            h.mentions = nil
         end
     end
     if #queue == 0 then return end
@@ -1156,6 +1174,11 @@ function XRayPlugin:updateMentionsForChapter(toc_entry, next_toc_entry)
             if l.mentions and #l.mentions > 0 then has_activated = true; break end
         end
     end
+    if not has_activated then
+        for _, h in ipairs(self.historical_figures or {}) do
+            if h.mentions and #h.mentions > 0 then has_activated = true; break end
+        end
+    end
     if not has_activated then return end
 
     local all_entities = {}
@@ -1164,6 +1187,9 @@ function XRayPlugin:updateMentionsForChapter(toc_entry, next_toc_entry)
     end
     for _, l in ipairs(self.locations or {}) do
         if l.name then table.insert(all_entities, l) end
+    end
+    for _, h in ipairs(self.historical_figures or {}) do
+        if h.name then table.insert(all_entities, h) end
     end
     if #all_entities == 0 then return end
 
@@ -2760,19 +2786,55 @@ function XRayPlugin:showTimeline()
     UIManager:show(self.timeline_menu)
 end
 
+function XRayPlugin:showHistoricalFigureDetails(fig)
+    local name = fig.name or "???"
+    local bio = fig.biography or (self.loc:t("msg_no_bio") or "No biography available.")
+    
+    local mentions_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.mentions_enabled ~= false
+    
+    if mentions_enabled then
+        self.active_details_dialog = ConfirmBox:new{
+            text = name .. "\n\n" .. bio,
+            icon = "info",
+            ok_text = self.loc:t("find_mentions") or "Find Mentions",
+            cancel_text = self.loc:t("close") or "Close",
+            ok_callback = function()
+                self.active_details_dialog = nil
+                self:showMentionsForEntity(fig)
+            end,
+            cancel_callback = function()
+                self.active_details_dialog = nil
+            end,
+        }
+    else
+        self.active_details_dialog = ConfirmBox:new{
+            text = name .. "\n\n" .. bio,
+            icon = "info",
+            ok_text = self.loc:t("close") or "Close",
+            ok_callback = function() self.active_details_dialog = nil end,
+            cancel_callback = function() self.active_details_dialog = nil end,
+        }
+    end
+    UIManager:show(self.active_details_dialog)
+end
+
 function XRayPlugin:showHistoricalFigures()
-    if not self.historical_figures or #self.historical_figures == 0 then UIManager:show(InfoMessage:new{ text = self.loc:t("no_historical_data"), timeout = 3 }); return end
+    if not self.historical_figures or #self.historical_figures == 0 then 
+        UIManager:show(InfoMessage:new{ text = self.loc:t("no_historical_data"), timeout = 3 })
+        return 
+    end
     local items = {}
     for _, fig in ipairs(self.historical_figures) do
         table.insert(items, {
             text = (fig.name or "???"),
             keep_menu_open = true,
             callback = function()
-                UIManager:show(InfoMessage:new{ text = (fig.name or "") .. "\n\n" .. (fig.biography or ""), timeout = 15 })
-            end
+                self:showHistoricalFigureDetails(fig)
+            end,
         })
     end
-    self.hf_menu = Menu:new{ 
+
+    self.hf_menu = Menu:new{
         title = self.loc:t("menu_historical_figures"), 
         item_table = items, 
         is_borderless = true, 
