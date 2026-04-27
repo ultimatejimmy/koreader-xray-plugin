@@ -788,7 +788,10 @@ function ChapterAnalyzer:findMentionsAcrossChapters(ui, name, toc, max_page)
 
     local name_lower  = name:lower()
     local first_name  = name:match("^(%S+)")
-    local first_lower = (first_name and #first_name > 3) and first_name:lower() or nil
+    local last_name   = name:match("(%S+)$")
+    
+    local first_lower = (first_name and #first_name > 2 and first_name ~= name) and first_name:lower() or nil
+    local last_lower  = (last_name and #last_name > 2 and last_name ~= first_name and last_name ~= name) and last_name:lower() or nil
     local mentions    = {}
 
     for i, entry in ipairs(toc) do
@@ -807,23 +810,17 @@ function ChapterAnalyzer:findMentionsAcrossChapters(ui, name, toc, max_page)
         while true do
             local p1 = text_lower:find(name_lower, pos, true)
             local p2 = first_lower and text_lower:find(first_lower, pos, true) or nil
+            local p3 = last_lower and text_lower:find(last_lower, pos, true) or nil
             
             local match_pos = nil
             local match_len = 0
-            if p1 and p2 then
-                if p1 <= p2 then
-                    match_pos = p1
-                    match_len = #name_lower
-                else
-                    match_pos = p2
-                    match_len = #first_lower
-                end
-            elseif p1 then
-                match_pos = p1
-                match_len = #name_lower
-            elseif p2 then
-                match_pos = p2
-                match_len = #first_lower
+            
+            if p1 or p2 or p3 then
+                local min_p = math.huge
+                if p1 and p1 < min_p then min_p = p1; match_len = #name_lower end
+                if p2 and p2 < min_p then min_p = p2; match_len = #first_lower end
+                if p3 and p3 < min_p then min_p = p3; match_len = #last_lower end
+                match_pos = min_p
             else
                 break
             end
@@ -861,7 +858,10 @@ function ChapterAnalyzer:findMentionsInChapter(ui, name, toc_entry, next_toc_ent
 
     local name_lower  = name:lower()
     local first_name  = name:match("^(%S+)")
-    local first_lower = (first_name and #first_name > 3) and first_name:lower() or nil
+    local last_name   = name:match("(%S+)$")
+    
+    local first_lower = (first_name and #first_name > 2 and first_name ~= name) and first_name:lower() or nil
+    local last_lower  = (last_name and #last_name > 2 and last_name ~= first_name and last_name ~= name) and last_name:lower() or nil
     local chapter_mentions = {}
 
     local ok, raw_text = pcall(function()
@@ -874,23 +874,17 @@ function ChapterAnalyzer:findMentionsInChapter(ui, name, toc_entry, next_toc_ent
     while true do
         local p1 = text_lower:find(name_lower, pos, true)
         local p2 = first_lower and text_lower:find(first_lower, pos, true) or nil
+        local p3 = last_lower and text_lower:find(last_lower, pos, true) or nil
         
         local match_pos = nil
         local match_len = 0
-        if p1 and p2 then
-            if p1 <= p2 then
-                match_pos = p1
-                match_len = #name_lower
-            else
-                match_pos = p2
-                match_len = #first_lower
-            end
-        elseif p1 then
-            match_pos = p1
-            match_len = #name_lower
-        elseif p2 then
-            match_pos = p2
-            match_len = #first_lower
+        
+        if p1 or p2 or p3 then
+            local min_p = math.huge
+            if p1 and p1 < min_p then min_p = p1; match_len = #name_lower end
+            if p2 and p2 < min_p then min_p = p2; match_len = #first_lower end
+            if p3 and p3 < min_p then min_p = p3; match_len = #last_lower end
+            match_pos = min_p
         else
             break
         end
