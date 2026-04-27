@@ -47,7 +47,8 @@ Adım 6. SPOILER YOK: Tam olarak %%%d noktasında dur. Bu ilerlemeden sonraki ol
 KARAKTERLER VE TARİHİ KİŞİLER İÇİN ALGORİTMA:
 Adım 1. Her iki metin bloğunu da kullanarak önemli karakterleri çıkar. (Normalde 25, omnibus ise MAKSİMUM 10).
 Adım 2. Karakterlerin TAM resmi isimlerini kullanmalısın (örn. "Abraham Van Helsing"). Gündelik takma adları ana isim olarak kullanma.
-Adım 3. İnsanlık tarihindeki GERÇEK kişileri (örn. Başkanlar, Yazarlar, Generaller) aktif olarak tara. Onları `historical_figures` içine ekle.
+Adım 3. Bu karakterin bilindiği 3 adede kadar alternatif isim, unvan veya takma adı bir `aliases` dizisinde sağla. Kullanılıyorsa ortak adlarını ve soyadlarını dahil et. ÖNEMLİ: Eğer bir soyadı birden fazla karakter (örn. aile üyeleri) tarafından paylaşılıyorsa, bunu hiçbir karakter için bir takma ad olarak dahil ETME.
+Adım 4. İnsanlık tarihindeki GERÇEK kişileri (örn. Başkanlar, Yazarlar, Generaller) aktif olarak tara. Onları `historical_figures` içine ekle.
 SPOILER YOK: Tam olarak %%%d noktasında dur.
 
 MEKANLAR İÇİN ALGORİTMA:
@@ -67,6 +68,7 @@ GEREKLİ JSON FORMATI:
   "characters": [
     {
       "name": "Tam Resmi İsim",
+      "aliases": ["Takma Ad 1", "Takma Ad 2"],
       "role": "Mevcut ilerlemeye kadar olan rolü",
       "gender": "Erkek / Kadın / Bilinmiyor",
       "occupation": "Meslek/Durum",
@@ -117,6 +119,7 @@ GEREKLİ JSON FORMATI:
   "characters": [
     {
       "name": "Tam Resmi İsim",
+      "aliases": ["Takma Ad 1", "Takma Ad 2"],
       "role": "Mevcut ilerlemeye kadar olan rolü",
       "gender": "Erkek / Kadın / Bilinmiyor",
       "occupation": "Meslek/Durum",

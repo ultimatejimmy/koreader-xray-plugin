@@ -110,8 +110,14 @@ msgstr "Fetching author info from %s..."
 msgid "fetching_wait"
 msgstr "⏳ Por favor, aguarde...\nPode levar de 10 a 50 segundos."
 
+msgid "find_mentions"
+msgstr "Encontrar mencoes"
+
 msgid "full_book_option"
 msgstr "Full Book Mode"
+
+msgid "label_aliases"
+msgstr "APELIDOS"
 
 msgid "label_description"
 msgstr "DESCRIÇÃO"
@@ -142,6 +148,21 @@ msgstr "Idioma alterado. Reabra o menu para ver as alterações."
 
 msgid "logs_cleared"
 msgstr "Logs limpos!"
+
+msgid "mentions_none"
+msgstr "Nenhuma mencao encontrada para '%s' ainda."
+
+msgid "mentions_refresh"
+msgstr "Atualizar mencoes"
+
+msgid "mentions_refresh_started"
+msgstr "Atualizando mencoes em segundo plano..."
+
+msgid "mentions_scanning"
+msgstr "Procurando mencoes de %s..."
+
+msgid "mentions_title"
+msgstr "Mencoes: %s"
 
 msgid "menu_about"
 msgstr "Sobre"
@@ -392,21 +413,3 @@ msgstr "Adiciona um botão 'X-Ray' aos menus de dicionário e seleção para con
 msgid "yes"
 msgstr "Sim"
 
-
-msgid "find_mentions"
-msgstr "Encontrar mencoes"
-
-msgid "mentions_scanning"
-msgstr "Procurando mencoes de %s..."
-
-msgid "mentions_none"
-msgstr "Nenhuma mencao encontrada para '%s' ainda."
-
-msgid "mentions_title"
-msgstr "Mencoes: %s"
-
-msgid "mentions_refresh"
-msgstr "Atualizar mencoes"
-
-msgid "mentions_refresh_started"
-msgstr "Atualizando mencoes em segundo plano..."

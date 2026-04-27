@@ -110,8 +110,14 @@ msgstr "Récupération des infos auteur depuis %s..."
 msgid "fetching_wait"
 msgstr "⏳ Veuillez patienter...\nCe processus peut prendre 10 à 50 secondes."
 
+msgid "find_mentions"
+msgstr "Trouver les mentions"
+
 msgid "full_book_option"
 msgstr "Mode Livre Complet"
+
+msgid "label_aliases"
+msgstr "ALIASES"
 
 msgid "label_description"
 msgstr "DÉTAILS"
@@ -142,6 +148,21 @@ msgstr "Langue modifiée. Rouvrez le menu pour voir les changements."
 
 msgid "logs_cleared"
 msgstr "Logs effacés !"
+
+msgid "mentions_none"
+msgstr "Aucune mention trouvee pour '%s' pour l'instant."
+
+msgid "mentions_refresh"
+msgstr "Actualiser les mentions"
+
+msgid "mentions_refresh_started"
+msgstr "Actualisation des mentions en arriere-plan..."
+
+msgid "mentions_scanning"
+msgstr "Recherche des mentions de %s..."
+
+msgid "mentions_title"
+msgstr "Mentions : %s"
 
 msgid "menu_about"
 msgstr "À propos"
@@ -392,21 +413,3 @@ msgstr "Ajoute un bouton 'X-Ray' aux menus de dictionnaire et de sélection pour
 msgid "yes"
 msgstr "Oui"
 
-
-msgid "find_mentions"
-msgstr "Trouver les mentions"
-
-msgid "mentions_scanning"
-msgstr "Recherche des mentions de %s..."
-
-msgid "mentions_none"
-msgstr "Aucune mention trouvee pour '%s' pour l'instant."
-
-msgid "mentions_title"
-msgstr "Mentions : %s"
-
-msgid "mentions_refresh"
-msgstr "Actualiser les mentions"
-
-msgid "mentions_refresh_started"
-msgstr "Actualisation des mentions en arriere-plan..."

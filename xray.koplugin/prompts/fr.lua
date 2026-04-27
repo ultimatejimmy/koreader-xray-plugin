@@ -47,7 +47,8 @@ Pour éviter de sauter des chapitres ou d'halluciner des événements, vous DEVE
 ALGORITHME POUR LES PERSONNAGES ET LES FIGURES HISTORIQUES :
 Étape 1. Extrayez les personnages importants en utilisant les deux blocs de texte. (25 normaux, MAX 10 si omnibus).
 Étape 2. Vous DEVEZ utiliser leurs noms complets et formels (par exemple, "Abraham Van Helsing"). N'utilisez PAS de surnoms familiers comme nom principal.
-Étape 3. Recherchez activement des personnes RÉELLES de l'histoire humaine (par exemple, présidents, auteurs, généraux). Ajoutez-les à `historical_figures`.
+Étape 3. Fournissez jusqu'à 3 noms alternatifs, titres ou surnoms sous lesquels ce personnage est connu dans un tableau `aliases`. Incluez leur prénom et nom de famille courants s'ils sont utilisés. IMPORTANT : Si un nom de famille est partagé par plusieurs personnages (par exemple, des membres de la famille), NE l'incluez PAS comme alias pour aucun des personnages.
+Étape 4. Recherchez activement des personnes RÉELLES de l'histoire humaine (par exemple, présidents, auteurs, généraux). Ajoutez-les à `historical_figures`.
 PAS DE SPOILERS : Arrêtez-vous exactement à la marque de %d%%.
 
 ALGORITHME POUR LES LIEUX :
@@ -67,6 +68,7 @@ FORMAT JSON REQUIS :
   "characters": [
     {
       "name": "Nom formel complet",
+      "aliases": ["Alias 1", "Alias 2"],
       "role": "Rôle jusqu'à la progression actuelle",
       "gender": "Masculin / Féminin / Inconnu",
       "occupation": "Métier/Statut",
@@ -117,6 +119,7 @@ FORMAT JSON REQUIS :
   "characters": [
     {
       "name": "Nom formel complet",
+      "aliases": ["Alias 1", "Alias 2"],
       "role": "Rôle jusqu'à la progression actuelle",
       "gender": "Masculin / Féminin / Inconnu",
       "occupation": "Métier/Statut",

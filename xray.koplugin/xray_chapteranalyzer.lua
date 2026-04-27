@@ -783,85 +783,135 @@ end
 -- Scan every chapter in `toc` for occurrences of `name`.
 -- max_page: if non-nil, skips chapters whose start page > max_page (spoiler-free).
 -- Returns a list of { chapter, page, snippet } ordered by page.
-function ChapterAnalyzer:findMentionsAcrossChapters(ui, name, toc, max_page)
-    if not ui or not ui.document or not name or not toc or #toc == 0 then return {} end
+function ChapterAnalyzer:findMentionsAcrossChapters(ui, entity, toc, max_page)
+    if not ui or not ui.document or not entity or not entity.name or not toc or #toc == 0 then return {} end
 
-    local name_lower  = name:lower()
-    local first_name  = name:match("^(%S+)")
-    local last_name   = name:match("(%S+)$")
+    local name = entity.name
+    local n_low = name:lower()
     
-    local first_lower = (first_name and #first_name > 2 and first_name ~= name) and first_name:lower() or nil
-    local last_lower  = (last_name and #last_name > 2 and last_name ~= first_name and last_name ~= name) and last_name:lower() or nil
-    local mentions    = {}
-
-    for i, entry in ipairs(toc) do
-        local start_page = tonumber(entry.page)
-        if not start_page then goto next_ch end
-        if max_page and start_page > max_page then break end
-        if not entry.xpointer then goto next_ch end
-
-        local ok, raw_text = pcall(function()
-            return ui.document:getTextFromXPointer(entry.xpointer) or ""
-        end)
-        if not ok or not raw_text or #raw_text < 10 then goto next_ch end
-
-        local text_lower = raw_text:lower()
-        local pos = 1
-        while true do
-            local p1 = text_lower:find(name_lower, pos, true)
-            local p2 = first_lower and text_lower:find(first_lower, pos, true) or nil
-            local p3 = last_lower and text_lower:find(last_lower, pos, true) or nil
-            
-            local match_pos = nil
-            local match_len = 0
-            
-            if p1 or p2 or p3 then
-                local min_p = math.huge
-                if p1 and p1 < min_p then min_p = p1; match_len = #name_lower end
-                if p2 and p2 < min_p then min_p = p2; match_len = #first_lower end
-                if p3 and p3 < min_p then min_p = p3; match_len = #last_lower end
-                match_pos = min_p
-            else
-                break
-            end
-
-            -- Interpolate the exact page based on character offset in the chapter
-            local next_entry = toc[i+1]
-            local end_page = next_entry and tonumber(next_entry.page) or (ui.document.getTotalPages and ui.document:getTotalPages()) or start_page
-            if end_page < start_page then end_page = start_page end
-            
-            local est_page = start_page
-            local total_chars = #raw_text
-            if total_chars > 0 and end_page > start_page then
-                local fraction = match_pos / total_chars
-                est_page = math.floor(start_page + ((end_page - start_page) * fraction))
-            end
-
-            table.insert(mentions, {
-                chapter = entry.title or ("Chapter " .. i),
-                page    = est_page,
-                snippet = extractSentenceSnippet(raw_text, match_pos, 300),
-            })
-            pos = match_pos + match_len
-        end
-        ::next_ch::
+    -- Prepare search terms
+    local terms = { { s = n_low, l = #n_low } }
+    
+    -- Fallback: auto-generate first and last name aliases
+    local first_name = name:match("^(%S+)")
+    local last_name  = name:match("(%S+)$")
+    if first_name and #first_name > 2 and first_name ~= name then
+        local fl = first_name:lower()
+        table.insert(terms, { s = fl, l = #fl })
+    end
+    if last_name and #last_name > 2 and last_name ~= first_name and last_name ~= name then
+        local ll = last_name:lower()
+        table.insert(terms, { s = ll, l = #ll })
     end
 
+    -- Add AI aliases if available
+    if entity.aliases and type(entity.aliases) == "table" then
+        for _, alias in ipairs(entity.aliases) do
+            if type(alias) == "string" and #alias > 2 then
+                local al = alias:lower()
+                local exists = false
+                for _, t in ipairs(terms) do
+                    if t.s == al then exists = true; break end
+                end
+                if not exists then
+                    table.insert(terms, { s = al, l = #al })
+                end
+            end
+        end
+    end
+    
+    local mentions = {}
+    for i, entry in ipairs(toc) do
+        local start_p = tonumber(entry.page)
+        if start_p and max_page and start_p > max_page then break end
+        
+        if entry.xpointer then
+            local ok, raw = pcall(function()
+                return ui.document:getTextFromXPointer(entry.xpointer)
+            end)
+            
+            if ok and raw and #raw > 10 then
+                local t_low = raw:lower()
+                local pos = 1
+                while true do
+                    local min_p = math.huge
+                    local m_len = 0
+                    
+                    for _, t in ipairs(terms) do
+                        local p = t_low:find(t.s, pos, true)
+                        if p and p < min_p then
+                            min_p = p
+                            m_len = t.l
+                        end
+                    end
+                    
+                    if min_p == math.huge then break end
+                    
+                    local m_pos = min_p
+                    local next_entry = toc[i+1]
+                    local end_p = next_entry and tonumber(next_entry.page) or (ui.document.getTotalPages and ui.document:getTotalPages()) or start_p
+                    local est_p = start_p or 1
+                    if end_p and end_p > start_p then
+                        est_p = math.floor(start_p + ((end_p - start_p) * (m_pos / #raw)))
+                    end
+                    
+                    -- SPOILER PREVENTION: stop if this mention is past the max_page
+                    if max_page and est_p > max_page then break end
+                    
+                    table.insert(mentions, {
+                        chapter = entry.title or ("Chapter " .. i),
+                        page = est_p,
+                        snippet = extractSentenceSnippet(raw, m_pos, 300),
+                    })
+                    pos = m_pos + m_len
+                end
+            end
+        end
+    end
+    
     return mentions
 end
 
 -- Scan a single TOC entry for occurrences of `name`.
 -- Returns a list of { chapter, page, snippet } tables.
-function ChapterAnalyzer:findMentionsInChapter(ui, name, toc_entry, next_toc_entry)
-    if not ui or not ui.document or not name or not toc_entry then return {} end
+function ChapterAnalyzer:findMentionsInChapter(ui, entity, toc_entry, next_toc_entry)
+    if not ui or not ui.document or not entity or not entity.name or not toc_entry then return {} end
     if not toc_entry.xpointer then return {} end
 
-    local name_lower  = name:lower()
-    local first_name  = name:match("^(%S+)")
-    local last_name   = name:match("(%S+)$")
+    local name = entity.name
+    local name_lower = name:lower()
     
-    local first_lower = (first_name and #first_name > 2 and first_name ~= name) and first_name:lower() or nil
-    local last_lower  = (last_name and #last_name > 2 and last_name ~= first_name and last_name ~= name) and last_name:lower() or nil
+    -- Prepare search terms
+    local terms = { { s = name_lower, l = #name_lower } }
+    
+    -- Fallback: auto-generate first and last name aliases
+    local first_name = name:match("^(%S+)")
+    local last_name  = name:match("(%S+)$")
+    if first_name and #first_name > 2 and first_name ~= name then
+        local fl = first_name:lower()
+        table.insert(terms, { s = fl, l = #fl })
+    end
+    if last_name and #last_name > 2 and last_name ~= first_name and last_name ~= name then
+        local ll = last_name:lower()
+        table.insert(terms, { s = ll, l = #ll })
+    end
+
+    -- Add AI aliases if available
+    if entity.aliases and type(entity.aliases) == "table" then
+        for _, alias in ipairs(entity.aliases) do
+            if type(alias) == "string" and #alias > 2 then
+                local al = alias:lower()
+                local exists = false
+                for _, t in ipairs(terms) do
+                    if t.s == al then exists = true; break end
+                end
+                if not exists then
+                    table.insert(terms, { s = al, l = #al })
+                end
+            end
+        end
+    end
+    
     local chapter_mentions = {}
 
     local ok, raw_text = pcall(function()
@@ -872,22 +922,22 @@ function ChapterAnalyzer:findMentionsInChapter(ui, name, toc_entry, next_toc_ent
     local text_lower = raw_text:lower()
     local pos = 1
     while true do
-        local p1 = text_lower:find(name_lower, pos, true)
-        local p2 = first_lower and text_lower:find(first_lower, pos, true) or nil
-        local p3 = last_lower and text_lower:find(last_lower, pos, true) or nil
-        
-        local match_pos = nil
+        local min_p = math.huge
         local match_len = 0
         
-        if p1 or p2 or p3 then
-            local min_p = math.huge
-            if p1 and p1 < min_p then min_p = p1; match_len = #name_lower end
-            if p2 and p2 < min_p then min_p = p2; match_len = #first_lower end
-            if p3 and p3 < min_p then min_p = p3; match_len = #last_lower end
-            match_pos = min_p
-        else
+        for _, t in ipairs(terms) do
+            local p = text_lower:find(t.s, pos, true)
+            if p and p < min_p then
+                min_p = p
+                match_len = t.l
+            end
+        end
+        
+        if min_p == math.huge then
             break
         end
+        
+        local match_pos = min_p
 
         local start_page = tonumber(toc_entry.page) or 1
         local end_page = next_toc_entry and tonumber(next_toc_entry.page) or (ui.document.getTotalPages and ui.document:getTotalPages()) or start_page

@@ -110,8 +110,14 @@ msgstr "Yazar bilgisi %s üzerinden çekiliyor..."
 msgid "fetching_wait"
 msgstr "⏳ Lütfen bekleyin...\nBu işlem 10-50 saniye sürebilir."
 
+msgid "find_mentions"
+msgstr "Sozleri bul"
+
 msgid "full_book_option"
 msgstr "Tam Kitap Modu"
+
+msgid "label_aliases"
+msgstr "TAKMA ADLAR"
 
 msgid "label_description"
 msgstr "AÇIKLAMA"
@@ -142,6 +148,21 @@ msgstr "Dil değiştirildi. Değişiklikleri görmek için menüyü tekrar açı
 
 msgid "logs_cleared"
 msgstr "Günlükler temizlendi!"
+
+msgid "mentions_none"
+msgstr "'%s' icin henuz soz bulunamadı."
+
+msgid "mentions_refresh"
+msgstr "Sozleri yenile"
+
+msgid "mentions_refresh_started"
+msgstr "Sozler arka planda yenileniyor..."
+
+msgid "mentions_scanning"
+msgstr "%s icin sozler aranıyor..."
+
+msgid "mentions_title"
+msgstr "Sozler: %s"
 
 msgid "menu_about"
 msgstr "Hakkında"
@@ -392,21 +413,3 @@ msgstr "Anında arama yapmak için sözlük ve seçim menülerine bir 'X-Ray' d�
 msgid "yes"
 msgstr "Evet"
 
-
-msgid "find_mentions"
-msgstr "Sozleri bul"
-
-msgid "mentions_scanning"
-msgstr "%s icin sozler aranıyor..."
-
-msgid "mentions_none"
-msgstr "'%s' icin henuz soz bulunamadı."
-
-msgid "mentions_title"
-msgstr "Sozler: %s"
-
-msgid "mentions_refresh"
-msgstr "Sozleri yenile"
-
-msgid "mentions_refresh_started"
-msgstr "Sozler arka planda yenileniyor..."

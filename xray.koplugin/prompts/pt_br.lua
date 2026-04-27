@@ -47,7 +47,8 @@ Passo 6. SEM SPOILERS: Pare exatamente na marca de %d%%. Não inclua eventos ap�
 ALGORITMO PARA PERSONAGENS E FIGURAS HISTÓRICAS:
 Passo 1. Extraia personagens importantes usando ambos os blocos de texto. (25 normal, no MÁXIMO 10 se for omnibus).
 Passo 2. Você DEVE usar seus nomes completos e formais (ex: "Abraham Van Helsing"). NÃO use apelidos informais como o nome principal.
-Passo 3. Escaneie ativamente por pessoas REAIS da história humana (ex: Presidentes, Autores, Generais). Adicione-os em `historical_figures`.
+Passo 3. Forneça até 3 nomes alternativos, títulos ou apelidos pelos quais este personagem é conhecido em um array `aliases`. Inclua seu primeiro nome e sobrenome comuns se usados. IMPORTANTE: Se um sobrenome for compartilhado por vários personagens (ex: membros da família), NÃO o inclua como alias para nenhum dos personagens.
+Passo 4. Escaneie ativamente por pessoas REAIS da história humana (ex: Presidentes, Autores, Generais). Adicione-os em `historical_figures`.
 SEM SPOILERS: Pare exatamente na marca de %d%%.
 
 ALGORITMO PARA LOCAIS:
@@ -67,6 +68,7 @@ FORMATO JSON REQUERIDO:
   "characters": [
     {
       "name": "Nome Formal Completo",
+      "aliases": ["Alias 1", "Alias 2"],
       "role": "Papel até o progresso atual",
       "gender": "Masculino / Feminino / Desconhecido",
       "occupation": "Profissão/Status",
@@ -117,6 +119,7 @@ FORMATO JSON REQUERIDO:
   "characters": [
     {
       "name": "Nome Formal Completo",
+      "aliases": ["Alias 1", "Alias 2"],
       "role": "Papel até o progresso atual",
       "gender": "Masculino / Femenino / Desconhecido",
       "occupation": "Profissão/Status",

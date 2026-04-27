@@ -47,7 +47,8 @@ Schritt 6. KEINE SPOILER: Hören Sie genau bei der %d%%-Marke auf. Beziehen Sie 
 ALGORITHMUS FÜR CHARAKTERE & HISTORISCHE PERSONEN:
 Schritt 1. Extrahieren Sie wichtige Charaktere aus beiden Textblöcken. (25 normale, MAX. 10 bei Sammelausgaben).
 Schritt 2. Sie MÜSSEN deren VOLLSTÄNDIGEN, formellen Namen verwenden (z. B. "Abraham Van Helsing"). Verwenden Sie KEINE lockeren Spitznamen als Hauptnamen.
-Schritt 3. Suchen Sie aktiv nach REALEN Personen der Weltgeschichte (z. B. Präsidenten, Autoren, Generäle). Fügen Sie diese zu `historical_figures` hinzu.
+Schritt 3. Geben Sie bis zu 3 alternative Namen, Titel oder Spitznamen an, unter denen dieser Charakter bekannt ist, in einem Array `aliases`. Schließen Sie den üblichen Vornamen und Nachnamen ein, falls sie verwendet werden. WICHTIG: Wenn ein Nachname von mehreren Charakteren (z. B. Familienmitgliedern) geteilt wird, schließen Sie ihn für keinen der Charaktere als Alias ein.
+Schritt 4. Suchen Sie aktiv nach REALEN Personen der Weltgeschichte (z. B. Präsidenten, Autoren, Generäle). Fügen Sie diese zu `historical_figures` hinzu.
 KEINE SPOILER: Hören Sie genau bei der %d%%-Marke auf.
 
 ALGORITHMUS FÜR ORTE:
@@ -67,6 +68,7 @@ ERFORDERLICHES JSON-FORMAT:
   "characters": [
     {
       "name": "Vollständiger formeller Name",
+      "aliases": ["Alias 1", "Alias 2"],
       "role": "Rolle bis zum aktuellen Fortschritt",
       "gender": "Männlich / Weiblich / Unbekannt",
       "occupation": "Beruf/Status",
@@ -117,6 +119,7 @@ ERFORDERLICHES JSON-FORMAT:
   "characters": [
     {
       "name": "Vollständiger formeller Name",
+      "aliases": ["Alias 1", "Alias 2"],
       "role": "Rolle bis zum aktuellen Fortschritt",
       "gender": "Männlich / Weiblich / Unbekannt",
       "occupation": "Beruf/Status",

@@ -110,8 +110,14 @@ msgstr "Obteniendo información del autor desde %s..."
 msgid "fetching_wait"
 msgstr "⏳ Por favor, espera...\nEste proceso puede tardar entre 10 y 50 segundos."
 
+msgid "find_mentions"
+msgstr "Buscar menciones"
+
 msgid "full_book_option"
 msgstr "Modo libro completo"
+
+msgid "label_aliases"
+msgstr "ALIAS"
 
 msgid "label_description"
 msgstr "DESCRIPCIÓN"
@@ -142,6 +148,21 @@ msgstr "Idioma cambiado. Reabra el menú para ver los cambios."
 
 msgid "logs_cleared"
 msgstr "¡Registros limpiados!"
+
+msgid "mentions_none"
+msgstr "Aun no se encontraron menciones de '%s'."
+
+msgid "mentions_refresh"
+msgstr "Actualizar menciones"
+
+msgid "mentions_refresh_started"
+msgstr "Actualizando menciones en segundo plano..."
+
+msgid "mentions_scanning"
+msgstr "Buscando menciones de %s..."
+
+msgid "mentions_title"
+msgstr "Menciones: %s"
 
 msgid "menu_about"
 msgstr "Acerca de"
@@ -392,21 +413,3 @@ msgstr "Añade un botón 'X-Ray' a los menús de diccionario y selección para c
 msgid "yes"
 msgstr "Sí"
 
-
-msgid "find_mentions"
-msgstr "Buscar menciones"
-
-msgid "mentions_scanning"
-msgstr "Buscando menciones de %s..."
-
-msgid "mentions_none"
-msgstr "Aun no se encontraron menciones de '%s'."
-
-msgid "mentions_title"
-msgstr "Menciones: %s"
-
-msgid "mentions_refresh"
-msgstr "Actualizar menciones"
-
-msgid "mentions_refresh_started"
-msgstr "Actualizando menciones en segundo plano..."

@@ -456,31 +456,38 @@ function XRayPlugin:getSubMenuItems()
     self.current_xray_menu_table = {
         {
             text = self.loc:t("menu_characters") or "Characters",
+            keep_menu_open = true,
             callback = function() self:showCharacters() end,
         },
         {
             text = self.loc:t("menu_timeline") or "Timeline",
+            keep_menu_open = true,
             callback = function() self:showTimeline() end,
         },
         {
             text = self.loc:t("menu_historical_figures") or "Historical Figures",
+            keep_menu_open = true,
             callback = function() self:showHistoricalFigures() end,
         },
         {
             text = self.loc:t("menu_locations") or "Locations",
+            keep_menu_open = true,
             callback = function() self:showLocations() end,
         },
         {
             text = self.loc:t("menu_author_info"),
+            keep_menu_open = true,
             callback = function() self:showAuthorInfo() end,
             separator = true,
         },
         {
             text = self.loc:t("menu_fetch_xray") or "Fetch X-Ray Data",
+            keep_menu_open = true,
             callback = function() self:fetchFromAI() end,
         },
         {
             text = self.loc:t("menu_update_xray") or "Update X-Ray Data (Merge)",
+            keep_menu_open = true,
             callback = function() self:updateFromAI() end,
             separator = true,
         },
@@ -549,14 +556,17 @@ function XRayPlugin:getSubMenuItems()
             sub_item_table = {
                 {
                     text = self.loc:t("menu_clear_cache"),
+                    keep_menu_open = true,
                     callback = function() self:clearCache() end,
                 },
                 {
                     text = self.loc:t("menu_clear_logs") or "Clear Logs",
+                    keep_menu_open = true,
                     callback = function() self:clearLogs() end,
                 },
                 {
                     text = self.loc:t("updater_check") or "Check for Updates",
+                    keep_menu_open = true,
                     callback = function()
                         local updater = require("xray_updater")
                         updater.checkForUpdates(self.loc)
@@ -566,6 +576,7 @@ function XRayPlugin:getSubMenuItems()
         },
         {
             text = self.loc:t("menu_about"),
+            keep_menu_open = true,
             callback = function() self:showAbout() end,
         },
     }
@@ -588,21 +599,17 @@ end
 function XRayPlugin:sortDataByFrequency(list, text, key)
     if not list or #list == 0 then return list end
 
-    -- Role importance weights (higher = more important)
-    local role_weights = {
-        protagonist = 100,
-        main = 90,
-        ["main character"] = 90,
-        deuteragonist = 80,
-        major = 70,
-        antagonist = 70,
-        villain = 70,
-        ["primary antagonist"] = 70,
-        supporting = 40,
-        secondary = 30,
-        minor = 10,
-        background = 5,
-    }
+    local function getRoleScore(role)
+        if not role then return 0 end
+        local r = role:lower()
+        if r:find("protagonist") then return 100 end
+        if r:find("main") or r:find("lead") or r:find("hero") or r:find("detective") then return 90 end
+        if r:find("deuteragonist") then return 80 end
+        if r:find("major") or r:find("antagonist") or r:find("villain") or r:find("primary") then return 70 end
+        if r:find("secondary") or r:find("supporting") then return 30 end
+        if r:find("minor") or r:find("background") then return 5 end
+        return 15 -- Default for other specific roles
+    end
 
     local lower_text = text and string.lower(text) or ""
 
@@ -612,27 +619,42 @@ function XRayPlugin:sortDataByFrequency(list, text, key)
             local lower_name = string.lower(name):gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1")
 
             -- Signal 1: Role weight
-            local role_score = 0
-            local role = string.lower(item.role or "")
-            for role_key, weight in pairs(role_weights) do
-                if role:find(role_key, 1, true) then
-                    if weight > role_score then role_score = weight end
-                end
-            end
+            local role_score = getRoleScore(item.role)
 
             -- Signal 2: Frequency in text (normalized by name length to prevent
             -- short first-name references inflating minor character scores)
             local freq = 0
             if lower_text ~= "" then
                 local _, count = string.gsub(lower_text, lower_name, "")
-                -- Also try matching just the first name (more natural prose refs)
+                
+                -- Signal 2.1: Always check first and last name fallbacks (very common in prose)
                 local first_name = name:match("^(%S+)")
-                if first_name and #first_name > 3 then
+                local last_name  = name:match("(%S+)$")
+                
+                if first_name and #first_name > 3 and first_name ~= name then
                     local lower_first = string.lower(first_name):gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1")
                     local _, first_count = string.gsub(lower_text, lower_first, "")
-                    -- Use max(full_name, first_name/2) to avoid over-weighting common first names
                     count = math.max(count, math.floor(first_count / 2))
                 end
+                
+                if last_name and #last_name > 3 and last_name ~= name and last_name ~= first_name then
+                    local lower_last = string.lower(last_name):gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1")
+                    local _, last_count = string.gsub(lower_text, lower_last, "")
+                    -- Last names are often strong identifiers in many book styles
+                    count = math.max(count, math.floor(last_count / 1.5))
+                end
+
+                -- Signal 2.2: Check aliases for frequency
+                if item.aliases and type(item.aliases) == "table" then
+                    for _, alias in ipairs(item.aliases) do
+                        if type(alias) == "string" and #alias > 3 then
+                            local lower_alias = string.lower(alias):gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1")
+                            local _, alias_count = string.gsub(lower_text, lower_alias, "")
+                            count = count + alias_count
+                        end
+                    end
+                end
+                
                 -- Normalize: divide by name length bucket to reduce short-name bias
                 local name_len_factor = math.max(1, math.floor(#name / 4))
                 freq = math.floor(count / name_len_factor)
@@ -883,7 +905,7 @@ function XRayPlugin:showCharacters()
 
     local items = {
         { text = "⌕ " .. self.loc:t("search_character"), callback = function() self:showCharacterSearch() end },
-        { text = "✚ " .. (self.loc:t("menu_fetch_more_chars") or "Fetch More Characters"), callback = function() self:fetchMoreCharacters() end, separator = true },
+        { text = "✚ " .. (self.loc:t("menu_fetch_more_chars") or "Fetch More Characters"), keep_menu_open = true, callback = function() self:fetchMoreCharacters() end, separator = true },
     }
     for _, char in ipairs(self.characters) do
         local name = char.name or "Unknown"
@@ -914,14 +936,18 @@ end
 
 function XRayPlugin:showCharacterDetails(character)
     local lines = {
-        (self.loc:t("label_name") or "NAME") .. ": " .. (character.name or "???"),
-        (self.loc:t("label_role") or "ROLE") .. ": " .. (character.role or "---"),
-        (self.loc:t("label_gender") or "GENDER") .. ": " .. (character.gender or "---"),
-        (self.loc:t("label_occupation") or "OCCUPATION") .. ": " .. (character.occupation or "---"),
-        "",
-        (self.loc:t("label_description") or "DESCRIPTION") .. ":",
-        character.description or "---"
+        (self.loc:t("label_name") or "NAME") .. ": " .. (character.name or "???")
     }
+    if character.aliases and type(character.aliases) == "table" and #character.aliases > 0 then
+        table.insert(lines, (self.loc:t("label_aliases") or "ALIASES") .. ": " .. table.concat(character.aliases, ", "))
+    end
+    table.insert(lines, (self.loc:t("label_role") or "ROLE") .. ": " .. (character.role or "---"))
+    table.insert(lines, (self.loc:t("label_gender") or "GENDER") .. ": " .. (character.gender or "---"))
+    table.insert(lines, (self.loc:t("label_occupation") or "OCCUPATION") .. ": " .. (character.occupation or "---"))
+    table.insert(lines, "")
+    table.insert(lines, (self.loc:t("label_description") or "DESCRIPTION") .. ":")
+    table.insert(lines, character.description or "---")
+    
     local detail_dialog
     detail_dialog = ConfirmBox:new{
         text = table.concat(lines, "\n"),
@@ -929,7 +955,7 @@ function XRayPlugin:showCharacterDetails(character)
         ok_text = self.loc:t("find_mentions") or "Find Mentions",
         cancel_text = self.loc:t("close") or "Close",
         ok_callback = function()
-            self:showMentionsForEntity(character.name, character.mentions)
+            self:showMentionsForEntity(character)
         end,
     }
     UIManager:show(detail_dialog)
@@ -945,7 +971,7 @@ function XRayPlugin:showLocationDetails(loc_item)
         ok_text = self.loc:t("find_mentions") or "Find Mentions",
         cancel_text = self.loc:t("close") or "Close",
         ok_callback = function()
-            self:showMentionsForEntity(name, loc_item.mentions)
+            self:showMentionsForEntity(loc_item)
         end,
     }
     UIManager:show(loc_dialog)
@@ -995,7 +1021,7 @@ function XRayPlugin:buildMentionsInBackground(is_from_fetch)
         local item = queue[idx]; idx = idx + 1
         local ok, result = pcall(function()
             return self.chapter_analyzer:findMentionsAcrossChapters(
-                self.ui, item.name, toc, max_page)
+                self.ui, item.entity, toc, max_page)
         end)
         if ok and result then item.entity.mentions = result end
         UIManager:scheduleIn(0, scanNext)
@@ -1032,7 +1058,7 @@ function XRayPlugin:updateMentionsForChapter(toc_entry, next_toc_entry)
         local entity = all_entities[idx]; idx = idx + 1
         local ok, result = pcall(function()
             return self.chapter_analyzer:findMentionsInChapter(
-                self.ui, entity.name, toc_entry, next_toc_entry)
+                self.ui, entity, toc_entry, next_toc_entry)
         end)
         if ok and result and #result > 0 then
             entity.mentions = entity.mentions or {}
@@ -1081,11 +1107,13 @@ function XRayPlugin:saveMentionsToCache()
 end
 
 -- Show the Mentions view. Reads from cache (fast path) or scans live (fallback).
-function XRayPlugin:showMentionsForEntity(name, mentions)
-    if mentions then
-        self:showMentionsMenu(name, mentions)
+function XRayPlugin:showMentionsForEntity(entity)
+    if not entity then return end
+    if entity.mentions and #entity.mentions > 0 then
+        self:showMentionsMenu(entity)
         return
     end
+    local name = entity.name or "???"
     if not self.ui or not self.ui.document then return end
     local scanning_msg = InfoMessage:new{
         text    = (self.loc:t("mentions_scanning") or "Scanning for mentions of %s..."):format(name),
@@ -1100,16 +1128,24 @@ function XRayPlugin:showMentionsForEntity(name, mentions)
         local spoiler_free = (self.ai_helper and self.ai_helper.settings
             and self.ai_helper.settings.spoiler_setting or "spoiler_free") == "spoiler_free"
         local max_page = spoiler_free and self.ui:getCurrentPage() or nil
+        
         local ok, result = pcall(function()
             return self.chapter_analyzer:findMentionsAcrossChapters(
-                self.ui, name, toc, max_page)
+                self.ui, entity, toc, max_page)
         end)
         UIManager:close(scanning_msg)
-        self:showMentionsMenu(name, (ok and result) or {})
+        if ok and result then
+            entity.mentions = result
+        end
+        self:showMentionsMenu(entity)
     end)
 end
 
-function XRayPlugin:showMentionsMenu(name, mentions)
+function XRayPlugin:showMentionsMenu(entity)
+    if not entity then return end
+    local name = entity.name or "???"
+    local mentions = entity.mentions
+
     if not mentions or #mentions == 0 then
         UIManager:show(InfoMessage:new{
             text    = (self.loc:t("mentions_none") or "No mentions found for '%s' yet."):format(name),
@@ -1139,20 +1175,11 @@ function XRayPlugin:showMentionsMenu(name, mentions)
                 local max_page = spoiler_free and self.ui:getCurrentPage() or nil
                 local ok, result = pcall(function()
                     return self.chapter_analyzer:findMentionsAcrossChapters(
-                        self.ui, name, toc, max_page)
+                        self.ui, entity, toc, max_page)
                 end)
                 UIManager:close(scanning_msg)
                 if ok and result then
-                    -- Update entity in local tables
-                    local found = false
-                    for _, c in ipairs(self.characters or {}) do
-                        if c.name == name then c.mentions = result; found = true; break end
-                    end
-                    if not found then
-                        for _, l in ipairs(self.locations or {}) do
-                            if l.name == name then l.mentions = result; break end
-                        end
-                    end
+                    entity.mentions = result
                     self:saveMentionsToCache()
                     
                     -- Close old menu and re-open to refresh the list
@@ -1160,7 +1187,7 @@ function XRayPlugin:showMentionsMenu(name, mentions)
                         UIManager:close(self.mentions_menu)
                         self.mentions_menu = nil
                     end
-                    self:showMentionsMenu(name, result)
+                    self:showMentionsMenu(entity)
                 end
             end)
         end,
@@ -2301,14 +2328,30 @@ function XRayPlugin:showTimeline()
     self:assignTimelinePages(self.timeline, toc, true)
     self:sortTimelineByTOC(self.timeline)
     local items = {}
-    for _, ev in ipairs(self.timeline) do table.insert(items, { text = (ev.chapter or "") .. ": " .. (ev.event or ""), callback = function() UIManager:show(InfoMessage:new{ text = (ev.event or ""), timeout = 10 }) end }) end
+    for _, ev in ipairs(self.timeline) do
+        table.insert(items, {
+            text = (ev.chapter or "") .. ": " .. (ev.event or ""),
+            keep_menu_open = true,
+            callback = function()
+                UIManager:show(InfoMessage:new{ text = (ev.event or ""), timeout = 10 })
+            end
+        })
+    end
     UIManager:show(Menu:new{ title = self.loc:t("menu_timeline"), item_table = items, is_borderless = true, width = Screen:getWidth(), height = Screen:getHeight() })
 end
 
 function XRayPlugin:showHistoricalFigures()
     if not self.historical_figures or #self.historical_figures == 0 then UIManager:show(InfoMessage:new{ text = self.loc:t("no_historical_data"), timeout = 3 }); return end
     local items = {}
-    for _, fig in ipairs(self.historical_figures) do table.insert(items, { text = (fig.name or "???"), callback = function() UIManager:show(InfoMessage:new{ text = (fig.name or "") .. "\n\n" .. (fig.biography or ""), timeout = 15 }) end }) end
+    for _, fig in ipairs(self.historical_figures) do
+        table.insert(items, {
+            text = (fig.name or "???"),
+            keep_menu_open = true,
+            callback = function()
+                UIManager:show(InfoMessage:new{ text = (fig.name or "") .. "\n\n" .. (fig.biography or ""), timeout = 15 })
+            end
+        })
+    end
     UIManager:show(Menu:new{ title = self.loc:t("menu_historical_figures"), item_table = items, is_borderless = true, width = Screen:getWidth(), height = Screen:getHeight() })
 end
 

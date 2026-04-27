@@ -110,8 +110,14 @@ msgstr "Autor-Info wird von %s abgerufen..."
 msgid "fetching_wait"
 msgstr "⏳ Bitte warten...\nDieser Vorgang kann 10-50 Sekunden dauern."
 
+msgid "find_mentions"
+msgstr "Erwahnungen finden"
+
 msgid "full_book_option"
 msgstr "Vollständiger Buch-Modus"
+
+msgid "label_aliases"
+msgstr "ALIASSE"
 
 msgid "label_description"
 msgstr "BESCHREIBUNG"
@@ -142,6 +148,21 @@ msgstr "Sprache geändert. Öffnen Sie das Menü erneut, um die Änderungen zu s
 
 msgid "logs_cleared"
 msgstr "Logs gelöscht!"
+
+msgid "mentions_none"
+msgstr "Noch keine Erwahnungen fur '%s' gefunden."
+
+msgid "mentions_refresh"
+msgstr "Erwahnungen aktualisieren"
+
+msgid "mentions_refresh_started"
+msgstr "Erwahnungen werden im Hintergrund aktualisiert..."
+
+msgid "mentions_scanning"
+msgstr "Suche nach Erwahnungen von %s..."
+
+msgid "mentions_title"
+msgstr "Erwahnungen: %s"
 
 msgid "menu_about"
 msgstr "Über"
@@ -392,21 +413,3 @@ msgstr "Fügt eine 'X-Ray'-Schaltfläche zu Wörterbuch- und Auswahlmenüs für 
 msgid "yes"
 msgstr "Yes"
 
-
-msgid "find_mentions"
-msgstr "Erwahnungen finden"
-
-msgid "mentions_scanning"
-msgstr "Suche nach Erwahnungen von %s..."
-
-msgid "mentions_none"
-msgstr "Noch keine Erwahnungen fur '%s' gefunden."
-
-msgid "mentions_title"
-msgstr "Erwahnungen: %s"
-
-msgid "mentions_refresh"
-msgstr "Erwahnungen aktualisieren"
-
-msgid "mentions_refresh_started"
-msgstr "Erwahnungen werden im Hintergrund aktualisiert..."

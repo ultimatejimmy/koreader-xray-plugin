@@ -47,7 +47,8 @@ Step 6. NO SPOILERS: Stop exactly at the %d%% mark. Do not include events past t
 ALGORITHM FOR CHARACTERS & HISTORICAL FIGURES:
 Step 1. Extract important characters using both text blocks. (25 normal, MAX 10 if omnibus).
 Step 2. You MUST use their FULL, formal names (e.g., "Abraham Van Helsing"). Do NOT use casual nicknames as the main name.
-Step 3. Actively scan for REAL people from human history (e.g., Presidents, Authors, Generals). Add them to `historical_figures`.
+Step 3. Provide up to 3 alternative names, titles, or nicknames this character goes by in an `aliases` array. Include their common first name and last name if used. IMPORTANT: If a last name is shared by multiple characters (e.g., family members), DO NOT include it as an alias for either character.
+Step 4. Actively scan for REAL people from human history (e.g., Presidents, Authors, Generals). Add them to `historical_figures`.
 NO SPOILERS: Stop exactly at the %d%% mark.
 
 ALGORITHM FOR LOCATIONS:
@@ -67,28 +68,29 @@ REQUIRED JSON FORMAT:
   "characters": [
     {
       "name": "Full Formal Name",
+      "aliases": ["Alias 1", "Alias 2"],
       "role": "Role up to current progress",
       "gender": "Male / Female / Unknown",
       "occupation": "Job/Status",
-      "description": "Deep analysis with details from the text so far. NO SPOILERS. (Max 300 chars)"
+      "description": "Deep analysis with details from the text so far. NO SPOILERS. (Max 200 chars)"
     }
   ],
   "historical_figures": [
     {
       "name": "Real Historical Person Name",
       "role": "Historical Role",
-      "biography": "Short biography (MAX 150 chars)",
+      "biography": "Short biography (MAX 100 chars)",
       "importance_in_book": "Significance up to current progress",
-      "context_in_book": "How they are mentioned (MAX 150 chars)"
+      "context_in_book": "How they are mentioned (MAX 100 chars)"
     }
   ],
   "locations": [
-    {"name": "Place Name", "description": "Short desc (MAX 150 chars)"}
+    {"name": "Place Name", "description": "Short desc (MAX 100 chars)"}
   ],
   "timeline": [
     {
       "chapter": "Exact Chapter Title from Samples",
-      "event": "Key narrative event from this chapter (Max 150 chars)"
+      "event": "Key narrative event from this chapter (Max 100 chars)"
     }
   ]
 } ]],
@@ -117,6 +119,7 @@ REQUIRED JSON FORMAT:
   "characters": [
     {
       "name": "Full Formal Name",
+      "aliases": ["Alias 1", "Alias 2"],
       "role": "Role up to current progress",
       "gender": "Male / Female / Unknown",
       "occupation": "Job/Status",
