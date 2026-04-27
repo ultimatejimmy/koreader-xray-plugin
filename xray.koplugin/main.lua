@@ -173,28 +173,6 @@ function XRayPlugin:onReaderReady()
         self:checkWeeklyUpdate()
     end)
 
-    -- Backfill mentions for old caches that don't have them yet
-    local backfill_delay = XRayConfig.isLowPowerDevice and 20 or 8
-    UIManager:scheduleIn(backfill_delay, function()
-        if not self.mentions_enabled then return end
-        if not self.mentions_scan_active then
-            local has_mentions = false
-            for _, c in ipairs(self.characters or {}) do
-                if c.mentions and #c.mentions > 0 then has_mentions = true; break end
-            end
-            if not has_mentions and
-               ((self.characters and #self.characters > 0) or
-                (self.locations  and #self.locations  > 0)) then
-                self:log("XRayPlugin: Starting background backfill for mentions")
-                self:buildMentionsInBackground(false)
-            end
-        end
-    end)
-    
-    -- Background pre-normalization task for instant lookups
-    UIManager:scheduleIn(backfill_delay + 5, function()
-        self:preNormalizeEntitiesInBackground()
-    end)
 end
 
 function XRayPlugin:onPageUpdate(pageno)
@@ -1090,20 +1068,19 @@ function XRayPlugin:buildMentionsInBackground(is_from_fetch)
         and self.ai_helper.settings.spoiler_setting or "spoiler_free") == "spoiler_free"
     local max_page = spoiler_free and self.ui:getCurrentPage() or nil
 
-    for _, c in ipairs(self.characters or {}) do c.mentions = nil end
-    for _, l in ipairs(self.locations  or {}) do l.mentions = nil end
-
+    -- Capture activated entities (those with existing cached mentions) BEFORE
+    -- resetting them. Dormant entities wait for the manual "Find Mentions" trigger.
     local queue = {}
     for _, c in ipairs(self.characters or {}) do
-        -- ONLY scan characters that have existing mentions (activated)
-        -- Dormant entities wait for manual "Find Mentions" trigger.
         if c.name and c.mentions and #c.mentions > 0 then
             table.insert(queue, { entity = c, name = c.name })
+            c.mentions = nil  -- reset only activated entities for a fresh scan
         end
     end
     for _, l in ipairs(self.locations or {}) do
         if l.name and l.mentions and #l.mentions > 0 then
             table.insert(queue, { entity = l, name = l.name })
+            l.mentions = nil  -- reset only activated entities for a fresh scan
         end
     end
     if #queue == 0 then return end
@@ -1151,6 +1128,20 @@ function XRayPlugin:updateMentionsForChapter(toc_entry, next_toc_entry)
     if not self.chapter_analyzer then
         self.chapter_analyzer = require("xray_chapteranalyzer"):new()
     end
+    -- Early-exit: if no entities are activated (have cached mentions), there is
+    -- nothing to incrementally update. Avoids any allocation on chapter change
+    -- when the user hasn't run "Find Mentions" for any character yet.
+    local has_activated = false
+    for _, c in ipairs(self.characters or {}) do
+        if c.mentions and #c.mentions > 0 then has_activated = true; break end
+    end
+    if not has_activated then
+        for _, l in ipairs(self.locations or {}) do
+            if l.mentions and #l.mentions > 0 then has_activated = true; break end
+        end
+    end
+    if not has_activated then return end
+
     local all_entities = {}
     for _, c in ipairs(self.characters or {}) do
         if c.name then table.insert(all_entities, c) end
@@ -1207,45 +1198,7 @@ function XRayPlugin:updateMentionsForChapter(toc_entry, next_toc_entry)
     UIManager:scheduleIn(0, scanNext)
 end
 
--- Pre-calculate normalized names for all characters/locations to make lookups instantaneous.
-function XRayPlugin:preNormalizeEntitiesInBackground()
-    if not self.characters and not self.locations then return end
-    
-    local queue = {}
-    for _, c in ipairs(self.characters or {}) do
-        if c.name and not c._norm_name then table.insert(queue, c) end
-    end
-    for _, l in ipairs(self.locations or {}) do
-        if l.name and not l._norm_name then table.insert(queue, l) end
-    end
-    
-    if #queue == 0 then return end
-    
-    local idx = 1
-    local function processNext()
-        if not self.ui or not self.ui.document then return end
-        if idx > #queue then 
-            self:log("XRayPlugin: Pre-normalization complete")
-            return 
-        end
-        
-        local item = queue[idx]
-        idx = idx + 1
-        
-        -- Cache normalized name and aliases
-        item._norm_name = self:normalizeChapterName(item.name)
-        if item.aliases then
-            item._norm_aliases = {}
-            for _, alias in ipairs(item.aliases) do
-                table.insert(item._norm_aliases, self:normalizeChapterName(alias))
-            end
-        end
-        
-        -- Yield to keep UI snappy
-        UIManager:scheduleIn(XRayConfig.isLowPowerDevice and 0.05 or 0, processNext)
-    end
-    processNext()
-end
+
 
 -- Save characters/locations (with mentions) back to the cache file.
 function XRayPlugin:saveMentionsToCache()
@@ -1263,6 +1216,9 @@ function XRayPlugin:saveMentionsToCache()
         author_info        = self.author_info,
         last_fetch_page    = self.book_data and self.book_data.last_fetch_page,
     }
+    -- Force a GC pass before writing: scan debris fills the heap and can
+    -- cause the serializer to OOM on low-memory hardware.
+    collectgarbage("collect")
     self.cache_manager:saveCache(self.ui.document.file, updated)
     self:log("XRayPlugin: Mentions saved to cache")
 end

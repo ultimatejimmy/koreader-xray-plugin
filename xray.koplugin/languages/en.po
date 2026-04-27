@@ -165,7 +165,7 @@ msgid "mentions_refresh"
 msgstr "Refresh Mentions"
 
 msgid "mentions_scanning"
-msgstr "Scanning for mentions of %s..."
+msgstr "Scanning... %1 of %2 chapters"
 
 msgid "mentions_setting_desc"
 msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the 'Find Mentions' button."
@@ -175,6 +175,9 @@ msgstr "Mentions Settings"
 
 msgid "mentions_title"
 msgstr "Mentions: %s"
+
+msgid "mentions_wait_scan"
+msgstr "Wait for scan to finish before navigating..."
 
 msgid "menu_about"
 msgstr "About"

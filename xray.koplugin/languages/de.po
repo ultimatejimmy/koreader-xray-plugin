@@ -165,7 +165,7 @@ msgid "mentions_refresh"
 msgstr "Erwahnungen aktualisieren"
 
 msgid "mentions_scanning"
-msgstr "Suche nach Erwahnungen von %s..."
+msgstr "Scannen... %1 von %2 Kapiteln"
 
 msgid "mentions_setting_desc"
 msgstr "Das Scannen nach Erwähnungen ermöglicht es Ihnen, jedes Vorkommen eines Charakters oder Ortes im Buch zu finden. Dies geschieht automatisch im Hintergrund, um sicherzustellen, dass der Reader reaktionsschnell bleibt.\n\nDurch Deaktivieren dieser Option wird die Schaltfläche 'Erwähnungen suchen' ausgeblendet."
@@ -175,6 +175,9 @@ msgstr "Mentions Settings"
 
 msgid "mentions_title"
 msgstr "Erwahnungen: %s"
+
+msgid "mentions_wait_scan"
+msgstr "Bitte warten Sie, bis der Scan abgeschlossen ist..."
 
 msgid "menu_about"
 msgstr "Über"

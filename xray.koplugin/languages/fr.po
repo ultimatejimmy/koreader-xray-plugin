@@ -165,7 +165,7 @@ msgid "mentions_refresh"
 msgstr "Actualiser les mentions"
 
 msgid "mentions_scanning"
-msgstr "Recherche des mentions de %s..."
+msgstr "Analyse... %1 sur %2 chapitres"
 
 msgid "mentions_setting_desc"
 msgstr "L'analyse des mentions vous permet de trouver chaque occurrence d'un personnage ou d'un lieu dans le livre. Cela se produit automatiquement en arrière-plan pour garantir que le lecteur reste réactif.\n\nLa désactivation de cette option masquera le bouton 'Rechercher des mentions'."
@@ -175,6 +175,9 @@ msgstr "Mentions Settings"
 
 msgid "mentions_title"
 msgstr "Mentions : %s"
+
+msgid "mentions_wait_scan"
+msgstr "Veuillez attendre la fin de l'analyse avant de naviguer..."
 
 msgid "menu_about"
 msgstr "À propos"

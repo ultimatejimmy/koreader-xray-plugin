@@ -58,7 +58,10 @@ function CacheManager:ensureDirectory(path)
     return true
 end
 
--- Save book data to cache
+-- Save book data to cache.
+-- Writes the serialized data directly to the file handle token-by-token so
+-- that no large string ever exists in RAM. Peak memory is just the recursion
+-- stack plus the OS file buffer, not the full serialized text.
 function CacheManager:saveCache(book_path, data)
     if not book_path or not data then
         logger.warn("CacheManager: Cannot save cache - invalid parameters")
@@ -81,7 +84,6 @@ function CacheManager:saveCache(book_path, data)
     data.cached_at = os.time()
     data.cache_version = "6.0"
     
-    -- Serialize data
     local success, err = pcall(function()
         local f, open_err = io.open(cache_file, "w")
         
@@ -91,18 +93,22 @@ function CacheManager:saveCache(book_path, data)
             return false
         end
         
-        local serialized_data = self:serialize(data)
-        
-        if not serialized_data then
-            logger.warn("CacheManager: Failed to serialize data")
-            f:close()
-            return false
-        end
-        
         f:write("-- X-Ray Cache v6.0\n")
         f:write("-- Generated: " .. os.date("%Y-%m-%d %H:%M:%S") .. "\n\n")
-        f:write("return " .. serialized_data)
+        f:write("return ")
+        
+        local ok2, write_err = pcall(function()
+            self:serializeToFile(f, data, "")
+        end)
+        
+        f:write("\n")
         f:close()
+        
+        if not ok2 then
+            logger.warn("CacheManager: Serialization error:", write_err or "unknown")
+            AIHelper:log("CacheManager: Serialization error: " .. tostring(write_err or "unknown"))
+            return false
+        end
         
         logger.info("CacheManager: Saved cache to:", cache_file)
         AIHelper:log("CacheManager: Saved cache to: " .. tostring(cache_file))
@@ -181,48 +187,84 @@ function CacheManager:loadCache(book_path)
     return data
 end
 
--- Serialize Lua table to string (with better error handling)
+-- Serialize a Lua value by writing tokens directly to an open file handle.
+-- This avoids ever holding the full serialized text in RAM at once —
+-- the OS file buffer absorbs each small write transparently.
+function CacheManager:serializeToFile(f, obj, indent, seen)
+    seen = seen or {}
+    local t = type(obj)
+
+    if t == "table" then
+        if seen[obj] then
+            f:write("{--[[circular reference]]}")
+            return
+        end
+        seen[obj] = true
+
+        f:write("{\n")
+        local child_indent = indent .. "  "
+        for k, v in pairs(obj) do
+            if type(v) ~= "function" and type(v) ~= "userdata" and type(v) ~= "thread" then
+                f:write(child_indent)
+                if type(k) == "string" then
+                    if k:match("^[%a_][%w_]*$") then
+                        f:write(k)
+                        f:write(" = ")
+                    else
+                        f:write("[")
+                        f:write(string.format("%q", k))
+                        f:write("] = ")
+                    end
+                else
+                    f:write("[")
+                    f:write(tostring(k))
+                    f:write("] = ")
+                end
+                self:serializeToFile(f, v, child_indent, seen)
+                f:write(",\n")
+            end
+        end
+        f:write(indent)
+        f:write("}")
+
+    elseif t == "string" then
+        f:write(string.format("%q", obj))
+    elseif t == "number" or t == "boolean" then
+        f:write(tostring(obj))
+    else
+        f:write("nil")
+    end
+end
+
+-- Legacy serialize() retained for any external callers.
+-- Internally, saveCache now uses serializeToFile instead.
 function CacheManager:serialize(obj, indent, seen)
     indent = indent or ""
     seen = seen or {}
-    
     local t = type(obj)
-    
     if t == "table" then
-        -- Prevent infinite recursion
-        if seen[obj] then
-            return "{--[[circular reference]]}"
-        end
+        if seen[obj] then return "{--[[circular reference]]}" end
         seen[obj] = true
-        
-        local s = "{\n"
+        local parts = {}
         for k, v in pairs(obj) do
-            -- Skip functions and userdata
             if type(v) ~= "function" and type(v) ~= "userdata" and type(v) ~= "thread" then
-                s = s .. indent .. "  "
-                if type(k) == "string" then
-                    -- Check if key needs escaping
-                    if k:match("^[%a_][%w_]*$") then
-                        s = s .. k .. " = "
-                    else
-                        s = s .. "[" .. string.format("%q", k) .. "] = "
-                    end
+                local key
+                if type(k) == "string" and k:match("^[%a_][%w_]*$") then
+                    key = k .. " = "
+                elseif type(k) == "string" then
+                    key = "[" .. string.format("%q", k) .. "] = "
                 else
-                    s = s .. "[" .. tostring(k) .. "] = "
+                    key = "[" .. tostring(k) .. "] = "
                 end
-                s = s .. self:serialize(v, indent .. "  ", seen) .. ",\n"
+                table.insert(parts, indent .. "  " .. key .. self:serialize(v, indent .. "  ", seen) .. ",")
             end
         end
-        s = s .. indent .. "}"
-        return s
+        return "{\n" .. table.concat(parts, "\n") .. "\n" .. indent .. "}"
     elseif t == "string" then
         return string.format("%q", obj)
     elseif t == "number" or t == "boolean" then
         return tostring(obj)
-    elseif t == "nil" then
-        return "nil"
     else
-        -- Skip functions, userdata, threads
         return "nil"
     end
 end

@@ -165,7 +165,7 @@ msgid "mentions_refresh"
 msgstr "刷新提及"
 
 msgid "mentions_scanning"
-msgstr "正在搜索 %s 的提及..."
+msgstr "扫描中... 第 %1 / %2 章"
 
 msgid "mentions_setting_desc"
 msgstr "提及扫描允许您查找书中每个角色或地点的出现。这在后台自动发生，以确保阅读器保持响应。\n\n禁用此功能将隐藏“查找提及”按钮。"
@@ -175,6 +175,9 @@ msgstr "Mentions Settings"
 
 msgid "mentions_title"
 msgstr "提及：%s"
+
+msgid "mentions_wait_scan"
+msgstr "请等待扫描完成后再导航..."
 
 msgid "menu_about"
 msgstr "关于"

@@ -165,7 +165,7 @@ msgid "mentions_refresh"
 msgstr "Atualizar mencoes"
 
 msgid "mentions_scanning"
-msgstr "Procurando mencoes de %s..."
+msgstr "Escaneando... %1 de %2 capítulos"
 
 msgid "mentions_setting_desc"
 msgstr "A digitalização de menções permite encontrar cada ocorrência de um personagem ou local no livro. Isso acontece automaticamente em segundo plano para garantir que o leitor continue respondendo.\n\nDesativar isso ocultará o botão 'Localizar menções'."
@@ -175,6 +175,9 @@ msgstr "Mentions Settings"
 
 msgid "mentions_title"
 msgstr "Mencoes: %s"
+
+msgid "mentions_wait_scan"
+msgstr "Aguarde o término do scan antes de navegar..."
 
 msgid "menu_about"
 msgstr "Sobre"

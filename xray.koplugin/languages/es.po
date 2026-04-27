@@ -165,7 +165,7 @@ msgid "mentions_refresh"
 msgstr "Actualizar menciones"
 
 msgid "mentions_scanning"
-msgstr "Buscando menciones de %s..."
+msgstr "Escaneando... %1 de %2 capítulos"
 
 msgid "mentions_setting_desc"
 msgstr "El escaneo de menciones le permite encontrar cada ocurrencia de un personaje o ubicación en el libro. Esto sucede automáticamente en segundo plano para garantizar que el lector siga respondiendo.\n\nDeshabilitar esto ocultará el botón 'Buscar menciones'."
@@ -175,6 +175,9 @@ msgstr "Mentions Settings"
 
 msgid "mentions_title"
 msgstr "Menciones: %s"
+
+msgid "mentions_wait_scan"
+msgstr "Espera a que el escaneo termine antes de navegar..."
 
 msgid "menu_about"
 msgstr "Acerca de"

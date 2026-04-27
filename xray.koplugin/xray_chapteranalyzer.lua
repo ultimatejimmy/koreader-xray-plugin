@@ -934,10 +934,8 @@ function ChapterAnalyzer:scanMentionsAsync(ui, entity, toc, max_page, on_progres
 
         current_idx = current_idx + 1
         
-        -- Cleanup after every chapter to keep memory pressure low
-        if current_idx % 2 == 0 then
-            collectgarbage("collect")
-        end
+        -- GC every chapter to keep memory pressure low on old hardware
+        collectgarbage("collect")
         
         UIManager:scheduleIn(yield_delay, scanNext)
     end

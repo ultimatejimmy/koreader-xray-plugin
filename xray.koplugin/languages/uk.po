@@ -165,7 +165,7 @@ msgid "mentions_refresh"
 msgstr "Оновити згадки"
 
 msgid "mentions_scanning"
-msgstr "Пошук згадок %s..."
+msgstr "Сканування... %1 із %2 розділів"
 
 msgid "mentions_setting_desc"
 msgstr "Сканування згадок дозволяє знайти кожну згадку персонажа або місця в книзі. Це відбувається автоматично у фоновому режимі, щоб забезпечити чуйність рідера.\n\nВимкнення цієї функції приховає кнопку «Знайти згадки»."
@@ -175,6 +175,9 @@ msgstr "Mentions Settings"
 
 msgid "mentions_title"
 msgstr "Згадки: %s"
+
+msgid "mentions_wait_scan"
+msgstr "Зачекайте завершення сканування перед переходом..."
 
 msgid "menu_about"
 msgstr "Про додаток"

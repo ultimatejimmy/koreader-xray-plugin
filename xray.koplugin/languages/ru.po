@@ -165,7 +165,7 @@ msgid "mentions_refresh"
 msgstr "Обновить упоминания"
 
 msgid "mentions_scanning"
-msgstr "Поиск упоминаний %s..."
+msgstr "Сканирование... %1 из %2 глав"
 
 msgid "mentions_setting_desc"
 msgstr "Сканирование упоминаний позволяет найти каждое упоминание персонажа или места в книге. Это происходит автоматически в фоновом режиме, чтобы обеспечить отзывчивость ридера.\n\nОтключение этой функции скроет кнопку «Найти упоминания»."
@@ -175,6 +175,9 @@ msgstr "Mentions Settings"
 
 msgid "mentions_title"
 msgstr "Упоминания: %s"
+
+msgid "mentions_wait_scan"
+msgstr "Подождите завершения сканирования перед навигацией..."
 
 msgid "menu_about"
 msgstr "О плагине"

@@ -165,7 +165,7 @@ msgid "mentions_refresh"
 msgstr "Sozleri yenile"
 
 msgid "mentions_scanning"
-msgstr "%s icin sozler aranıyor..."
+msgstr "Taranıyor... %1 / %2 bölüm"
 
 msgid "mentions_setting_desc"
 msgstr "Bahsetme taramas, kitaptaki bir karakterin veya konumun her geA iYini bulmanza olanak tanr. Bu, okuyucunun yant vermeye devam etmesini saYlamak iA in arka planda otomatik olarak gerA ekleYir.\n\nBunu devre d brakmak 'Bahsetmeleri Bul' dAmesini gizleyecektir."
@@ -175,6 +175,9 @@ msgstr "Mentions Settings"
 
 msgid "mentions_title"
 msgstr "Sozler: %s"
+
+msgid "mentions_wait_scan"
+msgstr "Devam etmeden önce taramanın bitmesini bekleyin..."
 
 msgid "menu_about"
 msgstr "Hakkında"
