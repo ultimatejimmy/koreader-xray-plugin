@@ -461,3 +461,6 @@ msgstr "Mentions: %s"
 
 msgid "mentions_wait_scan"
 msgstr "Wait for scan to finish before navigating..."
+
+msgid "find_mentions"
+msgstr "Find Mentions"

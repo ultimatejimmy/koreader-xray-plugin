@@ -242,6 +242,7 @@ function Localization:t(key, ...)
             mentions_setting_title = "Mentions Settings",
             mentions_setting_desc = "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the 'Find Mentions' button.",
             mentions_preference_desc = "Select your preference for character and location mentions:",
+            find_mentions = "Find Mentions",
             menu_about = "About",
         }
         translation = fallbacks[key] or key

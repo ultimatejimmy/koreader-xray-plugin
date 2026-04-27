@@ -96,10 +96,25 @@ function LookupManager:lookupAll(text)
         end
         
         -- Contains / Contained (Pass 2 & 3 combined)
-        if #norm >= 3 and (query:find(norm, 1, true) or norm:find(query, 1, true)) then
+        local function checkContains(text_norm)
+            if not text_norm or #text_norm < 3 then return false end
+            return query:find(text_norm, 1, true) or text_norm:find(query, 1, true)
+        end
+
+        if checkContains(norm) then
             seen[n] = true
             table.insert(final_results, { item = item, item_type = item_type, score = 50 })
             return
+        end
+
+        if item._norm_aliases then
+            for _, anorm in ipairs(item._norm_aliases) do
+                if checkContains(anorm) then
+                    seen[n] = true
+                    table.insert(final_results, { item = item, item_type = item_type, score = 40 })
+                    return
+                end
+            end
         end
     end
 
@@ -113,36 +128,6 @@ function LookupManager:lookupAll(text)
     
     if #final_results > 0 then
         table.sort(final_results, function(a, b) return a.score > b.score end)
-        return final_results
-    end
-
-    -- Pass 4: Keyword matching (only if no exact/contains hits)
-    local words = {}
-    for word in query:gmatch("[%w%z\128-\255]+") do
-        if #word >= 3 then table.insert(words, word) end
-    end
-
-    if #words > 0 then
-        for _, cat in ipairs(categories) do
-            if cat.list then
-                for _, item in ipairs(cat.list) do
-                    local n = (item.name or ""):lower()
-                    if not seen[n] then
-                        local norm = item._norm_name or self:normalize(item.name)
-                        for _, w in ipairs(words) do
-                            if norm == w
-                                or norm:find("^" .. w .. " ")
-                                or norm:find(" "  .. w .. "$")
-                                or norm:find(" "  .. w .. " ") then
-                                seen[n] = true
-                                table.insert(final_results, { item = item, item_type = cat.type, score = 10 })
-                                break
-                            end
-                        end
-                    end
-                end
-            end
-        end
     end
 
     return final_results
