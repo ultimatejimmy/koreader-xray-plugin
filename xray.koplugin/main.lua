@@ -99,6 +99,12 @@ function XRayPlugin:init()
                 return {
                     text = "X-Ray",
                     callback = function()
+                        -- Extract selection data BEFORE closing or clearing
+                        local sel = _reader_highlight_instance and _reader_highlight_instance.selected_text or {}
+                        local text = sel.text
+                        local pos0 = sel.pos0
+                        local pos1 = sel.pos1
+                        
                         -- Directly tell the UIManager to close this specific dialog instance
                         if _reader_highlight_instance then
                             pcall(function() 
@@ -116,8 +122,9 @@ function XRayPlugin:init()
                             self.ui:handleEvent(Event:new("ClearSelection"))
                         end
                         
-                        local sel = _reader_highlight_instance.selected_text
-                        self.lookup_manager:handleLookup(sel.text, sel.pos0, sel.pos1)
+                        if text then
+                            self.lookup_manager:handleLookup(text, pos0, pos1)
+                        end
                     end,
                 }
             end)
@@ -134,13 +141,16 @@ function XRayPlugin:onDictButtonsReady(dict_popup, dict_buttons)
     local xray_button = {
         text = "X-Ray",
         callback = function()
+            -- Extract text and position data BEFORE closing
+            local text = dict_popup and (dict_popup.word or dict_popup.text or dict_popup.selection_text)
+            local pos0 = dict_popup and dict_popup.pos0
+            local pos1 = dict_popup and dict_popup.pos1
+            
             -- Close the native dictionary popup immediately so it doesn't linger
             if dict_popup then pcall(function() UIManager:close(dict_popup) end) end
             
-            -- Multi-word selections often store text in .text or .selection_text instead of .word
-            local text = dict_popup and (dict_popup.word or dict_popup.text or dict_popup.selection_text)
             if text then
-                self.lookup_manager:handleLookup(text, dict_popup.pos0, dict_popup.pos1)
+                self.lookup_manager:handleLookup(text, pos0, pos1)
             end
         end,
     }
