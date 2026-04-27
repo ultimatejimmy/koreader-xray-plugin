@@ -879,9 +879,6 @@ function XRayPlugin:closeAllMenus()
     if self.timeline_menu then UIManager:close(self.timeline_menu); self.timeline_menu = nil end
     if self.hf_menu then UIManager:close(self.hf_menu); self.hf_menu = nil end
     if self.xray_menu then UIManager:close(self.xray_menu); self.xray_menu = nil end
-    if self.ui and self.ui.onClose then
-        pcall(function() self.ui:onClose() end)
-    end
 end
 
 function XRayPlugin:showCharacters()
@@ -928,11 +925,10 @@ function XRayPlugin:showCharacterDetails(character)
         (self.loc:t("label_description") or "DESCRIPTION") .. ":",
         character.description or "---"
     }
-    local ConfirmBox = require("ui/widget/confirmbox")
     local detail_dialog
     detail_dialog = ConfirmBox:new{
         text = table.concat(lines, "\n"),
-        icon = "person",
+        icon = "info",
         ok_text = self.loc:t("find_mentions") or "Find Mentions",
         cancel_text = self.loc:t("close") or "Close",
         ok_callback = function()
@@ -945,11 +941,10 @@ end
 function XRayPlugin:showLocationDetails(loc_item)
     local name = loc_item.name or "???"
     local desc = loc_item.description or ""
-    local ConfirmBox = require("ui/widget/confirmbox")
     local loc_dialog
     loc_dialog = ConfirmBox:new{
         text = name .. "\n\n" .. desc,
-        icon = "location",
+        icon = "info",
         ok_text = self.loc:t("find_mentions") or "Find Mentions",
         cancel_text = self.loc:t("close") or "Close",
         ok_callback = function()
@@ -2194,7 +2189,14 @@ function XRayPlugin:showLocations()
         return
     end
     
-    self.loc_menu = Menu:new{ title = self.loc:t("menu_locations"), item_table = items, is_borderless = true, width = Screen:getWidth(), height = Screen:getHeight() }
+    self.loc_menu = Menu:new{
+        title = self.loc:t("menu_locations"),
+        item_table = items,
+        is_borderless = true,
+        width = Screen:getWidth(),
+        height = Screen:getHeight(),
+        close_callback = function() self.loc_menu = nil end,
+    }
     UIManager:show(self.loc_menu)
 end
 
