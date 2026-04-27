@@ -149,17 +149,29 @@ msgstr "语言已更改。重新打开菜单以查看更改。"
 msgid "logs_cleared"
 msgstr "日志已清除！"
 
+msgid "mentions_disabled"
+msgstr "Disabled"
+
+msgid "mentions_enabled"
+msgstr "Enabled"
+
 msgid "mentions_none"
 msgstr "目前未找到"%s"的提及。"
+
+msgid "mentions_preference_desc"
+msgstr "Select your preference for character and location mentions:"
 
 msgid "mentions_refresh"
 msgstr "刷新提及"
 
-msgid "mentions_refresh_started"
-msgstr "正在后台刷新提及..."
-
 msgid "mentions_scanning"
 msgstr "正在搜索 %s 的提及..."
+
+msgid "mentions_setting_desc"
+msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the "
+
+msgid "mentions_setting_title"
+msgstr "Mentions Settings"
 
 msgid "mentions_title"
 msgstr "提及：%s"
@@ -223,6 +235,9 @@ msgstr "地点"
 
 msgid "menu_maintenance"
 msgstr "维护"
+
+msgid "menu_mentions_settings"
+msgstr "Mentions Settings"
 
 msgid "menu_primary_ai_model"
 msgstr "主位 AI 模型"

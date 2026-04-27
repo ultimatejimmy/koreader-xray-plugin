@@ -960,4 +960,63 @@ function ChapterAnalyzer:findMentionsInChapter(ui, entity, toc_entry, next_toc_e
     return chapter_mentions
 end
 
+function ChapterAnalyzer:scanMentionsAsync(ui, entity, toc, max_page, on_progress, on_complete)
+    if not ui or not ui.document or not entity or not entity.name or not toc or #toc == 0 then 
+        if on_complete then on_complete({}) end
+        return { cancel = function() end } 
+    end
+
+    local UIManager = require("ui/uimanager")
+    local cancel_handle = { _cancelled = false }
+    function cancel_handle:cancel()
+        self._cancelled = true
+    end
+
+    local mentions = {}
+    local current_idx = 1
+    local total_chapters = #toc
+
+    local function scanNext()
+        if cancel_handle._cancelled then
+            if on_complete then on_complete(mentions) end
+            return
+        end
+
+        if current_idx > total_chapters then
+            if on_complete then on_complete(mentions) end
+            return
+        end
+
+        local entry = toc[current_idx]
+        local next_entry = toc[current_idx + 1]
+        
+        local start_p = tonumber(entry.page)
+        if start_p and max_page and start_p > max_page then
+            -- Reached spoiler limit
+            if on_complete then on_complete(mentions) end
+            return
+        end
+
+        local chapter_mentions = self:findMentionsInChapter(ui, entity, entry, next_entry)
+        
+        -- Filter out mentions that pass max_page
+        for _, m in ipairs(chapter_mentions) do
+            if not (max_page and m.page and m.page > max_page) then
+                table.insert(mentions, m)
+            end
+        end
+
+        if on_progress then
+            on_progress(mentions, current_idx, total_chapters)
+        end
+
+        current_idx = current_idx + 1
+        UIManager:scheduleIn(0, scanNext)
+    end
+
+    UIManager:scheduleIn(0, scanNext)
+    
+    return cancel_handle
+end
+
 return ChapterAnalyzer

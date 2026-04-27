@@ -149,17 +149,29 @@ msgstr "Dil değiştirildi. Değişiklikleri görmek için menüyü tekrar açı
 msgid "logs_cleared"
 msgstr "Günlükler temizlendi!"
 
+msgid "mentions_disabled"
+msgstr "Disabled"
+
+msgid "mentions_enabled"
+msgstr "Enabled"
+
 msgid "mentions_none"
 msgstr "'%s' icin henuz soz bulunamadı."
+
+msgid "mentions_preference_desc"
+msgstr "Select your preference for character and location mentions:"
 
 msgid "mentions_refresh"
 msgstr "Sozleri yenile"
 
-msgid "mentions_refresh_started"
-msgstr "Sozler arka planda yenileniyor..."
-
 msgid "mentions_scanning"
 msgstr "%s icin sozler aranıyor..."
+
+msgid "mentions_setting_desc"
+msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the "
+
+msgid "mentions_setting_title"
+msgstr "Mentions Settings"
 
 msgid "mentions_title"
 msgstr "Sozler: %s"
@@ -223,6 +235,9 @@ msgstr "Mekanlar"
 
 msgid "menu_maintenance"
 msgstr "Bakım"
+
+msgid "menu_mentions_settings"
+msgstr "Mentions Settings"
 
 msgid "menu_primary_ai_model"
 msgstr "Birincil YZ Modeli"

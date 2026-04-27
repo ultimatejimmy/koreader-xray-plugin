@@ -149,17 +149,29 @@ msgstr "Idioma alterado. Reabra o menu para ver as alterações."
 msgid "logs_cleared"
 msgstr "Logs limpos!"
 
+msgid "mentions_disabled"
+msgstr "Disabled"
+
+msgid "mentions_enabled"
+msgstr "Enabled"
+
 msgid "mentions_none"
 msgstr "Nenhuma mencao encontrada para '%s' ainda."
+
+msgid "mentions_preference_desc"
+msgstr "Select your preference for character and location mentions:"
 
 msgid "mentions_refresh"
 msgstr "Atualizar mencoes"
 
-msgid "mentions_refresh_started"
-msgstr "Atualizando mencoes em segundo plano..."
-
 msgid "mentions_scanning"
 msgstr "Procurando mencoes de %s..."
+
+msgid "mentions_setting_desc"
+msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the "
+
+msgid "mentions_setting_title"
+msgstr "Mentions Settings"
 
 msgid "mentions_title"
 msgstr "Mencoes: %s"
@@ -223,6 +235,9 @@ msgstr "Locais"
 
 msgid "menu_maintenance"
 msgstr "Manutenção"
+
+msgid "menu_mentions_settings"
+msgstr "Mentions Settings"
 
 msgid "menu_primary_ai_model"
 msgstr "Modelo de IA principal"

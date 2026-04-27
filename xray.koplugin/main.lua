@@ -511,6 +511,11 @@ function XRayPlugin:getSubMenuItems()
                     callback = function() self:showSpoilerSettings() end,
                 },
                 {
+                    text = self.loc:t("mentions_setting_title") or "Mentions Settings",
+                    keep_menu_open = true,
+                    callback = function() self:showMentionsSettings() end,
+                },
+                {
                     text = self.loc:t("menu_auto_update_frequency") or "Auto X-Ray Settings",
                     keep_menu_open = true,
                     callback = function() self:showAutoUpdateSettings() end,
@@ -983,32 +988,52 @@ function XRayPlugin:showCharacterDetails(character)
     table.insert(lines, (self.loc:t("label_description") or "DESCRIPTION") .. ":")
     table.insert(lines, character.description or "---")
     
+    local mentions_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.mentions_enabled ~= false
     local detail_dialog
-    detail_dialog = ConfirmBox:new{
-        text = table.concat(lines, "\n"),
-        icon = "info",
-        ok_text = self.loc:t("find_mentions") or "Find Mentions",
-        cancel_text = self.loc:t("close") or "Close",
-        ok_callback = function()
-            self:showMentionsForEntity(character)
-        end,
-    }
+    if mentions_enabled then
+        detail_dialog = ConfirmBox:new{
+            text = table.concat(lines, "\n"),
+            icon = "info",
+            ok_text = self.loc:t("find_mentions") or "Find Mentions",
+            cancel_text = self.loc:t("close") or "Close",
+            ok_callback = function()
+                self:showMentionsForEntity(character)
+            end,
+        }
+    else
+        detail_dialog = ConfirmBox:new{
+            text = table.concat(lines, "\n"),
+            icon = "info",
+            ok_text = self.loc:t("close") or "Close",
+            ok_callback = function() end,
+        }
+    end
     UIManager:show(detail_dialog)
 end
 
 function XRayPlugin:showLocationDetails(loc_item)
     local name = loc_item.name or "???"
     local desc = loc_item.description or ""
+    local mentions_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.mentions_enabled ~= false
     local loc_dialog
-    loc_dialog = ConfirmBox:new{
-        text = name .. "\n\n" .. desc,
-        icon = "info",
-        ok_text = self.loc:t("find_mentions") or "Find Mentions",
-        cancel_text = self.loc:t("close") or "Close",
-        ok_callback = function()
-            self:showMentionsForEntity(loc_item)
-        end,
-    }
+    if mentions_enabled then
+        loc_dialog = ConfirmBox:new{
+            text = name .. "\n\n" .. desc,
+            icon = "info",
+            ok_text = self.loc:t("find_mentions") or "Find Mentions",
+            cancel_text = self.loc:t("close") or "Close",
+            ok_callback = function()
+                self:showMentionsForEntity(loc_item)
+            end,
+        }
+    else
+        loc_dialog = ConfirmBox:new{
+            text = name .. "\n\n" .. desc,
+            icon = "info",
+            ok_text = self.loc:t("close") or "Close",
+            ok_callback = function() end,
+        }
+    end
     UIManager:show(loc_dialog)
 end
 
@@ -1144,90 +1169,158 @@ end
 -- Show the Mentions view. Reads from cache (fast path) or scans live (fallback).
 function XRayPlugin:showMentionsForEntity(entity)
     if not entity then return end
+    
+    local mentions_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.mentions_enabled
+    if mentions_enabled == false then return end -- Default is true, so only block if explicitly false
+    
+    local name = entity.name or "???"
+    
+    -- If already scanning this entity, just show the menu (will show progress)
+    if self.active_mention_scan and self.active_mention_scan.entity_name == name then
+        self:showMentionsMenu(entity)
+        return
+    end
+
     if entity.mentions and #entity.mentions > 0 then
         self:showMentionsMenu(entity)
         return
     end
-    local name = entity.name or "???"
+
     if not self.ui or not self.ui.document then return end
-    local scanning_msg = InfoMessage:new{
-        text    = (self.loc:t("mentions_scanning") or "Scanning for mentions of %s..."):format(name),
-        timeout = 60,
+    
+    if not self.chapter_analyzer then
+        self.chapter_analyzer = require("xray_chapteranalyzer"):new()
+    end
+    
+    local toc = self.ui.document:getToc() or {}
+    local spoiler_free = (self.ai_helper and self.ai_helper.settings
+        and self.ai_helper.settings.spoiler_setting or "spoiler_free") == "spoiler_free"
+    local max_page = spoiler_free and self.ui:getCurrentPage() or nil
+    
+    self.active_mention_scan = {
+        entity_name = name,
+        chapter_idx = 0,
+        total_chapters = #toc,
+        cancel_handle = nil
     }
-    UIManager:show(scanning_msg)
-    UIManager:scheduleIn(0, function()
-        if not self.chapter_analyzer then
-            self.chapter_analyzer = require("xray_chapteranalyzer"):new()
+    
+    self.active_mention_scan.cancel_handle = self.chapter_analyzer:scanMentionsAsync(
+        self.ui, entity, toc, max_page,
+        function(mentions_so_far, chapter_idx, total_chapters)
+            if self.active_mention_scan and self.active_mention_scan.entity_name == name then
+                self.active_mention_scan.chapter_idx = chapter_idx
+                self.active_mention_scan.total_chapters = total_chapters
+                if self.mentions_menu then
+                    entity.mentions = mentions_so_far
+                    self:updateMentionsMenuInPlace(entity)
+                end
+            end
+        end,
+        function(all_mentions)
+            if self.active_mention_scan and self.active_mention_scan.entity_name == name then
+                self.active_mention_scan = nil
+            end
+            entity.mentions = all_mentions
+            self:saveMentionsToCache()
+            if self.mentions_menu then
+                self:updateMentionsMenuInPlace(entity)
+            end
         end
-        local toc = self.ui.document:getToc() or {}
-        local spoiler_free = (self.ai_helper and self.ai_helper.settings
-            and self.ai_helper.settings.spoiler_setting or "spoiler_free") == "spoiler_free"
-        local max_page = spoiler_free and self.ui:getCurrentPage() or nil
-        
-        local ok, result = pcall(function()
-            return self.chapter_analyzer:findMentionsAcrossChapters(
-                self.ui, entity, toc, max_page)
-        end)
-        UIManager:close(scanning_msg)
-        if ok and result then
-            entity.mentions = result
-        end
-        self:showMentionsMenu(entity)
-    end)
+    )
+    
+    self:showMentionsMenu(entity)
 end
 
-function XRayPlugin:showMentionsMenu(entity)
-    if not entity then return end
-    local name = entity.name or "???"
-    local mentions = entity.mentions
-
-    if not mentions or #mentions == 0 then
-        UIManager:show(InfoMessage:new{
-            text    = (self.loc:t("mentions_none") or "No mentions found for '%s' yet."):format(name),
-            timeout = 4,
-        })
-        return
-    end
-
+function XRayPlugin:buildMentionsMenuItems(entity)
     local items = {}
-    -- Refresh button at the top
-    table.insert(items, {
-        text = "\xe2\x86\xba " .. (self.loc:t("mentions_refresh") or "Refresh Mentions"),
-        keep_menu_open = true,
-        callback = function()
-            local scanning_msg = InfoMessage:new{
-                text    = self.loc:t("mentions_refresh_started") or "Refreshing mentions...",
-                timeout = 60,
-            }
-            UIManager:show(scanning_msg)
-            UIManager:scheduleIn(0.1, function()
-                if not self.chapter_analyzer then
-                    self.chapter_analyzer = require("xray_chapteranalyzer"):new()
+    local name = entity.name or "???"
+    local mentions = entity.mentions or {}
+    
+    local is_scanning = self.active_mention_scan and self.active_mention_scan.entity_name == name
+    
+    if is_scanning then
+        local scan_text = (self.loc:t("mentions_scanning") or "Scanning... %1 of %2 chapters")
+            :gsub("%%1", tostring(self.active_mention_scan.chapter_idx))
+            :gsub("%%2", tostring(self.active_mention_scan.total_chapters))
+        table.insert(items, {
+            text = "\xE2\x8F\xB3 " .. scan_text,
+            keep_menu_open = true,
+            callback = function() end, -- do nothing, just status
+        })
+        table.insert(items, {
+            text = "\xE2\x9C\x96 " .. (self.loc:t("close") or "Close"),
+            keep_menu_open = true,
+            callback = function()
+                if self.mentions_menu then
+                    UIManager:close(self.mentions_menu)
+                    self.mentions_menu = nil
                 end
+            end,
+            separator = true,
+        })
+    else
+        table.insert(items, {
+            text = "\xe2\x86\xba " .. (self.loc:t("mentions_refresh") or "Refresh Mentions"),
+            keep_menu_open = true,
+            callback = function()
+                entity.mentions = {}
+                if self.active_mention_scan and self.active_mention_scan.cancel_handle then
+                    self.active_mention_scan.cancel_handle:cancel()
+                end
+                
                 local toc = self.ui.document:getToc() or {}
                 local spoiler_free = (self.ai_helper and self.ai_helper.settings
                     and self.ai_helper.settings.spoiler_setting or "spoiler_free") == "spoiler_free"
                 local max_page = spoiler_free and self.ui:getCurrentPage() or nil
-                local ok, result = pcall(function()
-                    return self.chapter_analyzer:findMentionsAcrossChapters(
-                        self.ui, entity, toc, max_page)
-                end)
-                UIManager:close(scanning_msg)
-                if ok and result then
-                    entity.mentions = result
-                    self:saveMentionsToCache()
-                    
-                    -- Close old menu and re-open to refresh the list
-                    if self.mentions_menu then
-                        UIManager:close(self.mentions_menu)
-                        self.mentions_menu = nil
-                    end
-                    self:showMentionsMenu(entity)
+                
+                if not self.chapter_analyzer then
+                    self.chapter_analyzer = require("xray_chapteranalyzer"):new()
                 end
-            end)
-        end,
-        separator = true,
-    })
+                
+                self.active_mention_scan = {
+                    entity_name = name,
+                    chapter_idx = 0,
+                    total_chapters = #toc,
+                    cancel_handle = nil
+                }
+                
+                self.active_mention_scan.cancel_handle = self.chapter_analyzer:scanMentionsAsync(
+                    self.ui, entity, toc, max_page,
+                    function(mentions_so_far, chapter_idx, total_chapters)
+                        if self.active_mention_scan and self.active_mention_scan.entity_name == name then
+                            self.active_mention_scan.chapter_idx = chapter_idx
+                            self.active_mention_scan.total_chapters = total_chapters
+                            if self.mentions_menu then
+                                entity.mentions = mentions_so_far
+                                self:updateMentionsMenuInPlace(entity)
+                            end
+                        end
+                    end,
+                    function(all_mentions)
+                        if self.active_mention_scan and self.active_mention_scan.entity_name == name then
+                            self.active_mention_scan = nil
+                        end
+                        entity.mentions = all_mentions
+                        self:saveMentionsToCache()
+                        if self.mentions_menu then
+                            self:updateMentionsMenuInPlace(entity)
+                        end
+                    end
+                )
+                self:updateMentionsMenuInPlace(entity)
+            end,
+            separator = true,
+        })
+    end
+
+    if not is_scanning and (#mentions == 0) then
+        table.insert(items, {
+            text = (self.loc:t("mentions_none") or "No mentions found for '%s' yet."):format(name),
+            keep_menu_open = true,
+            callback = function() end,
+        })
+        return items
+    end
 
     for _, m in ipairs(mentions) do
         local header = "p." .. tostring(m.page) .. " \xE2\x80\x94 " .. (m.chapter or "")
@@ -1240,30 +1333,46 @@ function XRayPlugin:showMentionsMenu(entity)
                 self:closeAllMenus()
                 UIManager:nextTick(function()
                     local Event = require("ui/event")
-                    -- Phase 1: Broadcast clear to ALL widgets immediately
                     UIManager:broadcastEvent(Event:new("ClearSelection"))
                     
-                    -- Phase 2: Direct method calls
-                    if self.ui.onClearSelection then pcall(function() self.ui:onClearSelection() end) end
-                    if self.ui.view and self.ui.view.clearSelection then pcall(function() self.ui.view:clearSelection() end) end
+                    local dict_ok, DictQuickLookup = pcall(require, "ui/widget/dictquicklookup")
+                    if dict_ok and DictQuickLookup and DictQuickLookup.window_list then
+                        for i = #DictQuickLookup.window_list, 1, -1 do
+                            local window = DictQuickLookup.window_list[i]
+                            if window and window.onClose then
+                                pcall(function() window:onClose() end)
+                            end
+                        end
+                    end
+                    if self.ui.highlight and self.ui.highlight.clear then
+                        pcall(function() self.ui.highlight:clear() end)
+                    end
                     
-                    -- Phase 3: Targeted close events
-                    self.ui:handleEvent(Event:new("DismissMenus"))
-                    if self.ui.dictionary then self.ui:handleEvent(Event:new("CloseDictionary")) end
-                    if self.ui.highlight then self.ui:handleEvent(Event:new("CloseHighlight")) end
-                    
-                    -- Phase 4: Execute jump
                     self.ui:handleEvent(Event:new("GotoPage", pg))
-                    
-                    -- Phase 5: Delayed cleanup (in case the jump re-triggered anything)
-                    UIManager:scheduleIn(0.5, function()
-                        UIManager:broadcastEvent(Event:new("ClearSelection"))
-                        if self.ui.onClearSelection then pcall(function() self.ui:onClearSelection() end) end
-                    end)
                 end)
             end,
         })
     end
+    
+    return items
+end
+
+function XRayPlugin:updateMentionsMenuInPlace(entity)
+    if not self.mentions_menu then return end
+    local items = self:buildMentionsMenuItems(entity)
+    local name = entity.name or "???"
+    local title = (self.loc:t("mentions_title") or "Mentions: %s"):format(name)
+    if self.mentions_menu.switchItemTable then
+        pcall(function()
+            self.mentions_menu:switchItemTable(title, items)
+        end)
+    end
+end
+
+function XRayPlugin:showMentionsMenu(entity)
+    if not entity then return end
+    local name = entity.name or "???"
+    local items = self:buildMentionsMenuItems(entity)
 
     self.mentions_menu = Menu:new{
         title          = (self.loc:t("mentions_title") or "Mentions: %s"):format(name),
@@ -1307,6 +1416,67 @@ function XRayPlugin:updateFromAI()
             self:continueWithFetch(reading_percent, true, last_fetch_page)
         end
     end)
+end
+
+function XRayPlugin:showMentionsSettings()
+    local ButtonDialog = require("ui/widget/buttondialog")
+    local InfoMessage = require("ui/widget/infomessage")
+    local info_dialog
+    
+    local function showSettings()
+        if info_dialog then UIManager:close(info_dialog) end
+        
+        local current_setting = self.ai_helper.settings.mentions_enabled ~= false -- default is true
+        local enabled_text = self.loc:t("mentions_enabled") or "Enabled"
+        local disabled_text = self.loc:t("mentions_disabled") or "Disabled"
+        
+        local buttons = {
+            {
+                {
+                    text = (current_setting and "[✓] " or "[  ] ") .. enabled_text,
+                    callback = function()
+                        self.ai_helper:saveSettings({ mentions_enabled = true })
+                        UIManager:setDirty(nil, "ui")
+                        UIManager:nextTick(function() showSettings() end)
+                    end
+                },
+                {
+                    text = ((not current_setting) and "[✓] " or "[  ] ") .. disabled_text,
+                    callback = function()
+                        self.ai_helper:saveSettings({ mentions_enabled = false })
+                        UIManager:setDirty(nil, "ui")
+                        UIManager:nextTick(function() showSettings() end)
+                    end
+                }
+            },
+            {
+                {
+                    text = self.loc:t("menu_about") or "About",
+                    callback = function()
+                        UIManager:show(InfoMessage:new{
+                            text = self.loc:t("mentions_setting_desc") or "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the 'Find Mentions' button.",
+                            timeout = 30
+                        })
+                    end
+                },
+                {
+                    text = self.loc:t("close") or "Close",
+                    callback = function()
+                        UIManager:close(info_dialog)
+                    end
+                }
+            }
+        }
+        
+        info_dialog = ButtonDialog:new{
+            title = self.loc:t("mentions_setting_title") or "Mentions Settings",
+            text = self.loc:t("mentions_preference_desc") or "Select your preference for character and location mentions:",
+            buttons = buttons,
+        }
+        UIManager:show(info_dialog)
+    end
+    
+    showSettings()
 end
 
 function XRayPlugin:showAutoUpdateSettings()

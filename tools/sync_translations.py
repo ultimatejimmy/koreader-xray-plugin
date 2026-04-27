@@ -14,8 +14,8 @@ def parse_po(file_path):
     if not os.path.exists(file_path): return []
     with open(file_path, 'r', encoding='utf-8') as f:
         for line in f:
-            line = line.strip('\n')
-            if not line.strip():
+            line = line.strip()
+            if not line:
                 if current_entry['msgid'] or current_entry['msgstr']:
                     entries.append(current_entry)
                     current_entry = {'msgid': '', 'msgstr': '', 'comments': []}
@@ -24,16 +24,22 @@ def parse_po(file_path):
             if line.startswith('#'):
                 current_entry['comments'].append(line)
             elif line.startswith('msgid '):
-                current_entry['msgid'] = line[7:-1]
+                m = re.match(r'^msgid "(.*)"$', line)
+                if m:
+                    current_entry['msgid'] = m.group(1)
                 current_field = 'msgid'
             elif line.startswith('msgstr '):
-                current_entry['msgstr'] = line[8:-1]
+                m = re.match(r'^msgstr "(.*)"$', line)
+                if m:
+                    current_entry['msgstr'] = m.group(1)
                 current_field = 'msgstr'
             elif line.startswith('"'):
-                if current_field == 'msgid':
-                    current_entry['msgid'] += line[1:-1]
-                elif current_field == 'msgstr':
-                    current_entry['msgstr'] += line[1:-1]
+                m = re.match(r'^"(.*)"$', line)
+                if m:
+                    if current_field == 'msgid':
+                        current_entry['msgid'] += m.group(1)
+                    elif current_field == 'msgstr':
+                        current_entry['msgstr'] += m.group(1)
         if current_entry['msgid'] or current_entry['msgstr']:
             entries.append(current_entry)
     return entries

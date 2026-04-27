@@ -149,17 +149,29 @@ msgstr "Sprache geändert. Öffnen Sie das Menü erneut, um die Änderungen zu s
 msgid "logs_cleared"
 msgstr "Logs gelöscht!"
 
+msgid "mentions_disabled"
+msgstr "Disabled"
+
+msgid "mentions_enabled"
+msgstr "Enabled"
+
 msgid "mentions_none"
 msgstr "Noch keine Erwahnungen fur '%s' gefunden."
+
+msgid "mentions_preference_desc"
+msgstr "Select your preference for character and location mentions:"
 
 msgid "mentions_refresh"
 msgstr "Erwahnungen aktualisieren"
 
-msgid "mentions_refresh_started"
-msgstr "Erwahnungen werden im Hintergrund aktualisiert..."
-
 msgid "mentions_scanning"
 msgstr "Suche nach Erwahnungen von %s..."
+
+msgid "mentions_setting_desc"
+msgstr "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the "
+
+msgid "mentions_setting_title"
+msgstr "Mentions Settings"
 
 msgid "mentions_title"
 msgstr "Erwahnungen: %s"
@@ -223,6 +235,9 @@ msgstr "Orte"
 
 msgid "menu_maintenance"
 msgstr "Wartung"
+
+msgid "menu_mentions_settings"
+msgstr "Mentions Settings"
 
 msgid "menu_primary_ai_model"
 msgstr "Primäres KI-Modell"

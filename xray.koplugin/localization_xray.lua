@@ -235,6 +235,14 @@ function Localization:t(key, ...)
             label_description = "DESCRIPTION",
             msg_added_characters = "Added %d new characters!",
             msg_no_bio = "No biography available.",
+            menu_mentions_settings = "Mentions Settings",
+            mentions_enabled = "Enabled",
+            mentions_disabled = "Disabled",
+            mentions_scanning = "Scanning... %1 of %2 chapters",
+            mentions_setting_title = "Mentions Settings",
+            mentions_setting_desc = "Mentions scanning allows you to find every occurrence of a character or location in the book. This happens automatically in the background to ensure the reader stays responsive.\n\nDisabling this will hide the 'Find Mentions' button.",
+            mentions_preference_desc = "Select your preference for character and location mentions:",
+            menu_about = "About",
         }
         translation = fallbacks[key] or key
     end
