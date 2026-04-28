@@ -13,9 +13,10 @@ This plugin brings Kindle-style X-Ray features to KOReader. It uses AI to track 
 - **Character Tracking**: View bios and roles so you never forget who someone is. Includes a **Character Disambiguation Picker** for ambiguous names.
 - **Plot Timeline**: Keeps track of major events chapter by chapter, strictly sorted by physical page location for accuracy.
 - **Historical Context**: Pulls real-world info for historical figures and locations.
+- **Mention Scanning**: Find every occurrence of a character or location throughout the book, complete with page numbers and context snippets for quick navigation.
 - **Spoiler Protection**: "Spoiler-free" mode only reads up to your current page so future twists aren't ruined.
 - **Auto Fetching while you read**: Automatically fetches data in the background when you get to a new chapter.
-- **X-Ray Mode**: Get insights while you read by highlighting character names and places and tapping the "X-Ray" button.
+- **X-Ray Mode & Inline Fetching**: Get instant lookups by tapping the "X-Ray" button in dictionary or selection popups. If an entity is missing, the plugin can fetch it on-the-fly using AI without requiring a full book scan.
 - **Silent Weekly Updates**: Automatically checks for new plugin versions in the background once a week.
 - **Offline First**: You only need internet to fetch the data. After that, it's saved locally.
 - **Multilingual**: Available in English, German, French, Spanish, Brazilian Portuguese, Russian, Ukrainian, Turkish, and Simplified Chinese.
