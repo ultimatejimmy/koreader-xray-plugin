@@ -255,6 +255,7 @@ function Localization:t(key, ...)
             mentions_preference_desc = "Select your preference for character and location mentions:",
             find_mentions = "Find Mentions",
             menu_about = "About",
+            linked_entries = "Linked Entries",
         }
         translation = fallbacks[key] or key
     end

@@ -158,6 +158,9 @@ msgstr "Logs cleared!"
 msgid "looking_up_msg"
 msgstr "Looking up '%s'..."
 
+msgid "linked_entries"
+msgstr "Linked Entries"
+
 msgid "mentions_disabled"
 msgstr "Disabled"
 

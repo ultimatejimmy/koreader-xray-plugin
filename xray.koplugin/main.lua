@@ -196,6 +196,13 @@ function XRayPlugin:onDictButtonsReady(dict_popup, dict_buttons)
             -- Close the native dictionary popup immediately so it doesn't linger
             if dict_popup then pcall(function() UIManager:close(dict_popup) end) end
             
+            -- Execute optimized clear and clear selection
+            self:closeAllMenus()
+            if self.ui and self.ui.handleEvent then
+                local Event = require("ui/event")
+                self.ui:handleEvent(Event:new("ClearSelection"))
+            end
+            
             if text then
                 self.lookup_manager:handleLookup(text, pos0, pos1)
             end
