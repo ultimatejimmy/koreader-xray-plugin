@@ -400,8 +400,7 @@ function M:showMentionsMenu(entity)
         width          = Screen:getWidth(),
         height         = Screen:getHeight(),
         on_close_callback = function() 
-            if self.is_cancelled then return end
-            self:showFullXRayMenu() 
+            self.mentions_menu = nil
         end,
     }
     UIManager:show(self.mentions_menu)

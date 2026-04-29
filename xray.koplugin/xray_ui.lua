@@ -4,6 +4,7 @@ local UIManager = require("ui/uimanager")
 local InfoMessage = require("ui/widget/infomessage")
 local ConfirmBox = require("ui/widget/confirmbox")
 local MultiConfirmBox = require("ui/widget/multiconfirmbox")
+local ButtonDialog = require("ui/widget/buttondialog")
 local Menu = require("ui/widget/menu")
 local Screen = require("device").screen
 local _ = require("gettext")
@@ -296,7 +297,154 @@ function M:showCharacters()
     UIManager:show(self.char_menu)
 end
 
+function M:findRelatedEntities(text, exclude_name)
+    if not text or text == "" then return {} end
+    local related = {}
+    local seen = {}
+    if exclude_name then seen[exclude_name:lower()] = true end
 
+    local lower_text = text:lower()
+
+    -- Honorifics: fast-path blocklist for known titles.
+    -- Tokens < 3 chars are already blocked by isTooGeneric's length check;
+    -- 3-char titles (mr., mrs, sir, dr., etc.) are listed here since they can
+    -- have plausible frequency ratios in densely character-focused descriptions.
+    local honorifics = {
+        ["mr."] = true, ["mrs"] = true, ["ms."] = true, ["sir"] = true,
+        ["dr."] = true, ["rev"] = true, ["rev."] = true, ["lt."] = true,
+        ["col"] = true, ["col."] = true, ["sgt"] = true, ["sgt."] = true,
+        ["gen"] = true, ["gen."] = true, ["miss"] = true, ["lord"] = true,
+        ["lady"] = true, ["dame"] = true, ["prof"] = true, ["prof."] = true,
+        ["capt"] = true, ["capt."] = true,
+    }
+
+    -- Frequency-ratio guard: if a candidate term appears 5× more often than the
+    -- entity's full name in the text, it is too generic to be a useful identifier.
+    -- This is language-agnostic — articles, stop words, and AI-hallucinated
+    -- one-word aliases will all fail this test naturally.
+    local function countInText(term)
+        local escaped = term:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1")
+        local _, n = lower_text:gsub(escaped, "")
+        return n
+    end
+    local function isTooGeneric(term, entity_name)
+        if #term < 3 then return true end
+        local name_freq = math.max(1, countInText(entity_name:lower()))
+        return countInText(term) > name_freq * 5
+    end
+
+    -- Check if a term appears in the text surrounded by non-word characters.
+    -- Pads the text so names at the very start/end of a string also match.
+    local function termFound(term)
+        if not term or #term < 2 then return false end
+        local escaped = term:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1")
+        return (" " .. lower_text .. " "):find("[^%w]" .. escaped:lower() .. "[^%w]") ~= nil
+    end
+
+    local function scanList(list, type_name)
+        if not list then return end
+        for _, item in ipairs(list) do
+            local name = item.name
+            if name and not seen[name:lower()] then
+                local found = false
+
+                -- Strategy 1: Full name match
+                if termFound(name) then
+                    found = true
+                end
+
+                -- Strategy 2: First name component (e.g. "John" from "John Smith")
+                if not found then
+                    local first = name:match("^(%S+)")
+                    if first and first ~= name
+                            and not honorifics[first:lower()]
+                            and not isTooGeneric(first, name) then
+                        if termFound(first) then found = true end
+                    end
+                end
+
+                -- Strategy 3: Last name component (e.g. "Smith" from "John Smith")
+                if not found then
+                    local last = name:match("(%S+)$")
+                    if last and last ~= name
+                            and not honorifics[last:lower()]
+                            and not isTooGeneric(last, name) then
+                        if termFound(last) then found = true end
+                    end
+                end
+
+                -- Strategy 4: Aliases (skip generic and honorific-only aliases)
+                if not found and item.aliases then
+                    for _, alias in ipairs(item.aliases) do
+                        if type(alias) == "string"
+                                  and not honorifics[alias:lower()]
+                                  and not isTooGeneric(alias, name)
+                                  and termFound(alias) then
+                            found = true
+                            break
+                        end
+                    end
+                end
+
+                if found then
+                    seen[name:lower()] = true
+                    table.insert(related, { item = item, type = type_name })
+                end
+            end
+        end
+    end
+
+    scanList(self.characters, "character")
+    scanList(self.locations, "location")
+    scanList(self.historical_figures, "historical")
+
+    return related
+end
+
+function M:showRelatedEntities(related)
+    local items = {}
+    if self.active_related_menu then
+        UIManager:close(self.active_related_menu)
+        self.active_related_menu = nil
+    end
+
+    for _, entry in ipairs(related) do
+        local item = entry.item
+        local item_type = entry.type
+        local display_type = item_type:sub(1,1):upper() .. item_type:sub(2)
+        table.insert(items, {
+            text = (item.name or "???") .. " (" .. display_type .. ")",
+            callback = function()
+                -- Close both the linked entries menu and any open detail dialog
+                -- before opening the new entity's detail.
+                if self.active_related_menu then
+                    UIManager:close(self.active_related_menu)
+                    self.active_related_menu = nil
+                end
+                if self.active_details_dialog then
+                    UIManager:close(self.active_details_dialog)
+                    self.active_details_dialog = nil
+                end
+                if item_type == "character" then
+                    self:showCharacterDetails(item)
+                elseif item_type == "location" then
+                    self:showLocationDetails(item)
+                elseif item_type == "historical" then
+                    self:showHistoricalFigureDetails(item)
+                end
+            end
+        })
+    end
+    
+    self.active_related_menu = Menu:new{
+        title = self.loc:t("linked_entries") or "Linked Entries",
+        item_table = items,
+        on_close_callback = function()
+            self.active_related_menu = nil
+        end
+    }
+    UIManager:show(self.active_related_menu)
+end
 
 function M:showCharacterDetails(character)
     local lines = {
@@ -318,30 +466,68 @@ function M:showCharacterDetails(character)
     table.insert(lines, character.description or "---")
     local body_text = table.concat(lines, "\n")
     
+    local linked_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.linked_entries_enabled ~= false
+    local related = linked_enabled and self:findRelatedEntities(character.description or "", character.name) or {}
     local mentions_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.mentions_enabled ~= false
     
-    if mentions_enabled then
-        self.active_details_dialog = ConfirmBox:new{
-            text = body_text,
-            icon = "info",
-            ok_text = self.loc:t("find_mentions") or "Find Mentions",
-            cancel_text = self.loc:t("close") or "Close",
-            ok_callback = function()
-                self.active_details_dialog = nil
-                self:showMentionsForEntity(character)
-            end,
-            cancel_callback = function()
-                self.active_details_dialog = nil
-            end,
+    if #related > 0 then
+        local buttons = {
+            {
+                {
+                    text = self.loc:t("linked_entries") or "Linked Entries",
+                    callback = function()
+                        self:showRelatedEntities(related)
+                    end,
+                }
+            },
+            {
+                {
+                    text = self.loc:t("find_mentions") or "Find Mentions",
+                    callback = function()
+                        self:showMentionsForEntity(character)
+                    end,
+                },
+                {
+                    text = self.loc:t("close") or "Close",
+                    callback = function()
+                        if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
+                        self.active_details_dialog = nil
+                    end,
+                }
+            }
+        }
+        
+        if not mentions_enabled then
+            table.remove(buttons[2], 1)
+        end
+        
+        self.active_details_dialog = ButtonDialog:new{
+            title = table.concat(lines, "\n"),
+            buttons = buttons,
         }
     else
-        self.active_details_dialog = ConfirmBox:new{
-            text = body_text,
-            icon = "info",
-            ok_text = self.loc:t("close") or "Close",
-            ok_callback = function() self.active_details_dialog = nil end,
-            cancel_callback = function() self.active_details_dialog = nil end,
-        }
+        if mentions_enabled then
+            self.active_details_dialog = ConfirmBox:new{
+                text = table.concat(lines, "\n"),
+                icon = "info",
+                ok_text = self.loc:t("find_mentions") or "Find Mentions",
+                cancel_text = self.loc:t("close") or "Close",
+                ok_callback = function()
+                    self:showMentionsForEntity(character)
+                end,
+                cancel_callback = function()
+                    self.active_details_dialog = nil
+                end,
+            }
+        else
+            self.active_details_dialog = ConfirmBox:new{
+                text = table.concat(lines, "\n"),
+                icon = "info",
+                ok_text = self.loc:t("close") or "Close",
+                ok_callback = function() self.active_details_dialog = nil end,
+                cancel_callback = function() self.active_details_dialog = nil end,
+            }
+        end
     end
     UIManager:show(self.active_details_dialog)
 end
@@ -350,34 +536,68 @@ function M:showLocationDetails(loc_item)
     local name = loc_item.name or "???"
     local desc = loc_item.description or ""
     local body_text = name .. "\n\n" .. desc
-    if loc_item.ai_reasoning then
-        body_text = "[" .. (self.loc:t("label_reasoning") or "AI REASONING") .. "]\n" .. loc_item.ai_reasoning .. "\n\n" .. body_text
-    end
-    
+    local linked_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.linked_entries_enabled ~= false
+    local related = linked_enabled and self:findRelatedEntities(desc, name) or {}
     local mentions_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.mentions_enabled ~= false
     
-    if mentions_enabled then
-        self.active_details_dialog = ConfirmBox:new{
-            text = body_text,
-            icon = "info",
-            ok_text = self.loc:t("find_mentions") or "Find Mentions",
-            cancel_text = self.loc:t("close") or "Close",
-            ok_callback = function()
-                self.active_details_dialog = nil
-                self:showMentionsForEntity(loc_item)
-            end,
-            cancel_callback = function()
-                self.active_details_dialog = nil
-            end,
+    if #related > 0 then
+        local buttons = {
+            {
+                {
+                    text = self.loc:t("linked_entries") or "Linked Entries",
+                    callback = function()
+                        self:showRelatedEntities(related)
+                    end,
+                }
+            },
+            {
+                {
+                    text = self.loc:t("find_mentions") or "Find Mentions",
+                    callback = function()
+                        self:showMentionsForEntity(loc_item)
+                    end,
+                },
+                {
+                    text = self.loc:t("close") or "Close",
+                    callback = function()
+                        if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
+                        self.active_details_dialog = nil
+                    end,
+                }
+            }
+        }
+        
+        if not mentions_enabled then
+            table.remove(buttons[2], 1)
+        end
+        
+        self.active_details_dialog = ButtonDialog:new{
+            title = body_text,
+            buttons = buttons,
         }
     else
-        self.active_details_dialog = ConfirmBox:new{
-            text = body_text,
-            icon = "info",
-            ok_text = self.loc:t("close") or "Close",
-            ok_callback = function() self.active_details_dialog = nil end,
-            cancel_callback = function() self.active_details_dialog = nil end,
-        }
+        if mentions_enabled then
+            self.active_details_dialog = ConfirmBox:new{
+                text = body_text,
+                icon = "info",
+                ok_text = self.loc:t("find_mentions") or "Find Mentions",
+                cancel_text = self.loc:t("close") or "Close",
+                ok_callback = function()
+                    self:showMentionsForEntity(loc_item)
+                end,
+                cancel_callback = function()
+                    self.active_details_dialog = nil
+                end,
+            }
+        else
+            self.active_details_dialog = ConfirmBox:new{
+                text = body_text,
+                icon = "info",
+                ok_text = self.loc:t("close") or "Close",
+                ok_callback = function() self.active_details_dialog = nil end,
+                cancel_callback = function() self.active_details_dialog = nil end,
+            }
+        end
     end
     UIManager:show(self.active_details_dialog)
 end
@@ -441,6 +661,67 @@ function M:showMentionsSettings()
     
     showSettings()
 end
+
+function M:showLinkedEntriesSettings()
+    local ButtonDialog = require("ui/widget/buttondialog")
+    local InfoMessage = require("ui/widget/infomessage")
+    local info_dialog
+    
+    local function showSettings()
+        if info_dialog then UIManager:close(info_dialog) end
+        
+        local current_setting = self.ai_helper.settings.linked_entries_enabled ~= false -- default is true
+        local enabled_text = self.loc:t("linked_entries_enabled") or "Enabled"
+        local disabled_text = self.loc:t("linked_entries_disabled") or "Disabled"
+        
+        local buttons = {
+            {
+                {
+                    text = (current_setting and "[✓] " or "[  ] ") .. enabled_text,
+                    callback = function()
+                        self.ai_helper:saveSettings({ linked_entries_enabled = true })
+                        UIManager:setDirty(nil, "ui")
+                        UIManager:nextTick(function() showSettings() end)
+                    end
+                },
+                {
+                    text = ((not current_setting) and "[✓] " or "[  ] ") .. disabled_text,
+                    callback = function()
+                        self.ai_helper:saveSettings({ linked_entries_enabled = false })
+                        UIManager:setDirty(nil, "ui")
+                        UIManager:nextTick(function() showSettings() end)
+                    end
+                }
+            },
+            {
+                {
+                    text = self.loc:t("menu_about") or "About",
+                    callback = function()
+                        UIManager:show(InfoMessage:new{
+                            text = self.loc:t("linked_entries_setting_desc") or "Linked Entries automatically connects characters, locations, and historical figures when they are mentioned in each other's descriptions.\n\nDisabling this will hide the 'Linked Entries' button from detail dialogs.",
+                            timeout = 30
+                        })
+                    end
+                },
+                {
+                    text = self.loc:t("close") or "Close",
+                    callback = function()
+                        UIManager:close(info_dialog)
+                    end
+                }
+            }
+        }
+        
+        info_dialog = ButtonDialog:new{
+            title = self.loc:t("menu_linked_entries_settings") or "Linked Entries Settings",
+            buttons = buttons,
+        }
+        UIManager:show(info_dialog)
+    end
+    
+    showSettings()
+end
+
 
 function M:showAutoUpdateSettings()
     local ButtonDialog = require("ui/widget/buttondialog")
@@ -759,34 +1040,68 @@ function M:showHistoricalFigureDetails(fig)
     local name = fig.name or "???"
     local bio = fig.biography or (self.loc:t("msg_no_bio") or "No biography available.")
     local body_text = name .. "\n\n" .. bio
-    if fig.ai_reasoning then
-        body_text = "[" .. (self.loc:t("label_reasoning") or "AI REASONING") .. "]\n" .. fig.ai_reasoning .. "\n\n" .. body_text
-    end
-    
+    local linked_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.linked_entries_enabled ~= false
+    local related = linked_enabled and self:findRelatedEntities(bio, name) or {}
     local mentions_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.mentions_enabled ~= false
     
-    if mentions_enabled then
-        self.active_details_dialog = ConfirmBox:new{
-            text = body_text,
-            icon = "info",
-            ok_text = self.loc:t("find_mentions") or "Find Mentions",
-            cancel_text = self.loc:t("close") or "Close",
-            ok_callback = function()
-                self.active_details_dialog = nil
-                self:showMentionsForEntity(fig)
-            end,
-            cancel_callback = function()
-                self.active_details_dialog = nil
-            end,
+    if #related > 0 then
+        local buttons = {
+            {
+                {
+                    text = self.loc:t("linked_entries") or "Linked Entries",
+                    callback = function()
+                        self:showRelatedEntities(related)
+                    end,
+                }
+            },
+            {
+                {
+                    text = self.loc:t("find_mentions") or "Find Mentions",
+                    callback = function()
+                        self:showMentionsForEntity(fig)
+                    end,
+                },
+                {
+                    text = self.loc:t("close") or "Close",
+                    callback = function()
+                        if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
+                        self.active_details_dialog = nil
+                    end,
+                }
+            }
+        }
+        
+        if not mentions_enabled then
+            table.remove(buttons[2], 1)
+        end
+        
+        self.active_details_dialog = ButtonDialog:new{
+            title = body_text,
+            buttons = buttons,
         }
     else
-        self.active_details_dialog = ConfirmBox:new{
-            text = body_text,
-            icon = "info",
-            ok_text = self.loc:t("close") or "Close",
-            ok_callback = function() self.active_details_dialog = nil end,
-            cancel_callback = function() self.active_details_dialog = nil end,
-        }
+        if mentions_enabled then
+            self.active_details_dialog = ConfirmBox:new{
+                text = body_text,
+                icon = "info",
+                ok_text = self.loc:t("find_mentions") or "Find Mentions",
+                cancel_text = self.loc:t("close") or "Close",
+                ok_callback = function()
+                    self:showMentionsForEntity(fig)
+                end,
+                cancel_callback = function()
+                    self.active_details_dialog = nil
+                end,
+            }
+        else
+            self.active_details_dialog = ConfirmBox:new{
+                text = body_text,
+                icon = "info",
+                ok_text = self.loc:t("close") or "Close",
+                ok_callback = function() self.active_details_dialog = nil end,
+                cancel_callback = function() self.active_details_dialog = nil end,
+            }
+        end
     end
     UIManager:show(self.active_details_dialog)
 end

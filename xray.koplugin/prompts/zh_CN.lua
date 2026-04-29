@@ -79,18 +79,18 @@ return {
     {
       "name": "真实历史人物姓名",
       "role": "历史角色",
-      "biography": "简短传记（最多 150 个字符）",
+      "biography": "简短传记（最多 100 个字符）",
       "importance_in_book": "到目前为止在书中的重要性",
-      "context_in_book": "提及方式（最多 150 个字符）"
+      "context_in_book": "提及方式（最多 100 个字符）"
     }
   ],
   "locations": [
-    {"name": "地点名称", "description": "简短描述（最多 150 个字符）"}
+    {"name": "地点名称", "description": "简短描述（最多 100 个字符）"}
   ],
   "timeline": [
     {
       "chapter": "样本中的准确章节标题",
-      "event": "该章节的关键叙事事件（最多 150 个字符）"
+      "event": "该章节的关键叙事事件（最多 100 个字符）"
     }
   ]
 } ]],
@@ -128,17 +128,6 @@ return {
   ]
 }]],
 
-    -- Fallback strings
-    fallback = {
-        unknown_book = "未知书籍",
-        unknown_author = "未知作者",
-        unnamed_character = "未命名角色",
-        not_specified = "未指定",
-        no_description = "无描述",
-        unnamed_person = "未命名人物",
-        no_biography = "暂无简介"
-    },
- 
     -- Targeted Single Word Lookup
     single_word_lookup = [[用户选中了单词 "%s"。
 任务：判断该单词是否为书中的人物、地点或历史人物。
@@ -160,11 +149,22 @@ return {
   "error_message": ""
 }
  
-注意：如果类型是 "location"，则 item 应包含 "name" 和 "description"。如果类型是 "historical_figure"，则 item 应包含 "name"、"biography" 和 "role"。
+注意：如果类型是 "location"，则 item 应包含 "name" 和 "description"。如果类型是 "historical_figure"，则 item 应包含 "name", "biography", 和 "role"。
  
-如果 `is_valid` 为 false：
+If `is_valid` is false:
 {
   "is_valid": false,
   "error_message": "简要说明为什么这不是人物或地点。"
-}]]
+}]],
+
+    -- Fallback strings
+    fallback = {
+        unknown_book = "未知书籍",
+        unknown_author = "未知作者",
+        unnamed_character = "未命名角色",
+        not_specified = "未指定",
+        no_description = "无描述",
+        unnamed_person = "未命名人物",
+        no_biography = "暂无简介"
+    }
 }

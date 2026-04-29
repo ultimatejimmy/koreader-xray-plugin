@@ -72,25 +72,25 @@ FORMATO JSON REQUERIDO:
       "role": "Papel até o progresso atual",
       "gender": "Masculino / Feminino / Desconhecido",
       "occupation": "Profissão/Status",
-      "description": "Análise profunda com detalhes do texto até agora. SEM SPOILERS. (Máx 300 caracteres)"
+      "description": "Análise profunda com detalhes do texto até agora. SEM SPOILERS. (Máx 200 caracteres)"
     }
   ],
   "historical_figures": [
     {
       "name": "Nome da Pessoa Histórica Real",
       "role": "Papel Histórico",
-      "biography": "Biografia curta (MÁX 150 caracteres)",
+      "biography": "Biografia curta (MÁX 100 caracteres)",
       "importance_in_book": "Significância até o progresso atual",
-      "context_in_book": "Como são mencionados (MÁX 150 caracteres)"
+      "context_in_book": "Como são mencionados (MÁX 100 caracteres)"
     }
   ],
   "locations": [
-    {"name": "Nome do Local", "description": "Descrição curta (MÁX 150 caracteres)"}
+    {"name": "Nome do Local", "description": "Descrição curta (MÁX 100 caracteres)"}
   ],
   "timeline": [
     {
       "chapter": "Título Exato do Capítulo das Amostras",
-      "event": "Evento narrativo principal deste capítulo (Máx 150 caracteres)"
+      "event": "Evento narrativo principal deste capítulo (Máx 100 caracteres)"
     }
   ]
 } ]],
@@ -128,20 +128,9 @@ FORMATO JSON REQUERIDO:
   ]
 }]],
 
-    -- Strings de reserva (Fallback)
-    fallback = {
-        unknown_book = "Livro Desconhecido",
-        unknown_author = "Autor Desconhecido",
-        unnamed_character = "Personagem Sem Nome",
-        not_specified = "Não Especificado",
-        no_description = "Sem Descrição",
-        unnamed_person = "Pessoa Sem Nome",
-        no_biography = "Biografia Não Disponível"
-    },
- 
     -- Targeted Single Word Lookup
     single_word_lookup = [[O usuário destacou a palavra "%s".
-TAREFA: Determine se esta palavra é um Personagem, Local ou Figura Histórica no livro.
+TAREFA: Determine si esta palavra é um Personagem, Local ou Figura Histórica no livro.
  
 IMPORTANTE: Use APENAS o "BOOK TEXT CONTEXT" fornecido para tomar sua decisão. Não use conhecimento externo e não alucine.
 Se a palavra NÃO for um personagem, local ou figura histórica no texto, defina `is_valid` como false.
@@ -153,18 +142,29 @@ FORMATO JSON OBRIGATÓRIO:
   "item": {
     "name": "Nome completo",
     "role": "Papel",
-    "gender": "Masculino/Feminino/Desconhecido",
+    "gender": "Masculino/Feminino/Desconocido",
     "occupation": "Ocupação",
     "description": "Breve descrição (máx. 250 caracteres)"
   },
   "error_message": ""
 }
  
-Nota: se o tipo for "location", o item deve ter "name" e "description". Se o tipo for "historical_figure", o item deve ter "name", "biography" e "role".
+Nota: se o tipo for "location", o item deve ter "name" and "description". Si o tipo for "historical_figure", o item deve ter "name", "biography" e "role".
  
-Se `is_valid` for false:
+If `is_valid` is false:
 {
   "is_valid": false,
   "error_message": "Breve explicação de por que isso não é um personagem nem um local."
-}]]
+}]],
+
+    -- Strings de reserva (Fallback)
+    fallback = {
+        unknown_book = "Livro Desconhecido",
+        unknown_author = "Autor Desconhecido",
+        unnamed_character = "Personagem Sem Nome",
+        not_specified = "Não Especificado",
+        no_description = "Sem Descrição",
+        unnamed_person = "Pessoa Sem Nome",
+        no_biography = "Biografia Não Disponível"
+    }
 }

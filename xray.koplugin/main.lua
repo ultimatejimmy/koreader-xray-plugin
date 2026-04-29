@@ -196,6 +196,13 @@ function XRayPlugin:onDictButtonsReady(dict_popup, dict_buttons)
             -- Close the native dictionary popup immediately so it doesn't linger
             if dict_popup then pcall(function() UIManager:close(dict_popup) end) end
             
+            -- Execute optimized clear and clear selection
+            self:closeAllMenus()
+            if self.ui and self.ui.handleEvent then
+                local Event = require("ui/event")
+                self.ui:handleEvent(Event:new("ClearSelection"))
+            end
+            
             if text then
                 self.lookup_manager:handleLookup(text, pos0, pos1)
             end
@@ -576,6 +583,11 @@ function XRayPlugin:getSubMenuItems()
                     text = self.loc:t("mentions_setting_title") or "Mentions Settings",
                     keep_menu_open = true,
                     callback = function() self:showMentionsSettings() end,
+                },
+                {
+                    text = self.loc:t("menu_linked_entries_settings") or "Linked Entries Settings",
+                    keep_menu_open = true,
+                    callback = function() self:showLinkedEntriesSettings() end,
                 },
                 {
                     text = self.loc:t("menu_auto_update_frequency") or "Auto X-Ray Settings",

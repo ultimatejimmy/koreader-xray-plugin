@@ -261,6 +261,11 @@ function Localization:t(key, ...)
             reasoning_high = "High",
             reasoning_xhigh = "Extra High (X-High)",
             label_reasoning = "AI REASONING",
+            linked_entries = "Linked Entries",
+            menu_linked_entries_settings = "Linked Entries Settings",
+            linked_entries_enabled = "Enabled",
+            linked_entries_disabled = "Disabled",
+            linked_entries_setting_desc = "Linked Entries automatically connects characters, locations, and historical figures when they are mentioned in each other's descriptions.\n\nDisabling this will hide the 'Linked Entries' button from detail dialogs.",
         }
         translation = fallbacks[key] or key
     end
