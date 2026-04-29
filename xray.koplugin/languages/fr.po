@@ -286,6 +286,9 @@ msgstr "Voir toutes les valeurs de configuration"
 
 msgid "menu_xray"
 msgstr "X-Ray"
+msgid "quick_menu_title"
+msgstr "Menu rapide X-Ray"
+
 
 msgid "menu_xray_mode"
 msgstr "Paramètres du mode X-Ray"

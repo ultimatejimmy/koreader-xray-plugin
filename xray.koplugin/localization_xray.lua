@@ -266,6 +266,7 @@ function Localization:t(key, ...)
             linked_entries_enabled = "Enabled",
             linked_entries_disabled = "Disabled",
             linked_entries_setting_desc = "Linked Entries automatically connects characters, locations, and historical figures when they are mentioned in each other's descriptions.\n\nDisabling this will hide the 'Linked Entries' button from detail dialogs.",
+            quick_menu_title = "X-Ray Quick Menu",
         }
         translation = fallbacks[key] or key
     end

@@ -286,6 +286,9 @@ msgstr "Yapılandırmayı Görüntüle"
 
 msgid "menu_xray"
 msgstr "X-Ray"
+msgid "quick_menu_title"
+msgstr "X-Ray Hızlı Menü"
+
 
 msgid "menu_xray_mode"
 msgstr "X-Ray Modu Ayarları"

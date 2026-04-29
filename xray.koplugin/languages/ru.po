@@ -286,6 +286,9 @@ msgstr "Просмотр всей конфигурации"
 
 msgid "menu_xray"
 msgstr "X-Ray"
+msgid "quick_menu_title"
+msgstr "Быстрое меню X-Ray"
+
 
 msgid "menu_xray_mode"
 msgstr "Настройки режима X-Ray"
@@ -452,3 +455,21 @@ msgstr "Добавляет кнопку 'X-Ray' в меню словаря и в
 msgid "yes"
 msgstr "Да"
 
+
+msgid "menu_reasoning_effort"
+msgstr "Уровень рассуждения GPT"
+
+msgid "reasoning_low"
+msgstr "Низкий"
+
+msgid "reasoning_medium"
+msgstr "Средний"
+
+msgid "reasoning_high"
+msgstr "Высокий"
+
+msgid "reasoning_xhigh"
+msgstr "Очень высокий"
+
+msgid "label_reasoning"
+msgstr "РАССУЖДЕНИЕ ИИ"

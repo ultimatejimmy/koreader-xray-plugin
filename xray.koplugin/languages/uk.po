@@ -286,6 +286,9 @@ msgstr "Переглянути всю конфігурацію"
 
 msgid "menu_xray"
 msgstr "X-Ray"
+msgid "quick_menu_title"
+msgstr "Швидке меню X-Ray"
+
 
 msgid "menu_xray_mode"
 msgstr "Налаштування режиму X-Ray"
@@ -452,3 +455,21 @@ msgstr "Додає кнопку 'X-Ray' у меню словника та вид
 msgid "yes"
 msgstr "Так"
 
+
+msgid "menu_reasoning_effort"
+msgstr "Рівень міркування GPT"
+
+msgid "reasoning_low"
+msgstr "Низький"
+
+msgid "reasoning_medium"
+msgstr "Середній"
+
+msgid "reasoning_high"
+msgstr "Високий"
+
+msgid "reasoning_xhigh"
+msgstr "Дуже високий"
+
+msgid "label_reasoning"
+msgstr "МІРКУВАННЯ ШІ"
