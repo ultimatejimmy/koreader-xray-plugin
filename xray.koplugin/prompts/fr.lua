@@ -72,25 +72,25 @@ FORMAT JSON REQUIS :
       "role": "Rôle jusqu'à la progression actuelle",
       "gender": "Masculin / Féminin / Inconnu",
       "occupation": "Métier/Statut",
-      "description": "Analyse approfondie avec des détails du texte jusqu'à présent. PAS DE SPOILERS. (Max 300 caractères)"
+      "description": "Analyse approfondie avec des détails du texte jusqu'à présent. PAS DE SPOILERS. (Max 200 caractères)"
     }
   ],
   "historical_figures": [
     {
       "name": "Nom de la personne historique réelle",
       "role": "Rôle historique",
-      "biography": "Courte biographie (MAX 150 caractères)",
+      "biography": "Courte biographie (MAX 100 caractères)",
       "importance_in_book": "Importance jusqu'à la progression actuelle",
-      "context_in_book": "Comment ils sont mentionnés (MAX 150 caractères)"
+      "context_in_book": "Comment ils sont mentionnés (MAX 100 caractères)"
     }
   ],
   "locations": [
-    {"name": "Nom du lieu", "description": "Courte description (MAX 150 caractères)"}
+    {"name": "Nom du lieu", "description": "Courte description (MAX 100 caractères)"}
   ],
   "timeline": [
     {
       "chapter": "Titre exact du chapitre des échantillons",
-      "event": "Événement narratif clé de ce chapitre (Max 150 caractères)"
+      "event": "Événement narratif clé de ce chapitre (Max 100 caractères)"
     }
   ]
 } ]],
@@ -128,17 +128,6 @@ FORMAT JSON REQUIS :
   ]
 }]],
 
-    -- Fallback strings
-    fallback = {
-        unknown_book = "Livre inconnu",
-        unknown_author = "Auteur inconnu",
-        unnamed_character = "Personnage sans nom",
-        not_specified = "Non spécifié",
-        no_description = "Pas de description",
-        unnamed_person = "Personne sans nom",
-        no_biography = "Pas de biographie disponible"
-    },
- 
     -- Targeted Single Word Lookup
     single_word_lookup = [[L'utilisateur a surligné le mot "%s".
 TÂCHE : Déterminez si ce mot est un Personnage, un Lieu ou une Figure Historique dans le livre.
@@ -162,9 +151,20 @@ FORMAT JSON REQUIS :
  
 Remarque : si le type est "location", l'élément doit avoir "name" and "description". Si le type est "historical_figure", l'élément doit avoir "name", "biography" et "role".
  
-Si `is_valid` est false :
+If `is_valid` is false:
 {
   "is_valid": false,
   "error_message": "Explication courte expliquant pourquoi ce n'est ni un personnage ni un lieu."
-}]]
+}]],
+
+    -- Fallback strings
+    fallback = {
+        unknown_book = "Livre inconnu",
+        unknown_author = "Auteur inconnu",
+        unnamed_character = "Personnage sans nom",
+        not_specified = "Non spécifié",
+        no_description = "Pas de description",
+        unnamed_person = "Personne sans nom",
+        no_biography = "Pas de biographie disponible"
+    }
 }

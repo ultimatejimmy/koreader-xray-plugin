@@ -152,14 +152,23 @@ msgstr "Language Mismatch"
 msgid "language_changed_reopen"
 msgstr "Language changed. Reopen the menu to see the changes."
 
+msgid "linked_entries"
+msgstr "Linked Entries"
+
+msgid "linked_entries_disabled"
+msgstr "Disabled"
+
+msgid "linked_entries_enabled"
+msgstr "Enabled"
+
+msgid "linked_entries_setting_desc"
+msgstr "Linked Entries automatically connects characters, locations, and historical figures when they are mentioned in each other's descriptions.\n\nDisabling this will hide the 'Linked Entries' button from detail dialogs."
+
 msgid "logs_cleared"
 msgstr "Logs cleared!"
 
 msgid "looking_up_msg"
 msgstr "Looking up '%s'..."
-
-msgid "linked_entries"
-msgstr "Linked Entries"
 
 msgid "mentions_disabled"
 msgstr "Disabled"
@@ -245,6 +254,9 @@ msgstr "Historical Figures"
 msgid "menu_language"
 msgstr "Language"
 
+msgid "menu_linked_entries_settings"
+msgstr "Linked Entries Settings"
+
 msgid "menu_locations"
 msgstr "Locations"
 
@@ -328,9 +340,6 @@ msgstr "plugins/xray.koplugin"
 
 msgid "plugin_description"
 msgstr "Transform your reading experience with AI-powered book analysis, just like Amazon Kindle X-Ray!"
-
-msgid "quick_menu_title"
-msgstr "X-Ray Quick Access"
 
 msgid "save"
 msgstr "Save"

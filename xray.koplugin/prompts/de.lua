@@ -79,18 +79,18 @@ ERFORDERLICHES JSON-FORMAT:
     {
       "name": "Name der realen historischen Person",
       "role": "Historische Rolle",
-      "biography": "Kurze Biografie (MAX. 150 Zeichen)",
+      "biography": "Kurze Biografie (MAX. 100 Zeichen)",
       "importance_in_book": "Bedeutung bis zum aktuellen Fortschritt",
-      "context_in_book": "Wie sie erwähnt werden (MAX. 150 Zeichen)"
+      "context_in_book": "Wie sie erwähnt werden (MAX. 100 Zeichen)"
     }
   ],
   "locations": [
-    {"name": "Name des Ortes", "description": "Kurzbeschreibung (MAX. 150 Zeichen)"}
+    {"name": "Name des Ortes", "description": "Kurzbeschreibung (MAX. 100 Zeichen)"}
   ],
   "timeline": [
     {
       "chapter": "Exakter Kapiteltitel aus den Stichproben",
-      "event": "Wichtiges erzählerisches Ereignis aus diesem Kapitel (Max. 150 Zeichen)"
+      "event": "Wichtiges erzählerisches Ereignis aus diesem Kapitel (Max. 100 Zeichen)"
     }
   ]
 } ]],
@@ -128,17 +128,6 @@ ERFORDERLICHES JSON-FORMAT:
   ]
 }]],
 
-    -- Fallback strings
-    fallback = {
-        unknown_book = "Unbekanntes Buch",
-        unknown_author = "Unbekannter Autor",
-        unnamed_character = "Unbenannter Charakter",
-        not_specified = "Nicht angegeben",
-        no_description = "Keine Beschreibung",
-        unnamed_person = "Unbenannte Person",
-        no_biography = "Keine Biografie verfügbar"
-    },
- 
     -- Targeted Single Word Lookup
     single_word_lookup = [[Der Benutzer hat das Wort "%s" hervorgehoben.
 AUFGABE: Bestimmen Sie, ob es sich bei diesem Wort um einen Charakter, einen Ort oder eine historische Figur im Buch handelt.
@@ -162,9 +151,20 @@ ERFORDERLICHES JSON-FORMAT:
  
 Hinweis: Wenn der Typ "location" ist, muss das Element "name" und "description" enthalten. Wenn der Typ "historical_figure" ist, muss das Element "name", "biography" und "role" enthalten.
  
-Wenn `is_valid` false ist:
+If `is_valid` is false:
 {
   "is_valid": false,
   "error_message": "Kurze Erklärung, warum dies kein Charakter oder Ort ist."
-}]]
+}]],
+
+    -- Fallback strings
+    fallback = {
+        unknown_book = "Unbekanntes Buch",
+        unknown_author = "Unbekannter Autor",
+        unnamed_character = "Unbenannter Charakter",
+        not_specified = "Nicht angegeben",
+        no_description = "Keine Beschreibung",
+        unnamed_person = "Unbenannte Person",
+        no_biography = "Keine Biografie verfügbar"
+    }
 }

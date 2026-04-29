@@ -72,25 +72,25 @@ GEREKLİ JSON FORMATI:
       "role": "Mevcut ilerlemeye kadar olan rolü",
       "gender": "Erkek / Kadın / Bilinmiyor",
       "occupation": "Meslek/Durum",
-      "description": "Şu ana kadarki metinden detaylarla derin analiz. SPOILER YOK. (Maks 300 karakter)"
+      "description": "Şu ana kadarki metinden detaylarla derin analiz. SPOILER YOK. (Maks 200 karakter)"
     }
   ],
   "historical_figures": [
     {
       "name": "Gerçek Tarihi Kişi Adı",
       "role": "Tarihi Rolü",
-      "biography": "Kısa biyografi (MAKS 150 karakter)",
+      "biography": "Kısa biyografi (MAKS 100 karakter)",
       "importance_in_book": "Mevcut ilerlemeye kadar olan önemi",
-      "context_in_book": "Nasıl bahsediliyor (MAKS 150 karakter)"
+      "context_in_book": "Nasıl bahsediliyor (MAKS 100 karakter)"
     }
   ],
   "locations": [
-    {"name": "Mekan Adı", "description": "Kısa açıklama (MAKS 150 karakter)"}
+    {"name": "Mekan Adı", "description": "Kısa açıklama (MAKS 100 karakter)"}
   ],
   "timeline": [
     {
       "chapter": "Örneklerdeki Tam Bölüm Başlığı",
-      "event": "Bu bölümdeki temel anlatı olayı (Maks 150 karakter)"
+      "event": "Bu bölümdeki temel anlatı olayı (Maks 100 karakter)"
     }
   ]
 } ]],
@@ -128,17 +128,6 @@ GEREKLİ JSON FORMATI:
   ]
 }]],
 
-    -- Yedek dizeler (Fallback)
-    fallback = {
-        unknown_book = "Bilinmeyen Kitap",
-        unknown_author = "Bilinmeyen Yazar",
-        unnamed_character = "İsimsiz Karakter",
-        not_specified = "Belirtilmemiş",
-        no_description = "Açıklama Yok",
-        unnamed_person = "İsimsiz Kişi",
-        no_biography = "Biyografi Mevcut Değil"
-    },
- 
     -- Targeted Single Word Lookup
     single_word_lookup = [[Kullanıcı "%s" kelimesini vurguladı.
 GÖREV: Bu kelimenin kitaptaki bir Karakter, Konum veya Tarihi Figür olup olmadığını belirleyin.
@@ -162,9 +151,20 @@ GEREKLİ JSON FORMATI:
  
 Not: eğer tür "location" ise, öğede "name" ve "description" olmalıdır. Eğer tür "historical_figure" ise, öğede "name", "biography" ve "role" olmalıdır.
  
-Eğer `is_valid` false ise:
+If `is_valid` is false:
 {
   "is_valid": false,
   "error_message": "Bunun neden bir karakter veya konum olmadığına dair kısa bir açıklama."
-}]]
+}]],
+
+    -- Yedek dizeler (Fallback)
+    fallback = {
+        unknown_book = "Bilinmeyen Kitap",
+        unknown_author = "Bilinmeyen Yazar",
+        unnamed_character = "İsimsiz Karakter",
+        not_specified = "Belirtilmemiş",
+        no_description = "Açıklama Yok",
+        unnamed_person = "İsimsiz Kişi",
+        no_biography = "Biyografi Mevcut Değil"
+    }
 }

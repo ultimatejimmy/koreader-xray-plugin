@@ -152,6 +152,18 @@ msgstr "Dil Uyumsuzluğu"
 msgid "language_changed_reopen"
 msgstr "Dil değiştirildi. Değişiklikleri görmek için menüyü tekrar açın."
 
+msgid "linked_entries"
+msgstr "Linked Entries"
+
+msgid "linked_entries_disabled"
+msgstr "Disabled"
+
+msgid "linked_entries_enabled"
+msgstr "Enabled"
+
+msgid "linked_entries_setting_desc"
+msgstr "Linked Entries automatically connects characters, locations, and historical figures when they are mentioned in each other's descriptions.\n\nDisabling this will hide the 'Linked Entries' button from detail dialogs."
+
 msgid "logs_cleared"
 msgstr "Günlükler temizlendi!"
 
@@ -242,6 +254,9 @@ msgstr "Tarihi Kişiler"
 msgid "menu_language"
 msgstr "Dil"
 
+msgid "menu_linked_entries_settings"
+msgstr "Linked Entries Settings"
+
 msgid "menu_locations"
 msgstr "Mekanlar"
 
@@ -325,9 +340,6 @@ msgstr "plugins/xray.koplugin"
 
 msgid "plugin_description"
 msgstr "Amazon Kindle X-Ray gibi, YZ destekli kitap analizi ile okuma deneyiminizi dönüştürün!"
-
-msgid "quick_menu_title"
-msgstr "X-Ray Hızlı Erişim"
 
 msgid "save"
 msgstr "Kaydet"

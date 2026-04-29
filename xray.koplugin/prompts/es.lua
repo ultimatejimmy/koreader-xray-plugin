@@ -72,25 +72,25 @@ FORMATO JSON REQUERIDO:
       "role": "Papel hasta el progreso actual",
       "gender": "Masculino / Femenino / Desconocido",
       "occupation": "Trabajo/Estado",
-      "description": "Análisis profundo con detalles del texto hasta ahora. SIN SPOILERS. (Máx 300 caracteres)"
+      "description": "Análisis profundo con detalles del texto hasta ahora. SIN SPOILERS. (Máx 200 caracteres)"
     }
   ],
   "historical_figures": [
     {
       "name": "Nombre de la Persona Histórica Real",
       "role": "Papel Histórico",
-      "biography": "Biografía breve (MÁX 150 caracteres)",
+      "biography": "Biografía breve (MÁX 100 caracteres)",
       "importance_in_book": "Significancia hasta el progreso actual",
-      "context_in_book": "Cómo se mencionan (MÁX 150 caracteres)"
+      "context_in_book": "Cómo se mencionan (MÁX 100 caracteres)"
     }
   ],
   "locations": [
-    {"name": "Nombre del Lugar", "description": "Descripción breve (MÁX 150 caracteres)"}
+    {"name": "Nombre del Lugar", "description": "Descripción breve (MÁX 100 caracteres)"}
   ],
   "timeline": [
     {
       "chapter": "Título exacto del capítulo de las muestras",
-      "event": "Evento narrativo clave de este capítulo (Máx 150 caracteres)"
+      "event": "Evento narrativo clave de este capítulo (Máx 100 caracteres)"
     }
   ]
 } ]],
@@ -128,17 +128,6 @@ FORMATO JSON REQUERIDO:
   ]
 }]],
 
-    -- Cadenas de respaldo
-    fallback = {
-        unknown_book = "Libro desconocido",
-        unknown_author = "Autor desconocido",
-        unnamed_character = "Personaje sin nombre",
-        not_specified = "No especificado",
-        no_description = "Sin descripción",
-        unnamed_person = "Persona sin nombre",
-        no_biography = "Biografía no disponible"
-    },
- 
     -- Targeted Single Word Lookup
     single_word_lookup = [[El usuario ha resaltado la palabra "%s".
 TAREA: Determine si esta palabra es un Personaje, Lugar o Figura Histórica en el libro.
@@ -160,11 +149,22 @@ FORMATO JSON REQUERIDO:
   "error_message": ""
 }
  
-Nota: si el tipo es "location", el elemento debe tener "name" y "description". Si el tipo es "historical_figure", el elemento debe tener "name", "biography" y "role".
+Nota: si el tipo es "location", el elemento debe tener "name" and "description". Si el tipo es "historical_figure", el elemento debe tener "name", "biography" y "role".
  
-Si `is_valid` es false:
+If `is_valid` is false:
 {
   "is_valid": false,
   "error_message": "Breve explicación de por qué esto no es un personaje ni un lugar."
-}]]
+}]],
+
+    -- Cadenas de respaldo
+    fallback = {
+        unknown_book = "Libro desconocido",
+        unknown_author = "Autor desconocido",
+        unnamed_character = "Personaje sin nombre",
+        not_specified = "No especificado",
+        no_description = "Sin descripción",
+        unnamed_person = "Persona sin nombre",
+        no_biography = "Biografía no disponible"
+    }
 }

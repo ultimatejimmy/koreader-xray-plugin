@@ -827,53 +827,96 @@ function ChapterAnalyzer:findMentionsInChapter(ui, entity, toc_entry, next_toc_e
 
     local name = entity.name
     local name_lower = name:lower()
-    
-    -- Prepare search terms
-    local terms = { { s = name_lower, l = #name_lower } }
-    
-    -- Fallback: auto-generate first and last name aliases
-    local first_name = name:match("^(%S+)")
-    local last_name  = name:match("(%S+)$")
-    if first_name and #first_name > 2 and first_name ~= name then
-        local fl = first_name:lower()
-        table.insert(terms, { s = fl, l = #fl })
-    end
-    if last_name and #last_name > 2 and last_name ~= first_name and last_name ~= name then
-        local ll = last_name:lower()
-        table.insert(terms, { s = ll, l = #ll })
-    end
-
-    -- Add AI aliases if available
-    if entity.aliases and type(entity.aliases) == "table" then
-        for _, alias in ipairs(entity.aliases) do
-            if type(alias) == "string" and #alias > 2 then
-                local al = alias:lower()
-                local exists = false
-                for _, t in ipairs(terms) do
-                    if t.s == al then exists = true; break end
-                end
-                if not exists then
-                    table.insert(terms, { s = al, l = #al })
-                end
-            end
-        end
-    end
-    
     local chapter_mentions = {}
 
+    -- Load chapter text first so we can use frequency analysis when building terms
     local ok, raw_text = pcall(function()
         return ui.document:getTextFromXPointer(toc_entry.xpointer) or ""
     end)
     if not ok or not raw_text or #raw_text < 10 then return {} end
 
     local text_lower = raw_text:lower()
+
+    -- Count plain occurrences of a needle in text_lower (used for frequency check)
+    local function countIn(needle)
+        local count, pos = 0, 1
+        while true do
+            local p = text_lower:find(needle, pos, true)
+            if not p then break end
+            count = count + 1
+            pos = p + math.max(1, #needle)
+        end
+        return count
+    end
+
+    -- Frequency-ratio guard: if a candidate term appears 5× more often than the
+    -- entity's full name, it is too generic to be a meaningful identifier.
+    -- This is language-agnostic — "The", "Le", "Der" all fail naturally.
+    -- The minimum is 3 chars (not 4) so short but valid names like "Ada" or
+    -- "Jon" are still evaluated by the ratio rather than hard-rejected.
+    local name_freq = math.max(1, countIn(name_lower))
+    local function isTooGeneric(term)
+        if #term < 3 then return true end
+        return countIn(term) > name_freq * 5
+    end
+
+    -- Honorifics: fast-path blocklist for known titles.
+    -- Short honorifics (< 3 chars) are already caught by the length check;
+    -- 3-char ones (mr., mrs, sir, dr., etc.) need explicit listing since they
+    -- can have plausible frequency ratios in heavily character-focused chapters.
+    local honorifics = {
+        ["mr."] = true, ["mrs"] = true, ["ms."] = true, ["sir"] = true,
+        ["dr."] = true, ["rev"] = true, ["rev."] = true, ["lt."] = true,
+        ["col"] = true, ["col."] = true, ["sgt"] = true, ["sgt."] = true,
+        ["gen"] = true, ["gen."] = true, ["miss"] = true, ["lord"] = true,
+        ["lady"] = true, ["dame"] = true, ["prof"] = true, ["prof."] = true,
+        ["capt"] = true, ["capt."] = true,
+    }
+
+    -- Always start with the full name
+    local terms = { { s = name_lower, l = #name_lower } }
+
+    -- Auto-generate first and last name components
+    local first_name = name:match("^(%S+)")
+    local last_name  = name:match("(%S+)$")
+    if first_name and first_name ~= name then
+        local fl = first_name:lower()
+        if not honorifics[fl] and not isTooGeneric(fl) then
+            table.insert(terms, { s = fl, l = #fl })
+        end
+    end
+    if last_name and last_name ~= first_name and last_name ~= name then
+        local ll = last_name:lower()
+        if not honorifics[ll] and not isTooGeneric(ll) then
+            table.insert(terms, { s = ll, l = #ll })
+        end
+    end
+
+    -- Add AI-provided aliases, filtered by the same rules
+    if entity.aliases and type(entity.aliases) == "table" then
+        for _, alias in ipairs(entity.aliases) do
+            if type(alias) == "string" then
+                local al = alias:lower()
+                if not honorifics[al] and not isTooGeneric(al) then
+                    local exists = false
+                    for _, t in ipairs(terms) do
+                        if t.s == al then exists = true; break end
+                    end
+                    if not exists then
+                        table.insert(terms, { s = al, l = #al })
+                    end
+                end
+            end
+        end
+    end
+
     local pos = 1
-    
-    -- Optimization: Pre-calculate the first match for each term.
-    -- This avoids re-scanning the entire text for every term on every iteration.
+
+    -- Pre-calculate the first match position for each term
     for _, t in ipairs(terms) do
         t.next_p = text_lower:find(t.s, pos, true)
     end
+
 
     local last_yield = os.clock()
     

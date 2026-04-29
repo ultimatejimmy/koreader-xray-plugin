@@ -585,6 +585,11 @@ function XRayPlugin:getSubMenuItems()
                     callback = function() self:showMentionsSettings() end,
                 },
                 {
+                    text = self.loc:t("menu_linked_entries_settings") or "Linked Entries Settings",
+                    keep_menu_open = true,
+                    callback = function() self:showLinkedEntriesSettings() end,
+                },
+                {
                     text = self.loc:t("menu_auto_update_frequency") or "Auto X-Ray Settings",
                     keep_menu_open = true,
                     callback = function() self:showAutoUpdateSettings() end,
