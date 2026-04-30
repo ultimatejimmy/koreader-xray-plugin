@@ -5,6 +5,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "about"
+msgstr "About"
+
 msgid "ai_fetch_complete"
 msgstr "%s üzerinden başarıyla çekildi!\n\nKitap: %s\nYazar: %s\n\nKarakterler: %d\nMekanlar: %d\nTemalar: %d\nZaman Çizelgesi Olayları: %d\nTarihi Kişiler: %d\n\n%s\n\nÖZET:\n%s"
 
@@ -137,6 +140,9 @@ msgstr "İSİM"
 msgid "label_occupation"
 msgstr "MESLEK"
 
+msgid "label_reasoning"
+msgstr "YZ AKIL YÜRÜTME"
+
 msgid "label_role"
 msgstr "ROL"
 
@@ -206,6 +212,9 @@ msgstr "Hakkında"
 msgid "menu_ai_settings"
 msgstr "AI Ayarları"
 
+msgid "menu_api_keys"
+msgstr "API Keys & Providers"
+
 msgid "menu_author_info"
 msgstr "Yazar Bilgisi"
 
@@ -214,9 +223,6 @@ msgstr "Otomatik X-Ray Ayarları"
 
 msgid "menu_characters"
 msgstr "Karakterler"
-
-msgid "menu_chatgpt_key"
-msgstr "ChatGPT API Anahtarı"
 
 msgid "menu_clear_cache"
 msgstr "Önbelleği Temizle"
@@ -233,9 +239,6 @@ msgstr "Özel %s Modeli"
 msgid "menu_enter_custom_model"
 msgstr "Özel model girin..."
 
-msgid "menu_enter_ui_key"
-msgstr "UI geçersiz kılma anahtarını girin: "
-
 msgid "menu_fetch_author"
 msgstr "Yazar Bilgisini Çek (AI)"
 
@@ -244,9 +247,6 @@ msgstr "Daha Fazla Karakter Getir"
 
 msgid "menu_fetch_xray"
 msgstr "X-Ray Verilerini Çek"
-
-msgid "menu_gemini_key"
-msgstr "Google Gemini API Anahtarı"
 
 msgid "menu_historical_figures"
 msgstr "Tarihi Kişiler"
@@ -269,6 +269,9 @@ msgstr "Bahsedilenler Ayarları"
 msgid "menu_primary_ai_model"
 msgstr "Birincil YZ Modeli"
 
+msgid "menu_reasoning_effort"
+msgstr "GPT Akıl Yürütme Çabası"
+
 msgid "menu_secondary_ai_model"
 msgstr "İkincil YZ Modeli"
 
@@ -286,9 +289,6 @@ msgstr "Yapılandırmayı Görüntüle"
 
 msgid "menu_xray"
 msgstr "X-Ray"
-msgid "quick_menu_title"
-msgstr "X-Ray Hızlı Menü"
-
 
 msgid "menu_xray_mode"
 msgstr "X-Ray Modu Ayarları"
@@ -343,6 +343,24 @@ msgstr "plugins/xray.koplugin"
 
 msgid "plugin_description"
 msgstr "Amazon Kindle X-Ray gibi, YZ destekli kitap analizi ile okuma deneyiminizi dönüştürün!"
+
+msgid "quick_menu_title"
+msgstr "X-Ray Hızlı Menü"
+
+msgid "reasoning_about"
+msgstr "Controls "
+
+msgid "reasoning_high"
+msgstr "Yüksek"
+
+msgid "reasoning_low"
+msgstr "Düşük"
+
+msgid "reasoning_medium"
+msgstr "Orta"
+
+msgid "reasoning_xhigh"
+msgstr "Çok Yüksek (X-High)"
 
 msgid "save"
 msgstr "Kaydet"
@@ -455,20 +473,3 @@ msgstr "Anında arama yapmak için sözlük ve seçim menülerine bir 'X-Ray' d�
 msgid "yes"
 msgstr "Evet"
 
-msgid "menu_reasoning_effort"
-msgstr "GPT Akıl Yürütme Çabası"
-
-msgid "reasoning_low"
-msgstr "Düşük"
-
-msgid "reasoning_medium"
-msgstr "Orta"
-
-msgid "reasoning_high"
-msgstr "Yüksek"
-
-msgid "reasoning_xhigh"
-msgstr "Çok Yüksek (X-High)"
-
-msgid "label_reasoning"
-msgstr "YZ AKIL YÜRÜTME"

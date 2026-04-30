@@ -1149,12 +1149,38 @@ function M:showFullXRayMenu()
     UIManager:show(self.xray_menu) 
 end
 
-function M:getAPIKeySelectionMenu(provider, provider_name)
-    local config_key = (self.ai_helper and self.ai_helper.config_keys) and self.ai_helper.config_keys[provider] or nil
+function M:getAPIKeysMenu()
+    local menu_items = {}
+    local providers = {
+        { id = "gemini", name = "Google Gemini" },
+        { id = "chatgpt", name = "OpenAI ChatGPT" },
+        { id = "deepseek", name = "DeepSeek" },
+        { id = "claude", name = "Anthropic Claude" },
+    }
+    for _, p in ipairs(providers) do
+        local prov_data = self.ai_helper.providers[p.id]
+        if prov_data then
+            local active_val = prov_data.api_key or ""
+            local status = (active_val ~= "") and (active_val:sub(1,6) .. "...") or "(None)"
+            local source = prov_data.ui_key_active and "[UI]" or "[Config]"
+            
+            table.insert(menu_items, {
+                text = p.name .. " " .. source .. ": " .. status,
+                keep_menu_open = true,
+                sub_item_table_func = function() return self:getProviderKeySubMenu(p.id, p.name) end
+            })
+        end
+    end
+    return menu_items
+end
+
+function M:getProviderKeySubMenu(provider, provider_name)
+    local config_key = (self.ai_helper and self.ai_helper.config_keys) and self.ai_helper.config_keys[provider] or ""
+    local ui_key = (self.ai_helper and self.ai_helper.settings) and self.ai_helper.settings[provider .. "_api_key"] or ""
     
     local menu_items = {
         {
-            text = "Use key from config.lua: " .. (config_key and #config_key > 0 and config_key or "(Not set)"),
+            text = "Use key from config.lua: " .. (#config_key > 0 and (config_key:sub(1,6) .. "...") or "(Not set)"),
             checked_func = function() 
                 if not self.ai_helper or not self.ai_helper.providers or not self.ai_helper.providers[provider] then return false end
                 return not self.ai_helper.providers[provider].ui_key_active 
@@ -1166,16 +1192,14 @@ function M:getAPIKeySelectionMenu(provider, provider_name)
             end
         },
         {
-            text = (self.loc:t("menu_enter_ui_key") or "Enter UI override key: ") .. ((self.ai_helper and self.ai_helper.settings and self.ai_helper.settings[provider .. "_api_key"]) or "(Not set)"),
+            text = "Use UI override key: " .. (#ui_key > 0 and (ui_key:sub(1,6) .. "...") or "(Not set)"),
             checked_func = function() 
                 if not self.ai_helper or not self.ai_helper.providers or not self.ai_helper.providers[provider] then return false end
                 return self.ai_helper.providers[provider].ui_key_active 
             end,
             callback = function()
-                local ui_key = (self.ai_helper and self.ai_helper.settings) and self.ai_helper.settings[provider .. "_api_key"] or nil
-                
                 -- If we have a UI key but it's not currently active, let's just activate it
-                if ui_key and #ui_key > 0 and not self.ai_helper.providers[provider].ui_key_active then
+                if #ui_key > 0 and not self.ai_helper.providers[provider].ui_key_active then
                     self.ai_helper:saveSettings({ [provider .. "_use_ui_key"] = true })
                     self.ai_helper:init(self.path)
                     UIManager:setDirty(nil, "ui")
@@ -1186,7 +1210,7 @@ function M:getAPIKeySelectionMenu(provider, provider_name)
                 local input_dialog
                 input_dialog = InputDialog:new{
                     title = provider_name .. " API Key",
-                    input = ui_key or "",
+                    input = ui_key,
                     buttons = {
                         {
                             { text = self.loc:t("cancel"), callback = function() UIManager:close(input_dialog) end },
@@ -1194,7 +1218,11 @@ function M:getAPIKeySelectionMenu(provider, provider_name)
                                 local key = input_dialog:getInputText()
                                 UIManager:close(input_dialog)
                                 if key and #key > 0 then
-                                    self.ai_helper:setAPIKey(provider, key)
+                                    self.ai_helper:saveSettings({ 
+                                        [provider .. "_api_key"] = key,
+                                        [provider .. "_use_ui_key"] = true
+                                    })
+                                    self.ai_helper:init(self.path)
                                     UIManager:setDirty(nil, "ui")
                                 end
                             end }
@@ -1214,11 +1242,13 @@ function M:getAIModelSelectionMenu(setting_type)
         { name = "Gemini Flash (gemini-2.5-flash) - " .. (self.loc:t("model_free") or "free"), provider = "gemini", id = "gemini-2.5-flash" },
         { name = "Gemini Flash-Lite (gemini-2.5-flash-lite) - " .. (self.loc:t("model_free") or "free"), provider = "gemini", id = "gemini-2.5-flash-lite" },
         { name = "Gemini Pro (gemini-2.5-pro) - " .. (self.loc:t("model_paid") or "paid"), provider = "gemini", id = "gemini-2.5-pro" },
-        { name = "ChatGPT Mini (gpt-4o-mini) - " .. (self.loc:t("model_paid") or "paid"), provider = "chatgpt", id = "gpt-4o-mini" },
-        { name = "ChatGPT (gpt-4o) - " .. (self.loc:t("model_paid") or "paid"), provider = "chatgpt", id = "gpt-4o" },
         { name = "GPT-5.5 (gpt-5.5) - " .. (self.loc:t("model_paid") or "paid"), provider = "chatgpt", id = "gpt-5.5" },
         { name = "GPT-5.4 Mini (gpt-5.4-mini) - " .. (self.loc:t("model_paid") or "paid"), provider = "chatgpt", id = "gpt-5.4-mini" },
         { name = "GPT-5.4 Nano (gpt-5.4-nano) - " .. (self.loc:t("model_paid") or "paid"), provider = "chatgpt", id = "gpt-5.4-nano" },
+        { name = "DeepSeek Chat (deepseek-chat) - " .. (self.loc:t("model_paid") or "paid"), provider = "deepseek", id = "deepseek-chat" },
+        { name = "DeepSeek Reasoner (deepseek-reasoner) - " .. (self.loc:t("model_paid") or "paid"), provider = "deepseek", id = "deepseek-reasoner" },
+        { name = "Claude 4.6 Sonnet (claude-sonnet-4-6) - " .. (self.loc:t("model_paid") or "paid"), provider = "claude", id = "claude-sonnet-4-6" },
+        { name = "Claude 4.5 Haiku (claude-haiku-4-5) - " .. (self.loc:t("model_paid") or "paid"), provider = "claude", id = "claude-haiku-4-5" },
     }
     
     local menu_items = {}
@@ -1264,6 +1294,8 @@ function M:getAIModelSelectionMenu(setting_type)
                                 local custom_model = input_dialog:getInputText()
                                 if custom_model and #custom_model > 0 then
                                     local provider = string.find(custom_model, "gpt") and "chatgpt" or "gemini"
+                                    if string.find(custom_model, "deepseek") then provider = "deepseek" end
+                                    if string.find(custom_model, "claude") then provider = "claude" end
                                     self.ai_helper:setUnifiedModel(setting_type, provider, custom_model)
                                     UIManager:show(InfoMessage:new{ text = setting_type:gsub("^%l", string.upper) .. " AI set to " .. custom_model, timeout = 3 })
                                     UIManager:setDirty(nil, "ui")
@@ -1333,9 +1365,10 @@ function M:showConfigSummary()
     local function add(p, n)
         local c = self.ai_helper.providers[p]
         local key_label = (self.loc:t("config_api_key_label") or "%s API Key: "):format(n)
-        text = text .. key_label .. (c.api_key and set_label or not_set_label) .. "\n"
+        text = text .. key_label .. ((c.api_key and #c.api_key > 0) and set_label or not_set_label) .. "\n"
     end
     add("gemini", "Google Gemini"); add("chatgpt", "ChatGPT")
+    add("deepseek", "DeepSeek"); add("claude", "Anthropic Claude")
     
     UIManager:show(InfoMessage:new{ text = text, timeout = 15 })
 end
@@ -1349,8 +1382,8 @@ function M:showReasoningEffortSettings()
         local current = self.ai_helper.settings and self.ai_helper.settings.reasoning_effort or "medium"
         
         info_dialog = ButtonDialog:new{
-            title = self.loc:t("menu_reasoning_effort") or "Reasoning Effort",
-            text = "Supported by gpt-5.x, o1, and o3 models:",
+            title = self.loc:t("menu_reasoning_effort") or "AI Model Reasoning Effort",
+            text = "Controls internal 'thinking' time for supported reasoning models.",
             buttons = {
                 {
                     {
@@ -1385,6 +1418,15 @@ function M:showReasoningEffortSettings()
                     }
                 },
                 {
+                    {
+                        text = self.loc:t("about") or "About",
+                        callback = function()
+                            UIManager:show(InfoMessage:new{
+                                text = self.loc:t("reasoning_about") or "Controls 'thinking' depth for reasoning models:\n\n• Low: Fast, economical extraction for simple books.\n• Medium: Balanced depth for most narratives.\n• High: Detailed analysis for complex character webs.\n• Extra High: Maximum effort for long books or omnibus editions.\n\nApplies to: GPT-5.x, DeepSeek Reasoner, Claude 4.5+ (extended thinking), and Gemini 2.5+.",
+                                timeout = 12
+                            })
+                        end
+                    },
                     {
                         text = self.loc:t("close") or "Close",
                         callback = function()

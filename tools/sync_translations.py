@@ -64,9 +64,9 @@ def sync():
                 with open(os.path.join(root, file), 'r', encoding='utf-8', errors='ignore') as f:
                     content = f.read()
                     # Find loc:t("key") or loc:t("key") or "default"
-                    matches = re.finditer(r'loc:t\([\"\']([^\"\']*)[\"\'](?:,\s*.*?)?\)(?:\s*or\s*[\"\'](.*?)[\"\'])?', content)
+                    matches = re.finditer(r'loc:t\([\"\']([^\"\']*)[\"\'](?:,\s*.*?)?\)(?:\s*or\s*([\"\'])(.*?)\2)?', content, re.DOTALL)
                     for m in matches:
-                        used_keys[m.group(1)] = m.group(2) or used_keys.get(m.group(1), "")
+                        used_keys[m.group(1)] = m.group(3) or used_keys.get(m.group(1), "")
                     # Find fallbacks in localization_xray.lua
                     if 'localization_xray.lua' in file:
                         fb_matches = re.finditer(r'(\w+)\s*=\s*\"(.*?)\"', content)

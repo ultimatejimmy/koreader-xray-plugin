@@ -625,19 +625,14 @@ function XRayPlugin:getSubMenuItems()
                             separator = true,
                         },
                         {
-                            text = self.loc:t("menu_gemini_key"), 
+                            text = self.loc:t("menu_api_keys") or "API Keys & Providers", 
                             keep_menu_open = true,
-                            sub_item_table_func = function() return self:getAPIKeySelectionMenu("gemini", "Google Gemini") end,
-                            separator = true,
-                        },
-                        {
-                            text = self.loc:t("menu_chatgpt_key"), 
-                            keep_menu_open = true,
-                            sub_item_table_func = function() return self:getAPIKeySelectionMenu("chatgpt", "ChatGPT") end,
+                            sub_item_table_func = function() return self:getAPIKeysMenu() end,
                             separator = true,
                         },
                         {
                             text = self.loc:t("menu_view_config") or "View All Config Values", 
+                            keep_menu_open = true,
                             callback = function() self:showConfigSummary() end,
                         },
                     }

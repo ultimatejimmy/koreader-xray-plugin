@@ -333,6 +333,8 @@ local function _applyUpdate(download_url, new_version)
         if ok and type(cfg) == "table" then
             saved_keys.gemini = cfg.gemini_api_key
             saved_keys.chatgpt = cfg.chatgpt_api_key
+            saved_keys.deepseek = cfg.deepseek_api_key
+            saved_keys.claude = cfg.claude_api_key
         end
 
         -- 2. Download the update
@@ -350,7 +352,9 @@ local function _applyUpdate(download_url, new_version)
 
         -- 4. Smart Merge: Inject keys back into the NEW config file
         if (saved_keys.gemini and saved_keys.gemini ~= "") or
-           (saved_keys.chatgpt and saved_keys.chatgpt ~= "") then
+           (saved_keys.chatgpt and saved_keys.chatgpt ~= "") or
+           (saved_keys.deepseek and saved_keys.deepseek ~= "") or
+           (saved_keys.claude and saved_keys.claude ~= "") then
             local nfh = io.open(config_path, "r")
             if nfh then
                 local content = nfh:read("*a")
@@ -362,6 +366,12 @@ local function _applyUpdate(download_url, new_version)
                 end
                 if saved_keys.chatgpt and saved_keys.chatgpt ~= "" then
                     content = content:gsub('chatgpt_api_key%s*=%s*""', 'chatgpt_api_key = "' .. saved_keys.chatgpt .. '"')
+                end
+                if saved_keys.deepseek and saved_keys.deepseek ~= "" then
+                    content = content:gsub('deepseek_api_key%s*=%s*""', 'deepseek_api_key = "' .. saved_keys.deepseek .. '"')
+                end
+                if saved_keys.claude and saved_keys.claude ~= "" then
+                    content = content:gsub('claude_api_key%s*=%s*""', 'claude_api_key = "' .. saved_keys.claude .. '"')
                 end
 
                 local outh = io.open(config_path, "w")

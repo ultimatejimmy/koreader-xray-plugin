@@ -5,6 +5,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "about"
+msgstr "About"
+
 msgid "ai_fetch_complete"
 msgstr "Успішно отримано від %s!\n\nКнига: %s\nАвтор: %s\n\nПерсонажі: %d\nЛокації: %d\nТеми: %d\nПодії хронології: %d\nІсторичні постаті: %d\n\n%s\n\nОГЛЯД:\n%s"
 
@@ -137,6 +140,9 @@ msgstr "ІМ'Я"
 msgid "label_occupation"
 msgstr "РІД ЗАНЯТЬ"
 
+msgid "label_reasoning"
+msgstr "МІРКУВАННЯ ШІ"
+
 msgid "label_role"
 msgstr "РОЛЬ"
 
@@ -206,6 +212,9 @@ msgstr "Про додаток"
 msgid "menu_ai_settings"
 msgstr "Налаштування ШІ"
 
+msgid "menu_api_keys"
+msgstr "API Keys & Providers"
+
 msgid "menu_author_info"
 msgstr "Інформація про автора"
 
@@ -214,9 +223,6 @@ msgstr "Налаштування авто X-Ray"
 
 msgid "menu_characters"
 msgstr "Персонажі"
-
-msgid "menu_chatgpt_key"
-msgstr "API-ключ ChatGPT"
 
 msgid "menu_clear_cache"
 msgstr "Очистити кеш"
@@ -233,9 +239,6 @@ msgstr "Користувацька модель %s"
 msgid "menu_enter_custom_model"
 msgstr "Ввести свою модель..."
 
-msgid "menu_enter_ui_key"
-msgstr "Введіть ключ перевизначення інтерфейсу: "
-
 msgid "menu_fetch_author"
 msgstr "Отримати інфо про автора (ШІ)"
 
@@ -244,9 +247,6 @@ msgstr "Завантажити більше персонажів"
 
 msgid "menu_fetch_xray"
 msgstr "Отримати дані X-Ray"
-
-msgid "menu_gemini_key"
-msgstr "API-ключ Google Gemini"
 
 msgid "menu_historical_figures"
 msgstr "Історичні постаті"
@@ -269,6 +269,9 @@ msgstr "Налаштування згадок"
 msgid "menu_primary_ai_model"
 msgstr "Основна модель ШІ"
 
+msgid "menu_reasoning_effort"
+msgstr "Рівень міркування GPT"
+
 msgid "menu_secondary_ai_model"
 msgstr "Запасна модель ШІ"
 
@@ -286,9 +289,6 @@ msgstr "Переглянути всю конфігурацію"
 
 msgid "menu_xray"
 msgstr "X-Ray"
-msgid "quick_menu_title"
-msgstr "Швидке меню X-Ray"
-
 
 msgid "menu_xray_mode"
 msgstr "Налаштування режиму X-Ray"
@@ -343,6 +343,24 @@ msgstr "plugins/xray.koplugin"
 
 msgid "plugin_description"
 msgstr "Перетворіть свій досвід читання за допомогою аналізу книг на основі ШІ, як в Amazon Kindle X-Ray!"
+
+msgid "quick_menu_title"
+msgstr "Швидке меню X-Ray"
+
+msgid "reasoning_about"
+msgstr "Controls "
+
+msgid "reasoning_high"
+msgstr "Високий"
+
+msgid "reasoning_low"
+msgstr "Низький"
+
+msgid "reasoning_medium"
+msgstr "Середній"
+
+msgid "reasoning_xhigh"
+msgstr "Дуже високий"
 
 msgid "save"
 msgstr "Зберегти"
@@ -455,21 +473,3 @@ msgstr "Додає кнопку 'X-Ray' у меню словника та вид
 msgid "yes"
 msgstr "Так"
 
-
-msgid "menu_reasoning_effort"
-msgstr "Рівень міркування GPT"
-
-msgid "reasoning_low"
-msgstr "Низький"
-
-msgid "reasoning_medium"
-msgstr "Середній"
-
-msgid "reasoning_high"
-msgstr "Високий"
-
-msgid "reasoning_xhigh"
-msgstr "Дуже високий"
-
-msgid "label_reasoning"
-msgstr "МІРКУВАННЯ ШІ"

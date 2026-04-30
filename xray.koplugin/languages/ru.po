@@ -5,6 +5,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "about"
+msgstr "About"
+
 msgid "ai_fetch_complete"
 msgstr "Успешно получено от %s!\n\nКнига: %s\nАвтор: %s\n\nПерсонажи: %d\nЛокации: %d\nТемы: %d\nСобытия: %d\nИст. личности: %d\n\n%s\n\nОБЗОР:\n%s"
 
@@ -137,6 +140,9 @@ msgstr "ИМЯ"
 msgid "label_occupation"
 msgstr "РОД ЗАНЯТИЙ"
 
+msgid "label_reasoning"
+msgstr "РАССУЖДЕНИЕ ИИ"
+
 msgid "label_role"
 msgstr "РОЛЬ"
 
@@ -206,6 +212,9 @@ msgstr "О плагине"
 msgid "menu_ai_settings"
 msgstr "Настройки ИИ"
 
+msgid "menu_api_keys"
+msgstr "API Keys & Providers"
+
 msgid "menu_author_info"
 msgstr "Информация об авторе"
 
@@ -214,9 +223,6 @@ msgstr "Автообновление X-Ray"
 
 msgid "menu_characters"
 msgstr "Персонажи"
-
-msgid "menu_chatgpt_key"
-msgstr "API-ключ ChatGPT"
 
 msgid "menu_clear_cache"
 msgstr "Очистить кэш"
@@ -233,9 +239,6 @@ msgstr "Пользовательская модель %s"
 msgid "menu_enter_custom_model"
 msgstr "Введите свою модель..."
 
-msgid "menu_enter_ui_key"
-msgstr "Введите ключ переопределения интерфейса: "
-
 msgid "menu_fetch_author"
 msgstr "Получить инфо об авторе (ИИ)"
 
@@ -244,9 +247,6 @@ msgstr "Загрузить больше персонажей"
 
 msgid "menu_fetch_xray"
 msgstr "Получить данные X-Ray"
-
-msgid "menu_gemini_key"
-msgstr "API-ключ Google Gemini"
 
 msgid "menu_historical_figures"
 msgstr "Исторические личности"
@@ -269,6 +269,9 @@ msgstr "Настройки упоминаний"
 msgid "menu_primary_ai_model"
 msgstr "Основная модель ИИ"
 
+msgid "menu_reasoning_effort"
+msgstr "Уровень рассуждения GPT"
+
 msgid "menu_secondary_ai_model"
 msgstr "Вторичная модель ИИ"
 
@@ -286,9 +289,6 @@ msgstr "Просмотр всей конфигурации"
 
 msgid "menu_xray"
 msgstr "X-Ray"
-msgid "quick_menu_title"
-msgstr "Быстрое меню X-Ray"
-
 
 msgid "menu_xray_mode"
 msgstr "Настройки режима X-Ray"
@@ -343,6 +343,24 @@ msgstr "plugins/xray.koplugin"
 
 msgid "plugin_description"
 msgstr "Улучшите чтение с помощью анализа книг на базе ИИ, как в Kindle X-Ray!"
+
+msgid "quick_menu_title"
+msgstr "Быстрое меню X-Ray"
+
+msgid "reasoning_about"
+msgstr "Controls "
+
+msgid "reasoning_high"
+msgstr "Высокий"
+
+msgid "reasoning_low"
+msgstr "Низкий"
+
+msgid "reasoning_medium"
+msgstr "Средний"
+
+msgid "reasoning_xhigh"
+msgstr "Очень высокий"
 
 msgid "save"
 msgstr "Сохранить"
@@ -455,21 +473,3 @@ msgstr "Добавляет кнопку 'X-Ray' в меню словаря и в
 msgid "yes"
 msgstr "Да"
 
-
-msgid "menu_reasoning_effort"
-msgstr "Уровень рассуждения GPT"
-
-msgid "reasoning_low"
-msgstr "Низкий"
-
-msgid "reasoning_medium"
-msgstr "Средний"
-
-msgid "reasoning_high"
-msgstr "Высокий"
-
-msgid "reasoning_xhigh"
-msgstr "Очень высокий"
-
-msgid "label_reasoning"
-msgstr "РАССУЖДЕНИЕ ИИ"

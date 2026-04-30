@@ -5,6 +5,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "about"
+msgstr "About"
+
 msgid "ai_fetch_complete"
 msgstr "Successfully fetched from %s!\n\nBook: %s\nAuthor: %s\n\nCharacters: %d\nLocations: %d\nThemes: %d\nTimeline Events: %d\nHistorical Figures: %d\n\n%s\n\nSUMMARY:\n%s"
 
@@ -137,6 +140,9 @@ msgstr "NAME"
 msgid "label_occupation"
 msgstr "OCCUPATION"
 
+msgid "label_reasoning"
+msgstr "AI REASONING"
+
 msgid "label_role"
 msgstr "ROLE"
 
@@ -206,6 +212,9 @@ msgstr "About"
 msgid "menu_ai_settings"
 msgstr "AI Settings"
 
+msgid "menu_api_keys"
+msgstr "API Keys & Providers"
+
 msgid "menu_author_info"
 msgstr "Author Info"
 
@@ -214,9 +223,6 @@ msgstr "Auto X-Ray Settings"
 
 msgid "menu_characters"
 msgstr "Characters"
-
-msgid "menu_chatgpt_key"
-msgstr "ChatGPT API Key"
 
 msgid "menu_clear_cache"
 msgstr "Clear Cache"
@@ -233,9 +239,6 @@ msgstr "Custom %s Model"
 msgid "menu_enter_custom_model"
 msgstr "Enter custom model..."
 
-msgid "menu_enter_ui_key"
-msgstr "Enter UI override key: "
-
 msgid "menu_fetch_author"
 msgstr "Fetch Author Info (AI)"
 
@@ -244,9 +247,6 @@ msgstr "Fetch More Characters"
 
 msgid "menu_fetch_xray"
 msgstr "Fetch X-Ray Data"
-
-msgid "menu_gemini_key"
-msgstr "Google Gemini API Key"
 
 msgid "menu_historical_figures"
 msgstr "Historical Figures"
@@ -269,6 +269,9 @@ msgstr "Mentions Settings"
 msgid "menu_primary_ai_model"
 msgstr "Primary AI Model"
 
+msgid "menu_reasoning_effort"
+msgstr "AI Model Reasoning Effort"
+
 msgid "menu_secondary_ai_model"
 msgstr "Secondary AI Model"
 
@@ -286,9 +289,6 @@ msgstr "View All Config Values"
 
 msgid "menu_xray"
 msgstr "X-Ray"
-
-msgid "quick_menu_title"
-msgstr "X-Ray Quick Menu"
 
 msgid "menu_xray_mode"
 msgstr "X-Ray Mode Settings"
@@ -343,6 +343,24 @@ msgstr "plugins/xray.koplugin"
 
 msgid "plugin_description"
 msgstr "Transform your reading experience with AI-powered book analysis, just like Amazon Kindle X-Ray!"
+
+msgid "quick_menu_title"
+msgstr "X-Ray Quick Menu"
+
+msgid "reasoning_about"
+msgstr "Controls 'thinking' depth for reasoning models:\n\n• Low: Fast, economical extraction for simple books.\n• Medium: Balanced depth for most narratives.\n• High: Detailed analysis for complex character webs.\n• Extra High: Maximum effort for long books or omnibus editions.\n\nApplies to: GPT-5.x, DeepSeek Reasoner, Claude 4.5+ (extended thinking), and Gemini 2.5+."
+
+msgid "reasoning_high"
+msgstr "High"
+
+msgid "reasoning_low"
+msgstr "Low"
+
+msgid "reasoning_medium"
+msgstr "Medium"
+
+msgid "reasoning_xhigh"
+msgstr "Extra High (X-High)"
 
 msgid "save"
 msgstr "Save"
@@ -455,20 +473,3 @@ msgstr "Adds an 'X-Ray' button to dictionary and selection menus for instant loo
 msgid "yes"
 msgstr "Yes"
 
-msgid "menu_reasoning_effort"
-msgstr "GPT Reasoning Effort"
-
-msgid "reasoning_low"
-msgstr "Low"
-
-msgid "reasoning_medium"
-msgstr "Medium"
-
-msgid "reasoning_high"
-msgstr "High"
-
-msgid "reasoning_xhigh"
-msgstr "Extra High (X-High)"
-
-msgid "label_reasoning"
-msgstr "AI REASONING"

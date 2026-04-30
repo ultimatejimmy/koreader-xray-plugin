@@ -5,6 +5,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "about"
+msgstr "About"
+
 msgid "ai_fetch_complete"
 msgstr "Erfolgreich von %s abgerufen!\n\nBuch: %s\nAutor: %s\n\nCharaktere: %d\nOrte: %d\nThemen: %d\nTimeline-Ereignisse: %d\nHistorische Personen: %d\n\n%s\n\nZUSAMMENFASSUNG:\n%s"
 
@@ -137,6 +140,9 @@ msgstr "NAME"
 msgid "label_occupation"
 msgstr "BERUF"
 
+msgid "label_reasoning"
+msgstr "KI-DENKPROZESS"
+
 msgid "label_role"
 msgstr "ROLLE"
 
@@ -206,6 +212,9 @@ msgstr "Über"
 msgid "menu_ai_settings"
 msgstr "KI-Einstellungen"
 
+msgid "menu_api_keys"
+msgstr "API Keys & Providers"
+
 msgid "menu_author_info"
 msgstr "Autor-Info"
 
@@ -214,9 +223,6 @@ msgstr "Auto X-Ray Einstellungen"
 
 msgid "menu_characters"
 msgstr "Charaktere"
-
-msgid "menu_chatgpt_key"
-msgstr "ChatGPT API-Key"
 
 msgid "menu_clear_cache"
 msgstr "Cache leeren"
@@ -233,9 +239,6 @@ msgstr "Benutzerdefiniertes %s-Modell"
 msgid "menu_enter_custom_model"
 msgstr "Benutzerdefiniertes Modell eingeben..."
 
-msgid "menu_enter_ui_key"
-msgstr "Enter UI override key: "
-
 msgid "menu_fetch_author"
 msgstr "Autor-Info abrufen (KI)"
 
@@ -244,9 +247,6 @@ msgstr "Weitere Charaktere abrufen"
 
 msgid "menu_fetch_xray"
 msgstr "X-Ray Daten abrufen"
-
-msgid "menu_gemini_key"
-msgstr "Google Gemini API-Key"
 
 msgid "menu_historical_figures"
 msgstr "Historische Personen"
@@ -269,6 +269,9 @@ msgstr "Mentions Settings"
 msgid "menu_primary_ai_model"
 msgstr "Primäres KI-Modell"
 
+msgid "menu_reasoning_effort"
+msgstr "GPT Reasoning-Aufwand"
+
 msgid "menu_secondary_ai_model"
 msgstr "Sekundäres KI-Modell"
 
@@ -286,9 +289,6 @@ msgstr "Alle Konfigurationswerte anzeigen"
 
 msgid "menu_xray"
 msgstr "X-Ray"
-msgid "quick_menu_title"
-msgstr "X-Ray-Schnellmenü"
-
 
 msgid "menu_xray_mode"
 msgstr "X-Ray Modus-Einstellungen"
@@ -343,6 +343,24 @@ msgstr "plugins/xray.koplugin"
 
 msgid "plugin_description"
 msgstr "Verbessern Sie Ihr Leseerlebnis mit KI-gestützter Buchanalyse, genau wie Amazon Kindle X-Ray!"
+
+msgid "quick_menu_title"
+msgstr "X-Ray-Schnellmenü"
+
+msgid "reasoning_about"
+msgstr "Controls "
+
+msgid "reasoning_high"
+msgstr "Hoch"
+
+msgid "reasoning_low"
+msgstr "Niedrig"
+
+msgid "reasoning_medium"
+msgstr "Mittel"
+
+msgid "reasoning_xhigh"
+msgstr "Extra Hoch (X-High)"
 
 msgid "save"
 msgstr "Speichern"
@@ -455,20 +473,3 @@ msgstr "Fügt eine 'X-Ray'-Schaltfläche zu Wörterbuch- und Auswahlmenüs für 
 msgid "yes"
 msgstr "Yes"
 
-msgid "menu_reasoning_effort"
-msgstr "GPT Reasoning-Aufwand"
-
-msgid "reasoning_low"
-msgstr "Niedrig"
-
-msgid "reasoning_medium"
-msgstr "Mittel"
-
-msgid "reasoning_high"
-msgstr "Hoch"
-
-msgid "reasoning_xhigh"
-msgstr "Extra Hoch (X-High)"
-
-msgid "label_reasoning"
-msgstr "KI-DENKPROZESS"

@@ -5,6 +5,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "about"
+msgstr "About"
+
 msgid "ai_fetch_complete"
 msgstr "Récupéré avec succès de %s !\n\nLivre : %s\nAuteur : %s\n\nPersonnages : %d\nLieux : %d\nThèmes : %d\nÉvénements : %d\nPersonnes historiques : %d\n\n%s\n\nRÉSUMÉ :\n%s"
 
@@ -137,6 +140,9 @@ msgstr "NOM"
 msgid "label_occupation"
 msgstr "PROFESSION"
 
+msgid "label_reasoning"
+msgstr "RÉFLEXION IA"
+
 msgid "label_role"
 msgstr "RÔLE"
 
@@ -206,6 +212,9 @@ msgstr "À propos"
 msgid "menu_ai_settings"
 msgstr "Paramètres IA"
 
+msgid "menu_api_keys"
+msgstr "API Keys & Providers"
+
 msgid "menu_author_info"
 msgstr "Infos Auteur"
 
@@ -214,9 +223,6 @@ msgstr "Paramètres Auto X-Ray"
 
 msgid "menu_characters"
 msgstr "Personnages"
-
-msgid "menu_chatgpt_key"
-msgstr "Clé API ChatGPT"
 
 msgid "menu_clear_cache"
 msgstr "Vider le cache"
@@ -233,9 +239,6 @@ msgstr "Modèle %s personnalisé"
 msgid "menu_enter_custom_model"
 msgstr "Entrer un modèle personnalisé..."
 
-msgid "menu_enter_ui_key"
-msgstr "Entrer la clé d'override UI : "
-
 msgid "menu_fetch_author"
 msgstr "Récupérer Infos Auteur (IA)"
 
@@ -244,9 +247,6 @@ msgstr "Récupérer plus de personnages"
 
 msgid "menu_fetch_xray"
 msgstr "Récupérer les données X-Ray"
-
-msgid "menu_gemini_key"
-msgstr "Clé API Google Gemini"
 
 msgid "menu_historical_figures"
 msgstr "Figures Historiques"
@@ -269,6 +269,9 @@ msgstr "Mentions Settings"
 msgid "menu_primary_ai_model"
 msgstr "Modèle IA principal"
 
+msgid "menu_reasoning_effort"
+msgstr "Effort de Réflexion (GPT)"
+
 msgid "menu_secondary_ai_model"
 msgstr "Modèle IA secondaire"
 
@@ -286,9 +289,6 @@ msgstr "Voir toutes les valeurs de configuration"
 
 msgid "menu_xray"
 msgstr "X-Ray"
-msgid "quick_menu_title"
-msgstr "Menu rapide X-Ray"
-
 
 msgid "menu_xray_mode"
 msgstr "Paramètres du mode X-Ray"
@@ -343,6 +343,24 @@ msgstr "plugins/xray.koplugin"
 
 msgid "plugin_description"
 msgstr "Transformez votre expérience de lecture avec l'analyse de livre assistée par l'IA, tout comme Amazon Kindle X-Ray !"
+
+msgid "quick_menu_title"
+msgstr "Menu rapide X-Ray"
+
+msgid "reasoning_about"
+msgstr "Controls "
+
+msgid "reasoning_high"
+msgstr "Élevé"
+
+msgid "reasoning_low"
+msgstr "Faible"
+
+msgid "reasoning_medium"
+msgstr "Moyen"
+
+msgid "reasoning_xhigh"
+msgstr "Très Élevé (X-High)"
 
 msgid "save"
 msgstr "Enregistrer"
@@ -455,20 +473,3 @@ msgstr "Ajoute un bouton 'X-Ray' aux menus de dictionnaire et de sélection pour
 msgid "yes"
 msgstr "Oui"
 
-msgid "menu_reasoning_effort"
-msgstr "Effort de Réflexion (GPT)"
-
-msgid "reasoning_low"
-msgstr "Faible"
-
-msgid "reasoning_medium"
-msgstr "Moyen"
-
-msgid "reasoning_high"
-msgstr "Élevé"
-
-msgid "reasoning_xhigh"
-msgstr "Très Élevé (X-High)"
-
-msgid "label_reasoning"
-msgstr "RÉFLEXION IA"

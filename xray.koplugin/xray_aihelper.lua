@@ -30,6 +30,18 @@ local AIHelper = {
             enabled = true,
             api_key = nil,
             endpoint = "https://api.openai.com/v1/chat/completions",
+        },
+        deepseek = {
+            name = "DeepSeek",
+            enabled = true,
+            api_key = nil,
+            endpoint = "https://api.deepseek.com/chat/completions",
+        },
+        claude = {
+            name = "Anthropic Claude",
+            enabled = true,
+            api_key = nil,
+            endpoint = "https://api.anthropic.com/v1/messages",
         }
     },
     default_provider = nil,
@@ -163,6 +175,15 @@ function AIHelper:buildComprehensiveRequest(title, author, context)
                 local system_instruction_text = self.prompts and self.prompts.system_instruction or "Return valid JSON ONLY."
                 url = "https://generativelanguage.googleapis.com/v1beta/models/" .. model .. ":generateContent"
                 headers = { ["Content-Type"] = "application/json", ["x-goog-api-key"] = config.api_key }
+                
+                local gen_config = { temperature = 0.2, maxOutputTokens = 16384 }
+                local current_effort = self.settings and self.settings.reasoning_effort or "medium"
+                if model:find("thinking") or model:find("2.5") or model:find("3.0") then
+                    local effort_map = { low = 1024, medium = 2048, high = 4096, xhigh = 8192 }
+                    -- Basic thinking parameter mapping for Gemini
+                    gen_config.thinkingConfig = { thinkingBudgetTokens = effort_map[current_effort] or 2048 }
+                end
+                
                 body = json.encode({
                     contents = {{ role = "user", parts = {{ text = prompt }} }},
                     system_instruction = { parts = {{ text = system_instruction_text }} },
@@ -172,15 +193,39 @@ function AIHelper:buildComprehensiveRequest(title, author, context)
                         { category = "HARM_CATEGORY_HARASSMENT", threshold = "BLOCK_NONE" },
                         { category = "HARM_CATEGORY_DANGEROUS_CONTENT", threshold = "BLOCK_NONE" }
                     },
-                    generationConfig = { temperature = 0.2, maxOutputTokens = 16384 }
+                    generationConfig = gen_config
                 })
+            elseif ai.provider == "claude" then
+                local model = ai.model or "claude-3-7-sonnet-latest"
+                url = config.endpoint or "https://api.anthropic.com/v1/messages"
+                headers = { ["Content-Type"] = "application/json", ["x-api-key"] = config.api_key, ["anthropic-version"] = "2023-06-01" }
+                local system_instruction_text = (self.prompts and self.prompts.system_instruction or "Return valid JSON ONLY.") .. " You MUST output strictly valid JSON, starting with '{'."
+                
+                local req_body = {
+                    model = model,
+                    max_tokens = 8192,
+                    system = system_instruction_text,
+                    messages = {
+                        { role = "user", content = prompt },
+                        { role = "assistant", content = "{" }
+                    }
+                }
+                
+                if model:find("sonnet") or model:find("opus") then
+                    local current_effort = self.settings and self.settings.reasoning_effort or "medium"
+                    local effort_map = { low = 2048, medium = 4096, high = 8192, xhigh = 16384 }
+                    -- Claude 3.7+ thinking configuration
+                    req_body.thinking = { type = "enabled", budget_tokens = effort_map[current_effort] or 4096 }
+                end
+                
+                body = json.encode(req_body)
             else
                 local model = ai.model or "gpt-4o-mini"
                 url = config.endpoint or "https://api.openai.com/v1/chat/completions"
                 headers = { ["Content-Type"] = "application/json", ["Authorization"] = "Bearer " .. config.api_key }
                 local system_instruction_text = self.prompts and self.prompts.system_instruction or "Return valid JSON ONLY."
                 local token_param, token_val = self:getChatGPTTokenConfig(model)
-                body = json.encode({ 
+                local req_body = { 
                     model = model, 
                     messages = {
                         { role = "system", content = system_instruction_text },
@@ -188,7 +233,15 @@ function AIHelper:buildComprehensiveRequest(title, author, context)
                     }, 
                     response_format = { type = "json_object" },
                     [token_param] = token_val
-                })
+                }
+                
+                if ai.provider == "deepseek" and model:find("reasoner") then
+                    local current_effort = self.settings and self.settings.reasoning_effort or "medium"
+                    local effort_map = { low = "low", medium = "medium", high = "high", xhigh = "max" }
+                    req_body.reasoning_effort = effort_map[current_effort] or "medium"
+                end
+                
+                body = json.encode(req_body)
             end
             table.insert(requests, { url = url, headers = headers, body = body, provider = ai.provider, model = ai.model })
         end
@@ -204,6 +257,8 @@ end
 function AIHelper:hasApiKey()
     if self.providers.gemini and self.providers.gemini.api_key and self.providers.gemini.api_key ~= "" then return true end
     if self.providers.chatgpt and self.providers.chatgpt.api_key and self.providers.chatgpt.api_key ~= "" then return true end
+    if self.providers.deepseek and self.providers.deepseek.api_key and self.providers.deepseek.api_key ~= "" then return true end
+    if self.providers.claude and self.providers.claude.api_key and self.providers.claude.api_key ~= "" then return true end
     return false
 end
 
@@ -463,6 +518,11 @@ function AIHelper:checkAsyncResult(result_file)
            data.candidates[1].content.parts[1] then
             ai_text = data.candidates[1].content.parts[1].text
         end
+    elseif provider == "claude" then
+        if data.content and data.content[1] and data.content[1].text then
+            -- Prepend the '{' that we prefilled in the request
+            ai_text = "{" .. data.content[1].text
+        end
     else
         if data.choices and data.choices[1] then
             ai_text = data.choices[1].message.content
@@ -531,13 +591,15 @@ function AIHelper:loadConfig()
     end
 
     local success, config = pcall(dofile, new_config_file)
-    self.config_keys = { gemini = nil, chatgpt = nil }
+    self.config_keys = { gemini = nil, chatgpt = nil, deepseek = nil, claude = nil }
     if success and config then
         if config.gemini_api_key then self.providers.gemini.api_key = config.gemini_api_key; self.config_keys.gemini = config.gemini_api_key end
         if config.gemini_primary_model then self.providers.gemini.primary_model = config.gemini_primary_model end
         if config.gemini_secondary_model then self.providers.gemini.secondary_model = config.gemini_secondary_model end
         if config.chatgpt_api_key then self.providers.chatgpt.api_key = config.chatgpt_api_key; self.config_keys.chatgpt = config.chatgpt_api_key end
         if config.chatgpt_model then self.providers.chatgpt.model = config.chatgpt_model end
+        if config.deepseek_api_key then self.providers.deepseek.api_key = config.deepseek_api_key; self.config_keys.deepseek = config.deepseek_api_key end
+        if config.claude_api_key then self.providers.claude.api_key = config.claude_api_key; self.config_keys.claude = config.claude_api_key end
         if config.default_provider then self.default_provider = config.default_provider end
     end
 end
@@ -611,7 +673,7 @@ function AIHelper:loadSettings()
             settings.primary_ai = { provider = "gemini", model = settings.gemini_primary_model or "gemini-2.5-flash" }
             settings.secondary_ai = { provider = "gemini", model = settings.gemini_secondary_model or "gemini-2.5-flash-lite" }
         else
-            settings.primary_ai = { provider = "chatgpt", model = settings.chatgpt_model or "gpt-4o-mini" }
+            settings.primary_ai = { provider = "chatgpt", model = settings.chatgpt_model or "gpt-5.4-mini" }
             settings.secondary_ai = { provider = "gemini", model = "gemini-2.5-flash-lite" }
         end
         migrated = true
@@ -667,6 +729,24 @@ function AIHelper:loadSettings()
             self.providers.chatgpt.ui_key_active = true
         else
             self.providers.chatgpt.ui_key_active = false
+        end
+    end
+    
+    if settings.deepseek_api_key then 
+        if settings.deepseek_use_ui_key ~= false then
+            self.providers.deepseek.api_key = settings.deepseek_api_key
+            self.providers.deepseek.ui_key_active = true
+        else
+            self.providers.deepseek.ui_key_active = false
+        end
+    end
+    
+    if settings.claude_api_key then 
+        if settings.claude_use_ui_key ~= false then
+            self.providers.claude.api_key = settings.claude_api_key
+            self.providers.claude.ui_key_active = true
+        else
+            self.providers.claude.ui_key_active = false
         end
     end
     
