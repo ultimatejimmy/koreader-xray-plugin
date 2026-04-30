@@ -116,15 +116,43 @@ end
 function M:deduplicateByName(list, key)
     key = key or "name"
     if not list or #list == 0 then return list end
-    local seen = {}
+    local seen = {}       -- canonical names (lowercased) -> true
+    local alias_map = {}  -- known alias (lowercased) -> true
     local deduped = {}
+
     for _, item in ipairs(list) do
         local k = (item[key] or ""):lower()
-        if k ~= "" and not seen[k] then
-            seen[k] = true
+        if k == "" then
             table.insert(deduped, item)
-        elseif k == "" then
-            table.insert(deduped, item) -- keep unnamed entries as-is
+        else
+            -- Check 1: exact canonical name duplicate
+            local is_dup = seen[k] or false
+
+            -- Check 2: canonical name matches a known alias of an accepted entry
+            if not is_dup then
+                is_dup = alias_map[k] or false
+            end
+
+            -- Check 3: first-name component of canonical name matches a known alias
+            if not is_dup then
+                local first = k:match("^(%S+)")
+                if first and first ~= k and #first >= 5 then
+                    is_dup = alias_map[first] or false
+                end
+            end
+
+            if not is_dup then
+                seen[k] = true
+                table.insert(deduped, item)
+                -- Register all aliases of this accepted entry
+                if item.aliases and type(item.aliases) == "table" then
+                    for _, alias in ipairs(item.aliases) do
+                        if type(alias) == "string" and alias ~= "" then
+                            alias_map[alias:lower()] = true
+                        end
+                    end
+                end
+            end
         end
     end
     return deduped
@@ -296,6 +324,51 @@ function M:sortTimelineByTOC(timeline)
     
     -- Clean up temporary index
     for _, ev in ipairs(timeline) do ev._sort_idx = nil end
+end
+
+function M:mergeEntries(list, primary_name, secondary_name)
+    local primary, secondary, sec_idx = nil, nil, nil
+    for i, item in ipairs(list) do
+        if item.name and item.name:lower() == primary_name:lower() then
+            primary = item
+        elseif item.name and item.name:lower() == secondary_name:lower() then
+            secondary = item
+            sec_idx = i
+        end
+    end
+    if not primary or not secondary then return false end
+
+    -- 1. Absorb secondary's name as an alias of primary (if not already present)
+    primary.aliases = primary.aliases or {}
+    local already = false
+    for _, a in ipairs(primary.aliases) do
+        if a:lower() == secondary.name:lower() then already = true; break end
+    end
+    if not already then table.insert(primary.aliases, secondary.name) end
+
+    -- 2. Absorb secondary's aliases (deduplicated)
+    local existing_aliases = {}
+    for _, a in ipairs(primary.aliases) do existing_aliases[a:lower()] = true end
+    if secondary.aliases then
+        for _, a in ipairs(secondary.aliases) do
+            if type(a) == "string" and not existing_aliases[a:lower()] 
+               and a:lower() ~= primary.name:lower() then
+                table.insert(primary.aliases, a)
+                existing_aliases[a:lower()] = true
+            end
+        end
+    end
+
+    -- 3. Merge description (append secondary's if different / non-empty)
+    if secondary.description and secondary.description ~= ""
+       and secondary.description ~= primary.description then
+        primary.description = (primary.description or "") 
+            .. "\n[Also known as " .. secondary.name .. ": " .. secondary.description .. "]"
+    end
+
+    -- 4. Remove secondary from list
+    table.remove(list, sec_idx)
+    return true
 end
 
 return M

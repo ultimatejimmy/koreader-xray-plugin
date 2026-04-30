@@ -267,6 +267,12 @@ function Localization:t(key, ...)
             linked_entries_disabled = "Disabled",
             linked_entries_setting_desc = "Linked Entries automatically connects characters, locations, and historical figures when they are mentioned in each other's descriptions.\n\nDisabling this will hide the 'Linked Entries' button from detail dialogs.",
             quick_menu_title = "X-Ray Quick Menu",
+            merge_duplicates = "⇄ Merge Duplicates...",
+            merge_pick_primary = "Choose the entry to KEEP",
+            merge_pick_secondary = "Choose the entry to REMOVE",
+            merge_confirm = "Merge %s into %s? The secondary entry will be deleted and its aliases absorbed.",
+            merge_success = "Entries merged successfully.",
+            merge_back = "← Back",
         }
         translation = fallbacks[key] or key
     end

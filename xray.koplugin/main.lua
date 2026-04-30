@@ -507,9 +507,15 @@ function XRayPlugin:autoLoadCache()
                 local toc = self.ui.document:getToc()
                 self:assignTimelinePages(self.timeline, toc, false)
                 self:sortTimelineByTOC(self.timeline)
+                
+                local full_text = self.ui.document:getText() or ""
+                self.characters = self:sortDataByFrequency(self.characters, full_text, "name")
                 self.characters = self:deduplicateByName(self.characters, "name")
+                self.historical_figures = self:sortDataByFrequency(self.historical_figures, full_text, "name")
                 self.historical_figures = self:deduplicateByName(self.historical_figures, "name")
+                self.locations = self:sortDataByFrequency(self.locations, full_text, "name")
                 self.locations = self:deduplicateByName(self.locations, "name")
+                
                 self:log("XRayPlugin: Chunked post-load complete")
             end)
         end)

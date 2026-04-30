@@ -293,6 +293,24 @@ msgstr "X-Ray"
 msgid "menu_xray_mode"
 msgstr "X-Ray Modu Ayarları"
 
+msgid "merge_back"
+msgstr "← Back"
+
+msgid "merge_confirm"
+msgstr "Merge %s into %s? The secondary entry will be deleted and its aliases absorbed."
+
+msgid "merge_duplicates"
+msgstr "Merge Duplicates..."
+
+msgid "merge_pick_primary"
+msgstr "Choose the entry to KEEP"
+
+msgid "merge_pick_secondary"
+msgstr "Choose the entry to REMOVE"
+
+msgid "merge_success"
+msgstr "Entries merged successfully."
+
 msgid "model_free"
 msgstr "ücretsiz"
 

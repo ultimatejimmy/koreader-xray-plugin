@@ -264,6 +264,7 @@ function M:showCharacters()
 
     local items = {
         { text = "⌕ " .. self.loc:t("search_character"), callback = function() self:showCharacterSearch() end },
+        { text = "⇄ " .. (self.loc:t("merge_duplicates") or "Merge Duplicates..."), callback = function() self:showMergeFlow(self.characters, "characters") end },
         { text = "✚ " .. (self.loc:t("menu_fetch_more_chars") or "Fetch More Characters"), keep_menu_open = true, callback = function() self:fetchMoreCharacters() end, separator = true },
     }
     for _, char in ipairs(self.characters) do
@@ -353,27 +354,7 @@ function M:findRelatedEntities(text, exclude_name)
                     found = true
                 end
 
-                -- Strategy 2: First name component (e.g. "John" from "John Smith")
-                if not found then
-                    local first = name:match("^(%S+)")
-                    if first and first ~= name
-                            and not honorifics[first:lower()]
-                            and not isTooGeneric(first, name) then
-                        if termFound(first) then found = true end
-                    end
-                end
-
-                -- Strategy 3: Last name component (e.g. "Smith" from "John Smith")
-                if not found then
-                    local last = name:match("(%S+)$")
-                    if last and last ~= name
-                            and not honorifics[last:lower()]
-                            and not isTooGeneric(last, name) then
-                        if termFound(last) then found = true end
-                    end
-                end
-
-                -- Strategy 4: Aliases (skip generic and honorific-only aliases)
+                -- Strategy 2: Aliases (skip generic and honorific-only aliases)
                 if not found and item.aliases then
                     for _, alias in ipairs(item.aliases) do
                         if type(alias) == "string"
@@ -714,12 +695,139 @@ function M:showLinkedEntriesSettings()
         
         info_dialog = ButtonDialog:new{
             title = self.loc:t("menu_linked_entries_settings") or "Linked Entries Settings",
-            buttons = buttons,
+            buttons = {
+                {
+                    {
+                        text = (current_setting and "[✓] " or "[  ] ") .. enabled_text,
+                        callback = function()
+                            self.ai_helper:saveSettings({ linked_entries_enabled = true })
+                            UIManager:setDirty(nil, "ui")
+                            UIManager:nextTick(function() showSettings() end)
+                        end
+                    },
+                    {
+                        text = ((not current_setting) and "[✓] " or "[  ] ") .. disabled_text,
+                        callback = function()
+                            self.ai_helper:saveSettings({ linked_entries_enabled = false })
+                            UIManager:setDirty(nil, "ui")
+                            UIManager:nextTick(function() showSettings() end)
+                        end
+                    }
+                },
+                {
+                    {
+                        text = self.loc:t("menu_about") or "About",
+                        callback = function()
+                            UIManager:show(InfoMessage:new{
+                                text = self.loc:t("linked_entries_setting_desc") or "Linked Entries automatically connects characters, locations, and historical figures when they are mentioned in each other's descriptions.\n\nDisabling this will hide the 'Linked Entries' button from detail dialogs.",
+                                timeout = 30
+                            })
+                        end
+                    },
+                    {
+                        text = self.loc:t("close") or "Close",
+                        callback = function()
+                            UIManager:close(info_dialog)
+                        end
+                    }
+                }
+            }
         }
         UIManager:show(info_dialog)
     end
     
     showSettings()
+end
+
+function M:showMergeFlow(list, list_name)
+    local ButtonDialog = require("ui/widget/buttondialog")
+    local ConfirmBox = require("ui/widget/confirmbox")
+    local InfoMessage = require("ui/widget/infomessage")
+    
+    local primary_dialog, secondary_dialog
+    
+    local function pickSecondary(primary_item)
+        local buttons = {}
+        for _, item in ipairs(list) do
+            if item.name ~= primary_item.name then
+                local secondary_name = item.name
+                table.insert(buttons, {{
+                    text = secondary_name,
+                    callback = function()
+                        UIManager:close(secondary_dialog)
+                        ConfirmBox:new{
+                            text = string.format(self.loc:t("merge_confirm") or "Merge %s into %s? The secondary entry will be deleted and its aliases absorbed.", secondary_name, primary_item.name),
+                            ok_callback = function()
+                                if self:mergeEntries(list, primary_item.name, secondary_name) then
+                                    -- Save cache
+                                    if not self.cache_manager then self.cache_manager = require(plugin_path .. "xray_cachemanager"):new() end
+                                    local cache = self.cache_manager:loadCache(self.ui.document.file) or {}
+                                    if list_name == "characters" then cache.characters = list
+                                    elseif list_name == "locations" then cache.locations = list end
+                                    self.cache_manager:saveCache(self.ui.document.file, cache)
+                                    
+                                    -- Rebuild LookupManager normalization
+                                    if self.lookup_manager then
+                                        for _, item in ipairs(list) do
+                                            item._norm_name = nil
+                                            item._norm_aliases = nil
+                                        end
+                                    end
+                                    
+                                    UIManager:show(InfoMessage:new{ text = self.loc:t("merge_success") or "Entries merged successfully.", timeout = 3 })
+                                    
+                                    -- Refresh the current list menu
+                                    if list_name == "characters" then self:showCharacters()
+                                    elseif list_name == "locations" then self:showLocations() end
+                                else
+                                    UIManager:show(InfoMessage:new{ text = "Merge failed.", timeout = 3 })
+                                end
+                            end
+                        }:show()
+                    end
+                }})
+            end
+        end
+        
+        table.insert(buttons, {{
+            text = self.loc:t("merge_back") or "← Back",
+            callback = function()
+                UIManager:close(secondary_dialog)
+                UIManager:show(primary_dialog)
+            end
+        }})
+        
+        secondary_dialog = ButtonDialog:new{
+            title = self.loc:t("merge_pick_secondary") or "Choose the entry to REMOVE",
+            buttons = buttons
+        }
+        UIManager:show(secondary_dialog)
+    end
+    
+    local buttons = {}
+    for _, item in ipairs(list) do
+        local primary_item = item
+        table.insert(buttons, {{
+            text = item.name,
+            callback = function()
+                UIManager:close(primary_dialog)
+                pickSecondary(primary_item)
+            end
+        }})
+    end
+    
+    table.insert(buttons, {{
+        text = self.loc:t("close") or "Close",
+        callback = function()
+            UIManager:close(primary_dialog)
+        end
+    }})
+    
+    primary_dialog = ButtonDialog:new{
+        title = self.loc:t("merge_pick_primary") or "Choose the entry to KEEP",
+        buttons = buttons
+    }
+    UIManager:show(primary_dialog)
 end
 
 
@@ -887,7 +995,9 @@ function M:showLocations()
         UIManager:show(InfoMessage:new{ text = self.loc:t("no_location_data"), timeout = 3 })
         return 
     end
-    local items = {}
+    local items = {
+        { text = "⇄ " .. (self.loc:t("merge_duplicates") or "Merge Duplicates..."), callback = function() self:showMergeFlow(self.locations, "locations") end, separator = true },
+    }
     for _, loc in ipairs(self.locations) do 
         if type(loc) == "table" then
             local captured_loc = loc
