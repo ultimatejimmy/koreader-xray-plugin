@@ -48,7 +48,12 @@ ALGORITMO PARA PERSONAGENS E FIGURAS HISTÓRICAS:
 Passo 1. Extraia personagens importantes usando ambos os blocos de texto. (25 normal, no MÁXIMO 10 se for omnibus).
 Passo 2. Você DEVE usar seus nomes completos e formais (ex: "Abraham Van Helsing"). NÃO use apelidos informais como o nome principal.
 Passo 3. Forneça até 3 nomes alternativos, títulos ou apelidos pelos quais este personagem é conhecido em um array `aliases`. Inclua seu primeiro nome e sobrenome comuns se usados. IMPORTANTE: Se um sobrenome for compartilhado por vários personagens (ex: membros da família), NÃO o inclua como alias para nenhum dos personagens.
-Passo 4. Escaneie ativamente por pessoas REAIS da história humana (ex: Presidentes, Autores, Generais). Adicione-os em `historical_figures`.
+Step 4. Actively scan for NOTABLE REAL people from human history (e.g., Presidents, Authors, Generals). Add them to `historical_figures`.
+CRITICAL for Characters & Historical Figures:
+- DO NOT extract characters or historical figures mentioned ONLY in non-narrative frontmatter or backmatter (e.g., Acknowledgments, Author Bio, Dedications, Title Page, Copyright).
+- Historical Figures MUST be verified real-world people with widespread historical recognition.
+- DO NOT include purely fictional characters in the historical figures list, even if they interact with real historical events. Fictional characters MUST go in the `characters` array.
+- For Historical Figures ONLY, you may use your internal knowledge to write their general `biography` and historical `role`, but you MUST use the book context for their `context_in_book`.
 SEM SPOILERS: Pare exatamente na marca de %d%%.
 
 ALGORITMO PARA LOCAIS:
@@ -132,7 +137,8 @@ FORMATO JSON REQUERIDO:
     single_word_lookup = [[O usuário destacou a palavra "%s".
 TAREFA: Determine si esta palavra é um Personagem, Local ou Figura Histórica no livro.
  
-IMPORTANTE: Use APENAS o "BOOK TEXT CONTEXT" fornecido para tomar sua decisão. Não use conhecimento externo e não alucine.
+CRITICAL FOR CHARACTERS AND LOCATIONS: Use ONLY the provided "BOOK TEXT CONTEXT". Outside knowledge is strictly forbidden. Do not hallucinate.
+CRITICAL FOR HISTORICAL FIGURES: You MAY use your internal knowledge to verify their identity and provide their biography/role, ONLY if they are a real, notable historical figure. You MUST still use the text context for their relevance in the book.
 Se a palavra NÃO for um personagem, local ou figura histórica no texto, defina `is_valid` como false.
  
 FORMATO JSON OBRIGATÓRIO:

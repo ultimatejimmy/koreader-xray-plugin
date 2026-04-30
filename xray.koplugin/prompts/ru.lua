@@ -48,7 +48,12 @@ return {
 Шаг 1. Извлеките важных персонажей, используя оба блока текста. (25 обычных, МАКСИМУМ 10 для омнибусов).
 Шаг 2. Вы ДОЛЖНЫ использовать их ПОЛНЫЕ официальные имена (например, "Абрахам Ван Хельсинг"). НЕ используйте повседневные прозвища в качестве основного имени.
 Шаг 3. Укажите до 3 альтернативных имен, титулов или прозвищ, под которыми известен этот персонаж, в массиве `aliases`. Включите их обычные имя и фамилию, если они используются. ВАЖНО: Если фамилия общая для нескольких персонажей (например, членов семьи), НЕ включайте ее как псевдоним ни для одного из них.
-Шаг 4. Активно ищите РЕАЛЬНЫХ людей из истории человечества (например, президентов, авторов, генералов). Добавьте их в `historical_figures`.
+Step 4. Actively scan for NOTABLE REAL people from human history (e.g., Presidents, Authors, Generals). Add them to `historical_figures`.
+CRITICAL for Characters & Historical Figures:
+- DO NOT extract characters or historical figures mentioned ONLY in non-narrative frontmatter or backmatter (e.g., Acknowledgments, Author Bio, Dedications, Title Page, Copyright).
+- Historical Figures MUST be verified real-world people with widespread historical recognition.
+- DO NOT include purely fictional characters in the historical figures list, even if they interact with real historical events. Fictional characters MUST go in the `characters` array.
+- For Historical Figures ONLY, you may use your internal knowledge to write their general `biography` and historical `role`, but you MUST use the book context for their `context_in_book`.
 БЕЗ СПОЙЛЕРОВ: Остановитесь ровно на отметке %d%%.
 
 АЛГОРИТМ ДЛЯ ЛОКАЦИЙ:
@@ -132,7 +137,8 @@ return {
     single_word_lookup = [[Пользователь выделил слово "%s".
 ЗАДАЧА: Определите, является ли это слово Персонажем, Местом или Исторической Личностью в книге.
  
-ВАЖНО: Используйте ТОЛЬКО предоставленный "BOOK TEXT CONTEXT" для принятия решения. Не используйте внешние знания и не галлюцинируйте.
+CRITICAL FOR CHARACTERS AND LOCATIONS: Use ONLY the provided "BOOK TEXT CONTEXT". Outside knowledge is strictly forbidden. Do not hallucinate.
+CRITICAL FOR HISTORICAL FIGURES: You MAY use your internal knowledge to verify their identity and provide their biography/role, ONLY if they are a real, notable historical figure. You MUST still use the text context for their relevance in the book.
 Если слово НЕ является персонажем, местом или исторической личностью в тексте, установите `is_valid` в false.
  
 ТРЕБУЕМЫЙ ФОРМАТ JSON:

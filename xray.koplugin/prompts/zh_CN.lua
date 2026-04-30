@@ -48,7 +48,12 @@ return {
 步骤 1：结合两个文本块提取重要角色。（普通书籍 25 个，合集本最多 10 个）。
 步骤 2：你必须使用他们的正式全名（例如："Abraham Van Helsing"）。不要使用非正式昵称作为主名称。
 步骤 3：在一个 `aliases` 数组中提供该角色最多 3 个备用名称、头衔或昵称。如果使用，请包含他们常用的名字和姓氏。重要提示：如果一个姓氏被多个角色（例如家庭成员）共享，请不要将其作为任何角色的别名。
-步骤 4：主动扫描人类历史上的真实人物（例如：总统、作家、将军）。将他们添加到 `historical_figures` 中。
+Step 4. Actively scan for NOTABLE REAL people from human history (e.g., Presidents, Authors, Generals). Add them to `historical_figures`.
+CRITICAL for Characters & Historical Figures:
+- DO NOT extract characters or historical figures mentioned ONLY in non-narrative frontmatter or backmatter (e.g., Acknowledgments, Author Bio, Dedications, Title Page, Copyright).
+- Historical Figures MUST be verified real-world people with widespread historical recognition.
+- DO NOT include purely fictional characters in the historical figures list, even if they interact with real historical events. Fictional characters MUST go in the `characters` array.
+- For Historical Figures ONLY, you may use your internal knowledge to write their general `biography` and historical `role`, but you MUST use the book context for their `context_in_book`.
 严禁剧透：严格停止在 %d%% 进度处。
 
 地点算法：
@@ -132,7 +137,8 @@ return {
     single_word_lookup = [[用户选中了单词 "%s"。
 任务：判断该单词是否为书中的人物、地点或历史人物。
  
-重要提示：仅使用提供的 "BOOK TEXT CONTEXT" 进行判断。不要使用外部知识或凭空臆造。
+CRITICAL FOR CHARACTERS AND LOCATIONS: Use ONLY the provided "BOOK TEXT CONTEXT". Outside knowledge is strictly forbidden. Do not hallucinate.
+CRITICAL FOR HISTORICAL FIGURES: You MAY use your internal knowledge to verify their identity and provide their biography/role, ONLY if they are a real, notable historical figure. You MUST still use the text context for their relevance in the book.
 如果该单词在文本中不是人物、地点或历史人物，请将 `is_valid` 设置为 false。
  
 要求的 JSON 格式：

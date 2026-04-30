@@ -48,7 +48,12 @@ KARAKTERLER VE TARİHİ KİŞİLER İÇİN ALGORİTMA:
 Adım 1. Her iki metin bloğunu da kullanarak önemli karakterleri çıkar. (Normalde 25, omnibus ise MAKSİMUM 10).
 Adım 2. Karakterlerin TAM resmi isimlerini kullanmalısın (örn. "Abraham Van Helsing"). Gündelik takma adları ana isim olarak kullanma.
 Adım 3. Bu karakterin bilindiği 3 adede kadar alternatif isim, unvan veya takma adı bir `aliases` dizisinde sağla. Kullanılıyorsa ortak adlarını ve soyadlarını dahil et. ÖNEMLİ: Eğer bir soyadı birden fazla karakter (örn. aile üyeleri) tarafından paylaşılıyorsa, bunu hiçbir karakter için bir takma ad olarak dahil ETME.
-Adım 4. İnsanlık tarihindeki GERÇEK kişileri (örn. Başkanlar, Yazarlar, Generaller) aktif olarak tara. Onları `historical_figures` içine ekle.
+Step 4. Actively scan for NOTABLE REAL people from human history (e.g., Presidents, Authors, Generals). Add them to `historical_figures`.
+CRITICAL for Characters & Historical Figures:
+- DO NOT extract characters or historical figures mentioned ONLY in non-narrative frontmatter or backmatter (e.g., Acknowledgments, Author Bio, Dedications, Title Page, Copyright).
+- Historical Figures MUST be verified real-world people with widespread historical recognition.
+- DO NOT include purely fictional characters in the historical figures list, even if they interact with real historical events. Fictional characters MUST go in the `characters` array.
+- For Historical Figures ONLY, you may use your internal knowledge to write their general `biography` and historical `role`, but you MUST use the book context for their `context_in_book`.
 SPOILER YOK: Tam olarak %%%d noktasında dur.
 
 MEKANLAR İÇİN ALGORİTMA:
@@ -132,7 +137,8 @@ GEREKLİ JSON FORMATI:
     single_word_lookup = [[Kullanıcı "%s" kelimesini vurguladı.
 GÖREV: Bu kelimenin kitaptaki bir Karakter, Konum veya Tarihi Figür olup olmadığını belirleyin.
  
-ÖNEMLİ: Kararınızı vermek için YALNIZCA sağlanan "BOOK TEXT CONTEXT" metnini kullanın. Dış bilgi kullanmayın veya uydurmayın.
+CRITICAL FOR CHARACTERS AND LOCATIONS: Use ONLY the provided "BOOK TEXT CONTEXT". Outside knowledge is strictly forbidden. Do not hallucinate.
+CRITICAL FOR HISTORICAL FIGURES: You MAY use your internal knowledge to verify their identity and provide their biography/role, ONLY if they are a real, notable historical figure. You MUST still use the text context for their relevance in the book.
 Kelime metinde bir karakter, konum veya tarihi figür DEĞİLSE, `is_valid` değerini false yapın.
  
 GEREKLİ JSON FORMATI:
