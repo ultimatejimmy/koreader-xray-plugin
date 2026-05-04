@@ -163,6 +163,18 @@ If `is_valid` is false:
   "error_message": "Short explanation why this is not a character or location."
 }]],
 
+    -- Smart Merge Descriptions
+    merge_descriptions = [[TASK: Combine the following two descriptions of the same entity (character or location) into a single, cohesive, and concise summary.
+Remove redundant information and ensure the final description flows naturally.
+
+Primary Description: %s
+Secondary Description: %s
+
+REQUIRED JSON FORMAT:
+{
+  "merged_description": "Combined and polished description (MAX 300 chars)"
+}]],
+
     -- Fallback strings
     fallback = {
         unknown_book = "Unknown Book",

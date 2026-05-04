@@ -326,7 +326,7 @@ function M:sortTimelineByTOC(timeline)
     for _, ev in ipairs(timeline) do ev._sort_idx = nil end
 end
 
-function M:mergeEntries(list, primary_name, secondary_name)
+function M:mergeEntries(list, primary_name, secondary_name, ai_merged_desc)
     local primary, secondary, sec_idx = nil, nil, nil
     for i, item in ipairs(list) do
         if item.name and item.name:lower() == primary_name:lower() then
@@ -359,8 +359,10 @@ function M:mergeEntries(list, primary_name, secondary_name)
         end
     end
 
-    -- 3. Merge description (append secondary's if different / non-empty)
-    if secondary.description and secondary.description ~= ""
+    -- 3. Merge description
+    if ai_merged_desc and ai_merged_desc ~= "" then
+        primary.description = ai_merged_desc
+    elseif secondary.description and secondary.description ~= ""
        and secondary.description ~= primary.description then
         primary.description = (primary.description or "") 
             .. "\n[Also known as " .. secondary.name .. ": " .. secondary.description .. "]"

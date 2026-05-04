@@ -755,35 +755,73 @@ function M:showMergeFlow(list, list_name)
                     text = secondary_name,
                     callback = function()
                         UIManager:close(secondary_dialog)
-                        ConfirmBox:new{
-                            text = string.format(self.loc:t("merge_confirm") or "Merge %s into %s? The secondary entry will be deleted and its aliases absorbed.", secondary_name, primary_item.name),
+                        secondary_dialog = nil
+                        local confirm = ConfirmBox:new{
+                            text = string.format(
+                                self.loc:t("merge_confirm") or "Merge %s into %s? The secondary entry will be deleted and its aliases absorbed.",
+                                secondary_name, primary_item.name
+                            ),
+                            ok_text = self.loc:t("yes") or "Yes",
+                            cancel_text = self.loc:t("close") or "Close",
                             ok_callback = function()
-                                if self:mergeEntries(list, primary_item.name, secondary_name) then
-                                    -- Save cache
-                                    if not self.cache_manager then self.cache_manager = require(plugin_path .. "xray_cachemanager"):new() end
-                                    local cache = self.cache_manager:loadCache(self.ui.document.file) or {}
-                                    if list_name == "characters" then cache.characters = list
-                                    elseif list_name == "locations" then cache.locations = list end
-                                    self.cache_manager:saveCache(self.ui.document.file, cache)
-                                    
-                                    -- Rebuild LookupManager normalization
-                                    if self.lookup_manager then
-                                        for _, item in ipairs(list) do
-                                            item._norm_name = nil
-                                            item._norm_aliases = nil
+                                local wait_msg = InfoMessage:new{ text = self.loc:t("merging_smartly") or "Merging...", timeout = 120 }
+                                UIManager:show(wait_msg)
+                                
+                                UIManager:scheduleIn(0.1, function()
+                                    local ai_merged_desc = nil
+                                    if self.ai_helper and self.ai_helper:hasApiKey() then
+                                        local sec_item = nil
+                                        for _, it in ipairs(list) do
+                                            if it.name == secondary_name then sec_item = it; break end
+                                        end
+                                        
+                                        if sec_item and primary_item.description and sec_item.description then
+                                            ai_merged_desc = self.ai_helper:mergeDescriptionsWithAI(primary_item.description, sec_item.description)
                                         end
                                     end
                                     
-                                    UIManager:show(InfoMessage:new{ text = self.loc:t("merge_success") or "Entries merged successfully.", timeout = 3 })
+                                    UIManager:close(wait_msg)
                                     
-                                    -- Refresh the current list menu
-                                    if list_name == "characters" then self:showCharacters()
-                                    elseif list_name == "locations" then self:showLocations() end
-                                else
-                                    UIManager:show(InfoMessage:new{ text = "Merge failed.", timeout = 3 })
-                                end
-                            end
-                        }:show()
+                                    if self:mergeEntries(list, primary_item.name, secondary_name, ai_merged_desc) then
+                                        -- Save cache: load existing, patch only the changed list
+                                        if not self.cache_manager then
+                                            self.cache_manager = require(plugin_path .. "xray_cachemanager"):new()
+                                        end
+                                        local cache = self.cache_manager:loadCache(self.ui.document.file) or {}
+                                        if list_name == "characters" then
+                                            cache.characters = list
+                                        elseif list_name == "locations" then
+                                            cache.locations = list
+                                        end
+                                        self.cache_manager:saveCache(self.ui.document.file, cache)
+                                        
+                                        -- Clear normalized lookup caches so the LookupManager rebuilds them
+                                        for _, it in ipairs(list) do
+                                            it._norm_name = nil
+                                            it._norm_aliases = nil
+                                        end
+                                        
+                                        UIManager:show(InfoMessage:new{
+                                            text = self.loc:t("merge_success") or "Entries merged successfully.",
+                                            timeout = 3
+                                        })
+                                        
+                                        -- Refresh the list menu
+                                        if list_name == "characters" then
+                                            self:showCharacters()
+                                        elseif list_name == "locations" then
+                                            self:showLocations()
+                                        end
+                                    else
+                                        UIManager:show(InfoMessage:new{
+                                            text = self.loc:t("merge_failed") or "Merge failed.",
+                                            timeout = 3
+                                        })
+                                    end
+                                end)
+                            end,
+                        }
+                        UIManager:show(confirm)
                     end
                 }})
             end
@@ -793,6 +831,7 @@ function M:showMergeFlow(list, list_name)
             text = self.loc:t("merge_back") or "← Back",
             callback = function()
                 UIManager:close(secondary_dialog)
+                secondary_dialog = nil
                 UIManager:show(primary_dialog)
             end
         }})
@@ -811,6 +850,7 @@ function M:showMergeFlow(list, list_name)
             text = item.name,
             callback = function()
                 UIManager:close(primary_dialog)
+                primary_dialog = nil
                 pickSecondary(primary_item)
             end
         }})
@@ -820,6 +860,7 @@ function M:showMergeFlow(list, list_name)
         text = self.loc:t("close") or "Close",
         callback = function()
             UIManager:close(primary_dialog)
+            primary_dialog = nil
         end
     }})
     
@@ -1266,12 +1307,26 @@ function M:getAPIKeysMenu()
         { id = "chatgpt", name = "OpenAI ChatGPT" },
         { id = "deepseek", name = "DeepSeek" },
         { id = "claude", name = "Anthropic Claude" },
+        { id = "custom1", name = self.loc:t("custom_api_name") and string.format(self.loc:t("custom_api_name"), 1) or "Custom API 1 (OpenAI-compatible)" },
+        { id = "custom2", name = self.loc:t("custom_api_name") and string.format(self.loc:t("custom_api_name"), 2) or "Custom API 2 (OpenAI-compatible)" },
     }
     for _, p in ipairs(providers) do
         local prov_data = self.ai_helper.providers[p.id]
         if prov_data then
             local active_val = prov_data.api_key or ""
-            local status = (active_val ~= "") and (active_val:sub(1,6) .. "...") or "(None)"
+            local status
+            if p.id:find("custom") then
+                local endpoint = prov_data.endpoint or ""
+                local host = endpoint:match("^https?://([^/]+)") or endpoint
+                local model = prov_data.model or ""
+                if host ~= "" or model ~= "" then
+                    status = (host ~= "" and host or "?") .. " | " .. (model ~= "" and model or "?")
+                else
+                    status = self.loc:t("custom_api_not_configured") or "(not configured — tap to set up)"
+                end
+            else
+                status = (active_val ~= "") and (active_val:sub(1,6) .. "...") or "(None)"
+            end
             local source = prov_data.ui_key_active and "[UI]" or "[Config]"
             
             table.insert(menu_items, {
@@ -1313,6 +1368,81 @@ function M:getProviderKeySubMenu(provider, provider_name)
                     self.ai_helper:saveSettings({ [provider .. "_use_ui_key"] = true })
                     self.ai_helper:init(self.path)
                     UIManager:setDirty(nil, "ui")
+                    return
+                end
+
+                if provider:find("custom") then
+                    local InputDialog = require("ui/widget/inputdialog")
+                    local InfoMessage = require("ui/widget/infomessage")
+                    
+                    local function promptModel(endpoint, key)
+                        local current_model = (self.ai_helper and self.ai_helper.settings) and self.ai_helper.settings[provider .. "_model"] or ""
+                        local model_dialog
+                        model_dialog = InputDialog:new{
+                            title = self.loc:t("custom_api_model_title") and string.format(self.loc:t("custom_api_model_title"), provider:sub(-1)) or ("Custom API " .. provider:sub(-1) .. " — Default Model"),
+                            input = current_model,
+                            input_hint = self.loc:t("custom_api_model_hint") or "e.g., google/gemini-2.5-flash or openai/gpt-4o",
+                            buttons = {
+                                {
+                                    { text = self.loc:t("cancel"), callback = function() UIManager:close(model_dialog) end },
+                                    { text = self.loc:t("save"), is_enter_default = true, callback = function()
+                                        local model = model_dialog:getInputText()
+                                        UIManager:close(model_dialog)
+                                        self.ai_helper:setCustomAPIConfig(provider, key, endpoint, model)
+                                        self.ai_helper:init(self.path)
+                                        UIManager:show(InfoMessage:new{ text = self.loc:t("custom_api_saved") and string.format(self.loc:t("custom_api_saved"), provider:sub(-1)) or ("Custom API " .. provider:sub(-1) .. " configuration saved."), timeout = 3 })
+                                        UIManager:setDirty(nil, "ui")
+                                    end }
+                                }
+                            }
+                        }
+                        UIManager:show(model_dialog)
+                        model_dialog:onShowKeyboard()
+                    end
+
+                    local function promptKey(endpoint)
+                        local key_dialog
+                        key_dialog = InputDialog:new{
+                            title = self.loc:t("custom_api_key_title") and string.format(self.loc:t("custom_api_key_title"), provider:sub(-1)) or ("Custom API " .. provider:sub(-1) .. " — API Key"),
+                            input = ui_key,
+                            buttons = {
+                                {
+                                    { text = self.loc:t("cancel"), callback = function() UIManager:close(key_dialog) end },
+                                    { text = self.loc:t("next") or "Next", is_enter_default = true, callback = function()
+                                        local key = key_dialog:getInputText()
+                                        UIManager:close(key_dialog)
+                                        promptModel(endpoint, key)
+                                    end }
+                                }
+                            }
+                        }
+                        UIManager:show(key_dialog)
+                        key_dialog:onShowKeyboard()
+                    end
+
+                    local function promptEndpoint()
+                        local current_endpoint = (self.ai_helper and self.ai_helper.settings) and self.ai_helper.settings[provider .. "_endpoint"] or "https://openrouter.ai/api/v1/chat/completions"
+                        local endpoint_dialog
+                        endpoint_dialog = InputDialog:new{
+                            title = self.loc:t("custom_api_endpoint_title") and string.format(self.loc:t("custom_api_endpoint_title"), provider:sub(-1)) or ("Custom API " .. provider:sub(-1) .. " — Endpoint URL"),
+                            input = current_endpoint,
+                            input_hint = self.loc:t("custom_api_endpoint_hint") or "e.g., https://openrouter.ai/api/v1/chat/completions",
+                            buttons = {
+                                {
+                                    { text = self.loc:t("cancel"), callback = function() UIManager:close(endpoint_dialog) end },
+                                    { text = self.loc:t("next") or "Next", is_enter_default = true, callback = function()
+                                        local endpoint = endpoint_dialog:getInputText()
+                                        UIManager:close(endpoint_dialog)
+                                        promptKey(endpoint)
+                                    end }
+                                }
+                            }
+                        }
+                        UIManager:show(endpoint_dialog)
+                        endpoint_dialog:onShowKeyboard()
+                    end
+                    
+                    promptEndpoint()
                     return
                 end
 
@@ -1361,6 +1491,20 @@ function M:getAIModelSelectionMenu(setting_type)
         { name = "Claude 4.5 Haiku (claude-haiku-4-5) - " .. (self.loc:t("model_paid") or "paid"), provider = "claude", id = "claude-haiku-4-5" },
     }
     
+    local custom1_model = (self.ai_helper and self.ai_helper.settings) and self.ai_helper.settings.custom1_model or nil
+    local custom2_model = (self.ai_helper and self.ai_helper.settings) and self.ai_helper.settings.custom2_model or nil
+    
+    table.insert(models, {
+        name = "Custom API 1: " .. (custom1_model or "(configure in API Keys)"),
+        provider = "custom1",
+        id = (custom1_model or "custom1")
+    })
+    table.insert(models, {
+        name = "Custom API 2: " .. (custom2_model or "(configure in API Keys)"),
+        provider = "custom2",
+        id = (custom2_model or "custom2")
+    })
+    
     local menu_items = {}
     for i, m in ipairs(models) do
         table.insert(menu_items, {
@@ -1403,9 +1547,10 @@ function M:getAIModelSelectionMenu(setting_type)
                             callback = function()
                                 local custom_model = input_dialog:getInputText()
                                 if custom_model and #custom_model > 0 then
-                                    local provider = string.find(custom_model, "gpt") and "chatgpt" or "gemini"
+                                    local provider = string.find(custom_model, "gpt") and "chatgpt" or "custom1"
                                     if string.find(custom_model, "deepseek") then provider = "deepseek" end
                                     if string.find(custom_model, "claude") then provider = "claude" end
+                                    if string.find(custom_model, "gemini") then provider = "gemini" end
                                     self.ai_helper:setUnifiedModel(setting_type, provider, custom_model)
                                     UIManager:show(InfoMessage:new{ text = setting_type:gsub("^%l", string.upper) .. " AI set to " .. custom_model, timeout = 3 })
                                     UIManager:setDirty(nil, "ui")
@@ -1479,6 +1624,7 @@ function M:showConfigSummary()
     end
     add("gemini", "Google Gemini"); add("chatgpt", "ChatGPT")
     add("deepseek", "DeepSeek"); add("claude", "Anthropic Claude")
+    add("custom1", "Custom API 1"); add("custom2", "Custom API 2")
     
     UIManager:show(InfoMessage:new{ text = text, timeout = 15 })
 end

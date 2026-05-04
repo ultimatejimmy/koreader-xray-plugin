@@ -272,7 +272,17 @@ function Localization:t(key, ...)
             merge_pick_secondary = "Choose the entry to REMOVE",
             merge_confirm = "Merge %s into %s? The secondary entry will be deleted and its aliases absorbed.",
             merge_success = "Entries merged successfully.",
+            merge_failed = "Merge failed.",
             merge_back = "← Back",
+            merging_smartly = "Merging...",
+            custom_api_name = "Custom API %d (OpenAI-compatible)",
+            custom_api_endpoint_title = "Custom API %d — Endpoint URL",
+            custom_api_key_title = "Custom API %d — API Key",
+            custom_api_model_title = "Custom API %d — Default Model",
+            custom_api_endpoint_hint = "e.g., https://openrouter.ai/api/v1/chat/completions",
+            custom_api_model_hint = "e.g., google/gemini-2.5-flash or openai/gpt-4o",
+            custom_api_saved = "Custom API %d configuration saved.",
+            custom_api_not_configured = "(not configured — tap to set up)",
         }
         translation = fallbacks[key] or key
     end

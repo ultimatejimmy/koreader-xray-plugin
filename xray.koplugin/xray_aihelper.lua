@@ -42,6 +42,20 @@ local AIHelper = {
             enabled = true,
             api_key = nil,
             endpoint = "https://api.anthropic.com/v1/messages",
+        },
+        custom1 = {
+            name = "Custom API 1",
+            enabled = true,
+            api_key = nil,
+            endpoint = "",
+            model = nil,
+        },
+        custom2 = {
+            name = "Custom API 2",
+            enabled = true,
+            api_key = nil,
+            endpoint = "",
+            model = nil,
         }
     },
     default_provider = nil,
@@ -119,8 +133,8 @@ function AIHelper:getChatGPTTokenConfig(model)
     if model:find("^o[13]") or model:find("^gpt%-5") or model:find("^gpt%-4") then
         return "max_completion_tokens", 16384
     end
-    -- Legacy models (gpt-4, gpt-3.5) stay with the old parameter and safe limit.
-    return "max_tokens", 4096
+    -- Default to the modern parameter with a safe limit for unknown custom models as well
+    return "max_completion_tokens", 8192
 end
 
 function AIHelper:setTrapWidget(trap_widget) self.trap_widget = trap_widget end
@@ -241,6 +255,13 @@ function AIHelper:buildComprehensiveRequest(title, author, context)
                     req_body.reasoning_effort = effort_map[current_effort] or "medium"
                 end
                 
+                if ai.provider == "custom1" or ai.provider == "custom2" then
+                    if (config.endpoint or ""):find("openrouter.ai") then
+                        headers["HTTP-Referer"]      = "https://github.com/koreader/koreader-xray-plugin"
+                        headers["X-OpenRouter-Title"] = "KOReader X-Ray"
+                    end
+                end
+                
                 body = json.encode(req_body)
             end
             table.insert(requests, { url = url, headers = headers, body = body, provider = ai.provider, model = ai.model })
@@ -259,6 +280,8 @@ function AIHelper:hasApiKey()
     if self.providers.chatgpt and self.providers.chatgpt.api_key and self.providers.chatgpt.api_key ~= "" then return true end
     if self.providers.deepseek and self.providers.deepseek.api_key and self.providers.deepseek.api_key ~= "" then return true end
     if self.providers.claude and self.providers.claude.api_key and self.providers.claude.api_key ~= "" then return true end
+    if self.providers.custom1 and self.providers.custom1.api_key and self.providers.custom1.api_key ~= "" then return true end
+    if self.providers.custom2 and self.providers.custom2.api_key and self.providers.custom2.api_key ~= "" then return true end
     return false
 end
 
@@ -591,7 +614,7 @@ function AIHelper:loadConfig()
     end
 
     local success, config = pcall(dofile, new_config_file)
-    self.config_keys = { gemini = nil, chatgpt = nil, deepseek = nil, claude = nil }
+    self.config_keys = { gemini = nil, chatgpt = nil, deepseek = nil, claude = nil, custom1 = nil, custom2 = nil }
     if success and config then
         if config.gemini_api_key then self.providers.gemini.api_key = config.gemini_api_key; self.config_keys.gemini = config.gemini_api_key end
         if config.gemini_primary_model then self.providers.gemini.primary_model = config.gemini_primary_model end
@@ -601,6 +624,12 @@ function AIHelper:loadConfig()
         if config.deepseek_api_key then self.providers.deepseek.api_key = config.deepseek_api_key; self.config_keys.deepseek = config.deepseek_api_key end
         if config.claude_api_key then self.providers.claude.api_key = config.claude_api_key; self.config_keys.claude = config.claude_api_key end
         if config.default_provider then self.default_provider = config.default_provider end
+        
+        for _, slot in ipairs({"custom1", "custom2"}) do
+            if config[slot .. "_api_key"]  then self.providers[slot].api_key  = config[slot .. "_api_key"];  self.config_keys[slot] = config[slot .. "_api_key"] end
+            if config[slot .. "_endpoint"] then self.providers[slot].endpoint = config[slot .. "_endpoint"] end
+            if config[slot .. "_model"]    then self.providers[slot].model    = config[slot .. "_model"]    end
+        end
     end
 end
 
@@ -748,6 +777,19 @@ function AIHelper:loadSettings()
         else
             self.providers.claude.ui_key_active = false
         end
+    end
+    
+    for _, slot in ipairs({"custom1", "custom2"}) do
+        if settings[slot .. "_api_key"] then
+            if settings[slot .. "_use_ui_key"] ~= false then
+                self.providers[slot].api_key = settings[slot .. "_api_key"]
+                self.providers[slot].ui_key_active = true
+            else
+                self.providers[slot].ui_key_active = false
+            end
+        end
+        if settings[slot .. "_endpoint"] then self.providers[slot].endpoint = settings[slot .. "_endpoint"] end
+        if settings[slot .. "_model"] then self.providers[slot].model = settings[slot .. "_model"] end
     end
     
     self:loadLanguage()
@@ -915,6 +957,8 @@ function AIHelper:executeUnifiedRequest(prompt)
             local result, err_code, err_msg
             if ai.provider == "gemini" then
                 result, err_code, err_msg = self:callGemini(prompt, config, ai.model)
+            elseif ai.provider == "custom1" or ai.provider == "custom2" then
+                result, err_code, err_msg = self:callChatGPT(prompt, config, ai.model or config.model)
             else
                 result, err_code, err_msg = self:callChatGPT(prompt, config, ai.model)
             end
@@ -949,6 +993,23 @@ end
 function AIHelper:lookupSingleWord(text, context)
     local prompt = self:createPrompt(nil, nil, context, "single_word_lookup", text)
     return self:executeUnifiedRequest(prompt)
+end
+
+function AIHelper:mergeDescriptionsWithAI(primary_desc, secondary_desc)
+    if not self.prompts then self:loadLanguage() end
+    local template = self.prompts.merge_descriptions
+    if not template then
+        self:log("AIHelper: merge_descriptions prompt not found, falling back.")
+        return nil
+    end
+    
+    local prompt = string.format(template, primary_desc or "", secondary_desc or "")
+    local result, err_code, err_msg = self:executeUnifiedRequest(prompt)
+    if result and result.merged_description then
+        return result.merged_description
+    end
+    self:log("AIHelper: mergeDescriptionsWithAI failed: " .. tostring(err_msg))
+    return nil
 end
 
 function AIHelper:callGemini(prompt, config, current_model)
@@ -1034,7 +1095,14 @@ function AIHelper:callChatGPT(prompt, config, current_model)
 
     local request_body = json.encode(request_payload)
     self:log("AIHelper: Sending ChatGPT request (" .. #request_body .. " bytes)")
-    local ok, code, response_text = self:makeRequest(config.endpoint or "https://api.openai.com/v1/chat/completions", { ["Content-Type"] = "application/json", ["Authorization"] = "Bearer " .. config.api_key }, request_body)
+    
+    local headers = { ["Content-Type"] = "application/json", ["Authorization"] = "Bearer " .. config.api_key }
+    if (config.endpoint or ""):find("openrouter.ai") then
+        headers["HTTP-Referer"]       = "https://github.com/koreader/koreader-xray-plugin"
+        headers["X-OpenRouter-Title"] = "KOReader X-Ray"
+    end
+    
+    local ok, code, response_text = self:makeRequest(config.endpoint or "https://api.openai.com/v1/chat/completions", headers, request_body)
     
     local code_num = tonumber(code)
     self:log("AIHelper: ChatGPT Response Code: " .. tostring(code_num))
@@ -1225,6 +1293,21 @@ function AIHelper:setAPIKey(p, k)
     self.providers[p].ui_key_active = true
     self:saveSettings({ [p .. "_api_key"] = k, [p .. "_use_ui_key"] = true })
     return true 
+end
+
+function AIHelper:setCustomAPIConfig(slot, key, endpoint, model)
+    -- slot is "custom1" or "custom2"
+    self.providers[slot].api_key        = key
+    self.providers[slot].endpoint       = endpoint
+    self.providers[slot].model          = model
+    self.providers[slot].ui_key_active  = true
+    self:saveSettings({
+        [slot .. "_api_key"]    = key,
+        [slot .. "_use_ui_key"] = true,
+        [slot .. "_endpoint"]   = endpoint,
+        [slot .. "_model"]      = model,
+    })
+    return true
 end
 
 function AIHelper:setUnifiedModel(type, provider, model)

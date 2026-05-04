@@ -326,7 +326,6 @@ local function _applyUpdate(download_url, new_version)
     local ok_tr, Trapper = pcall(require, "ui/trapper")
 
     local function doDownloadAndInstall()
-        -- 1. Extract current keys before update
         local config_path = _plugin_dir .. "/xray_config.lua"
         local saved_keys = {}
         local ok, cfg = pcall(dofile, config_path)
@@ -335,6 +334,12 @@ local function _applyUpdate(download_url, new_version)
             saved_keys.chatgpt = cfg.chatgpt_api_key
             saved_keys.deepseek = cfg.deepseek_api_key
             saved_keys.claude = cfg.claude_api_key
+            saved_keys.custom1_key = cfg.custom1_api_key
+            saved_keys.custom1_endpoint = cfg.custom1_endpoint
+            saved_keys.custom1_model = cfg.custom1_model
+            saved_keys.custom2_key = cfg.custom2_api_key
+            saved_keys.custom2_endpoint = cfg.custom2_endpoint
+            saved_keys.custom2_model = cfg.custom2_model
         end
 
         -- 2. Download the update
@@ -354,7 +359,9 @@ local function _applyUpdate(download_url, new_version)
         if (saved_keys.gemini and saved_keys.gemini ~= "") or
            (saved_keys.chatgpt and saved_keys.chatgpt ~= "") or
            (saved_keys.deepseek and saved_keys.deepseek ~= "") or
-           (saved_keys.claude and saved_keys.claude ~= "") then
+           (saved_keys.claude and saved_keys.claude ~= "") or
+           (saved_keys.custom1_key and saved_keys.custom1_key ~= "") or
+           (saved_keys.custom2_key and saved_keys.custom2_key ~= "") then
             local nfh = io.open(config_path, "r")
             if nfh then
                 local content = nfh:read("*a")
@@ -372,6 +379,26 @@ local function _applyUpdate(download_url, new_version)
                 end
                 if saved_keys.claude and saved_keys.claude ~= "" then
                     content = content:gsub('claude_api_key%s*=%s*""', 'claude_api_key = "' .. saved_keys.claude .. '"')
+                end
+                
+                if saved_keys.custom1_key and saved_keys.custom1_key ~= "" then
+                    content = content:gsub('custom1_api_key%s*=%s*""', 'custom1_api_key = "' .. saved_keys.custom1_key .. '"')
+                end
+                if saved_keys.custom1_endpoint and saved_keys.custom1_endpoint ~= "" then
+                    content = content:gsub('custom1_endpoint%s*=%s*""', 'custom1_endpoint = "' .. saved_keys.custom1_endpoint .. '"')
+                end
+                if saved_keys.custom1_model and saved_keys.custom1_model ~= "" then
+                    content = content:gsub('custom1_model%s*=%s*""', 'custom1_model = "' .. saved_keys.custom1_model .. '"')
+                end
+                
+                if saved_keys.custom2_key and saved_keys.custom2_key ~= "" then
+                    content = content:gsub('custom2_api_key%s*=%s*""', 'custom2_api_key = "' .. saved_keys.custom2_key .. '"')
+                end
+                if saved_keys.custom2_endpoint and saved_keys.custom2_endpoint ~= "" then
+                    content = content:gsub('custom2_endpoint%s*=%s*""', 'custom2_endpoint = "' .. saved_keys.custom2_endpoint .. '"')
+                end
+                if saved_keys.custom2_model and saved_keys.custom2_model ~= "" then
+                    content = content:gsub('custom2_model%s*=%s*""', 'custom2_model = "' .. saved_keys.custom2_model .. '"')
                 end
 
                 local outh = io.open(config_path, "w")

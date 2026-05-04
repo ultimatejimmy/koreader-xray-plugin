@@ -302,6 +302,9 @@ msgstr "Merge %s into %s? The secondary entry will be deleted and its aliases ab
 msgid "merge_duplicates"
 msgstr "Merge Duplicates..."
 
+msgid "merge_failed"
+msgstr "Merge failed."
+
 msgid "merge_pick_primary"
 msgstr "Choose the entry to KEEP"
 
@@ -310,6 +313,9 @@ msgstr "Choose the entry to REMOVE"
 
 msgid "merge_success"
 msgstr "Entries merged successfully."
+
+msgid "merging_smartly"
+msgstr "Merging..."
 
 msgid "model_free"
 msgstr "ücretsiz"
@@ -491,3 +497,27 @@ msgstr "Anında arama yapmak için sözlük ve seçim menülerine bir 'X-Ray' d�
 msgid "yes"
 msgstr "Evet"
 
+
+msgid "custom_api_name"
+msgstr ""
+
+msgid "custom_api_endpoint_title"
+msgstr ""
+
+msgid "custom_api_key_title"
+msgstr ""
+
+msgid "custom_api_model_title"
+msgstr ""
+
+msgid "custom_api_endpoint_hint"
+msgstr ""
+
+msgid "custom_api_model_hint"
+msgstr ""
+
+msgid "custom_api_saved"
+msgstr ""
+
+msgid "custom_api_not_configured"
+msgstr ""
