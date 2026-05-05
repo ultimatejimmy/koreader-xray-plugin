@@ -14,14 +14,14 @@ trigger: always_on
 ## Reddit release notes
 - When asked for Reddit-specific notes, please do these things, in addition to the general rules above.
 - Use appropriate tone for reddit
-- Make sure to include a hr and this at the end (update the directly link with the latest tag for the release): 
+- Make sure to include a hr and this at the end: 
 
 ```
 ### Install
 
 If you are on an older version that doesn't have built-in updates or you haven't tried it yet, get it here: https://github.com/ultimatejimmy/koreader-xray-plugin
 
-Here's the direct link to this release: https://github.com/ultimatejimmy/koreader-xray-plugin/releases/tag/XXXX
+Here's the direct link the releases: https://github.com/ultimatejimmy/koreader-xray-plugin/releases
 
 ### Feedback
 
