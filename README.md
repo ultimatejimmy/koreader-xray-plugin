@@ -9,8 +9,9 @@ This plugin brings Kindle-style X-Ray features to KOReader. It uses AI to track 
 
 ## What it does
 
-- **AI-Powered Insights**: Uses Google Gemini or OpenAI ChatGPT to scan your books and generate descriptions, summaries, and more.
-- **Character Tracking**: View bios and roles so you never forget who someone is. Includes a **Character Disambiguation Picker** for ambiguous names.
+- **AI-Powered Insights**: Supports Google Gemini, OpenAI, **DeepSeek**, **Claude**, and **Custom API** providers (like OpenRouter).
+- **Character Tracking**: View bios and roles. Now supports **Merging Duplicates** with AI-consolidated summaries.
+- **Customizable Detail**: Choose between short or long AI descriptions to fit your preference.
 - **Linked Entries**: Automatically connect related characters and locations through smart cross-referencing.
 - **Plot Timeline**: Keeps track of major events chapter by chapter, strictly sorted by physical page location for accuracy.
 - **Historical Context**: Pulls real-world info for historical figures and locations.
