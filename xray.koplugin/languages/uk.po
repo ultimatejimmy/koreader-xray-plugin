@@ -499,25 +499,28 @@ msgstr "Так"
 
 
 msgid "custom_api_name"
-msgstr ""
+msgstr "Custom API %d (OpenAI-compatible)"
 
 msgid "custom_api_endpoint_title"
-msgstr ""
+msgstr "Custom API %d — Endpoint URL"
 
 msgid "custom_api_key_title"
-msgstr ""
+msgstr "Custom API %d — API Key"
 
 msgid "custom_api_model_title"
-msgstr ""
+msgstr "Custom API %d — Default Model"
 
 msgid "custom_api_endpoint_hint"
-msgstr ""
+msgstr "e.g., https://openrouter.ai/api/v1/chat/completions"
 
 msgid "custom_api_model_hint"
-msgstr ""
+msgstr "e.g., google/gemini-2.5-flash or openai/gpt-4o"
 
 msgid "custom_api_saved"
-msgstr ""
+msgstr "Custom API %d configuration saved."
 
 msgid "custom_api_not_configured"
-msgstr ""
+msgstr "(not configured — tap to set up)"
+
+msgid "custom_api_is_reasoning"
+msgstr "Is Reasoning Model (e.g. DeepSeek-R1)"

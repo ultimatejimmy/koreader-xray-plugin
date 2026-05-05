@@ -133,8 +133,15 @@ function AIHelper:getChatGPTTokenConfig(model)
     if model:find("^o[13]") or model:find("^gpt%-5") or model:find("^gpt%-4") then
         return "max_completion_tokens", 16384
     end
-    -- Default to the modern parameter with a safe limit for unknown custom models as well
-    return "max_completion_tokens", 8192
+    -- DeepSeek reasoner and common reasoning model name patterns (for custom slots via OpenRouter etc.)
+    -- These models produce reasoning chains that consume the same token budget as the response,
+    -- so they need a much higher ceiling (DeepSeek's own default is 32k).
+    if model:find("reasoner") or model:find("%-r1") or model:find("/r1") then
+        return "max_completion_tokens", 32000
+    end
+    -- Raise the default from 8192 to 16384 — this is a ceiling, not a cost, so it's safe.
+    -- Gives standard unknown/custom models enough headroom for a full X-Ray JSON response.
+    return "max_completion_tokens", 16384
 end
 
 function AIHelper:setTrapWidget(trap_widget) self.trap_widget = trap_widget end
@@ -190,12 +197,27 @@ function AIHelper:buildComprehensiveRequest(title, author, context)
                 url = "https://generativelanguage.googleapis.com/v1beta/models/" .. model .. ":generateContent"
                 headers = { ["Content-Type"] = "application/json", ["x-goog-api-key"] = config.api_key }
                 
-                local gen_config = { temperature = 0.2, maxOutputTokens = 16384 }
+                local gen_config = { temperature = 0.2, maxOutputTokens = 16384 } -- default
                 local current_effort = self.settings and self.settings.reasoning_effort or "medium"
-                if model:find("thinking") or model:find("2.5") or model:find("3.0") then
+                if model:find("thinking") or model:find("2%.5") or model:find("3%.0") or model:find("pro") or model:find("flash") then
                     local effort_map = { low = 1024, medium = 2048, high = 4096, xhigh = 8192 }
-                    -- Basic thinking parameter mapping for Gemini
-                    gen_config.thinkingConfig = { thinkingBudgetTokens = effort_map[current_effort] or 2048 }
+                    local budget = effort_map[current_effort] or 2048
+                    
+                    -- Gemini 1.5 Pro and 2.0 Flash have a hard output limit of 8,192 tokens.
+                    -- Thinking tokens count against this, so we must leave room for the response.
+                    if (model:find("1%.5%-pro") or model:find("2%.0%-flash")) and budget > 2000 then
+                        self:log(string.format("AIHelper: Gemini %s detected — capping thinking budget from %d to 2000 (limit=8192)", model, budget))
+                        budget = 2000
+                        gen_config.maxOutputTokens = 8192
+                    elseif model:find("2%.5") or model:find("3%.0") then
+                        -- For newer models with 65k limits, scale maxOutputTokens to budget + 16000 reserve
+                        gen_config.maxOutputTokens = budget + 16000
+                    else
+                        -- Standard fallback for other models
+                        gen_config.maxOutputTokens = budget + 8000
+                    end
+                    
+                    gen_config.thinkingConfig = { thinkingBudgetTokens = budget }
                 end
                 
                 body = json.encode({
@@ -217,7 +239,7 @@ function AIHelper:buildComprehensiveRequest(title, author, context)
                 
                 local req_body = {
                     model = model,
-                    max_tokens = 8192,
+                    max_tokens = 8192,  -- default for non-thinking models; overridden below
                     system = system_instruction_text,
                     messages = {
                         { role = "user", content = prompt },
@@ -225,11 +247,24 @@ function AIHelper:buildComprehensiveRequest(title, author, context)
                     }
                 }
                 
-                if model:find("sonnet") or model:find("opus") then
+                if model:find("sonnet") or model:find("opus") or model:find("haiku") then
                     local current_effort = self.settings and self.settings.reasoning_effort or "medium"
                     local effort_map = { low = 2048, medium = 4096, high = 8192, xhigh = 16384 }
-                    -- Claude 3.7+ thinking configuration
-                    req_body.thinking = { type = "enabled", budget_tokens = effort_map[current_effort] or 4096 }
+                    local budget = effort_map[current_effort] or 4096
+                    -- Haiku has a hard max_tokens limit of 8192; silently cap budget to leave room for output.
+                    -- Claude thinking tokens count against max_tokens, so max_tokens must be > budget_tokens.
+                    if model:find("haiku") and budget > 2000 then
+                        self:log(string.format("AIHelper: Haiku detected — capping thinking budget from %d to 2000 (haiku max_tokens=8192)", budget))
+                        budget = 2000
+                        req_body.max_tokens = 8192
+                    else
+                        -- For sonnet/opus: dynamically scale max_tokens to always leave 8000 tokens for the JSON response.
+                        -- Without this, at 'high' effort budget_tokens==max_tokens leaving zero room for output.
+                        local output_reserve = 8000
+                        req_body.max_tokens = budget + output_reserve
+                    end
+                    -- Claude extended thinking configuration
+                    req_body.thinking = { type = "enabled", budget_tokens = budget }
                 end
                 
                 body = json.encode(req_body)
@@ -254,11 +289,29 @@ function AIHelper:buildComprehensiveRequest(title, author, context)
                     local effort_map = { low = "low", medium = "medium", high = "high", xhigh = "max" }
                     req_body.reasoning_effort = effort_map[current_effort] or "medium"
                 end
+
+                -- OpenAI gpt-5 and o-series: inject reasoning_effort (xhigh is a valid OpenAI value).
+                -- At high/xhigh effort, raise max_completion_tokens since reasoning tokens count against it.
+                if (ai.provider == "chatgpt" or ai.provider == "custom1" or ai.provider == "custom2")
+                    and (model:find("^gpt%-5") or model:find("^o[13]")) then
+                    local current_effort = self.settings and self.settings.reasoning_effort or "medium"
+                    req_body.reasoning_effort = current_effort
+                    if current_effort == "high" or current_effort == "xhigh" then
+                        req_body[token_param] = 32000
+                        self:log(string.format("AIHelper: OpenAI %s at %s effort — raising max_completion_tokens to 32000", model, current_effort))
+                    end
+                end
                 
                 if ai.provider == "custom1" or ai.provider == "custom2" then
                     if (config.endpoint or ""):find("openrouter.ai") then
                         headers["HTTP-Referer"]      = "https://github.com/koreader/koreader-xray-plugin"
                         headers["X-OpenRouter-Title"] = "KOReader X-Ray"
+                    end
+                    -- Per-slot "Is Reasoning Model" setting: raise token ceiling to accommodate reasoning chains
+                    local is_reasoning = self.settings and self.settings[ai.provider .. "_is_reasoning"]
+                    if is_reasoning then
+                        req_body["max_completion_tokens"] = 32000
+                        self:log(string.format("AIHelper: Custom slot %s marked as reasoning model — using 32000 token ceiling", ai.provider))
                     end
                 end
                 
@@ -1119,9 +1172,17 @@ function AIHelper:callChatGPT(prompt, config, current_model)
         [token_param] = token_val 
     }
 
-    -- Add reasoning_effort if configured and supported
+    -- Add reasoning_effort if configured and supported.
+    -- xhigh is a valid OpenAI API value; pass through directly.
+    -- At high/xhigh effort, reasoning tokens count against max_completion_tokens,
+    -- so raise from 16384 to 32000 to prevent the reasoning chain from starving the JSON output.
     if self.settings.reasoning_effort and (model:find("^gpt%-5") or model:find("^o[13]")) then
-        request_payload.reasoning_effort = self.settings.reasoning_effort
+        local effort = self.settings.reasoning_effort
+        request_payload.reasoning_effort = effort
+        if effort == "high" or effort == "xhigh" then
+            request_payload[token_param] = 32000
+            self:log(string.format("AIHelper: OpenAI %s at %s effort — raising max_completion_tokens to 32000", model, effort))
+        end
     end
 
     local request_body = json.encode(request_payload)

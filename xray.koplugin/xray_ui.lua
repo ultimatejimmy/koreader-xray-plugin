@@ -1598,6 +1598,25 @@ function M:getProviderKeySubMenu(provider, provider_name)
             end
         }
     }
+
+    -- For custom slots: add a toggle to mark the model as a reasoning model.
+    -- When enabled, the plugin raises the output token ceiling to 32000 to accommodate
+    -- reasoning chains that would otherwise consume the entire output budget.
+    if provider:find("custom") then
+        table.insert(menu_items, {
+            text = self.loc:t("custom_api_is_reasoning") or "Is Reasoning Model (e.g. DeepSeek-R1)",
+            keep_menu_open = true,
+            checked_func = function()
+                return (self.ai_helper and self.ai_helper.settings) and self.ai_helper.settings[provider .. "_is_reasoning"] or false
+            end,
+            callback = function()
+                local current = (self.ai_helper and self.ai_helper.settings) and self.ai_helper.settings[provider .. "_is_reasoning"] or false
+                self.ai_helper:saveSettings({ [provider .. "_is_reasoning"] = not current })
+                UIManager:setDirty(nil, "ui")
+            end
+        })
+    end
+
     return menu_items
 end
 

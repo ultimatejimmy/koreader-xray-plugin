@@ -283,6 +283,7 @@ function Localization:t(key, ...)
             custom_api_model_hint = "e.g., google/gemini-2.5-flash or openai/gpt-4o",
             custom_api_saved = "Custom API %d configuration saved.",
             custom_api_not_configured = "(not configured — tap to set up)",
+            custom_api_is_reasoning = "Is Reasoning Model (e.g. DeepSeek-R1)",
             menu_desc_length_settings = "Description Length Settings",
             desc_len_short = "Short",
             desc_len_default = "Default",
