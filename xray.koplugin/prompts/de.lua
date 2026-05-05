@@ -31,8 +31,8 @@ Sie verarbeiten ein umfangreiches Dokument mit zwei Textblöcken am Ende dieses 
 ANTI-TRUNKIERUNGSPROTOKOLL (WICHTIG):
 Sie haben ein striktes maximales Ausgabelimit. Wenn die "CHAPTER SAMPLES" MEHR ALS 40 Kapitel enthalten (z. B. eine Sammelausgabe):
 1. Sie MÜSSEN die Liste der Charaktere auf NUR die 10 absolut wichtigsten Charaktere reduzieren.
-2. Sie MÜSSEN die Beschreibungen der Charaktere auf MAX. 200 Zeichen reduzieren.
-3. Sie MÜSSEN die Zusammenfassungen der Timeline-Ereignisse auf MAX. 80 Zeichen reduzieren.
+2. Sie MÜSSEN die Beschreibungen der Charaktere auf MAX. {MAX_CHAR_DESC} Zeichen reduzieren.
+3. Sie MÜSSEN die Zusammenfassungen der Timeline-Ereignisse auf MAX. {MAX_TIMELINE_EVENT} Zeichen reduzieren.
 Ein Versäumnis, Ihre Ausgabe für massive Bücher zu komprimieren, führt dazu, dass das JSON abgeschnitten wird und fehlschlägt.
 
 ALGORITHMUS FÜR DIE TIMELINE (HÖCHSTE PRIORITÄT):
@@ -41,14 +41,14 @@ Schritt 1. Schauen Sie NUR in den Block "CHAPTER SAMPLES". Identifizieren Sie di
 Schritt 2. SCHLIESSEN Sie alle nicht-erzählenden Vorspann- und Nachspann-Elemente AUS (z. B. Cover, Titelseite, Copyright, Inhaltsverzeichnis, Widmung, Danksagung, Auch von).
 Schritt 3. Erstellen Sie für jedes erzählende Kapitel, beginnend mit dem allerersten, GENAU EIN Ereignisobjekt im Array `timeline`.
 Schritt 4. Das Feld `chapter` MUSS exakt mit der Kapitelüberschrift in der Stichprobe übereinstimmen. (Ordnen Sie diese strikt in sequentieller Reihenfolge zu).
-Schritt 5. Fassen Sie dieses spezifische Kapitel im Feld `event` zusammen (MAX. 80 Zeichen). Gruppieren Sie KEINE Kapitel.
+Schritt 5. Fassen Sie dieses spezifische Kapitel im Feld `event` zusammen (MAX. {MAX_TIMELINE_EVENT} Zeichen). Gruppieren Sie KEINE Kapitel.
 Schritt 6. KEINE SPOILER: Hören Sie genau bei der %d%%-Marke auf. Beziehen Sie keine Ereignisse nach diesem Fortschritt ein.
 
 ALGORITHMUS FÜR CHARAKTERE & HISTORISCHE PERSONEN:
-Schritt 1. Extrahieren Sie wichtige Charaktere aus beiden Textblöcken. (25 normale, MAX. 10 bei Sammelausgaben).
+Schritt 1. Extrahieren Sie wichtige Charaktere aus beiden Textblöcken. ({NUM_CHARS} normale, MAX. 10 bei Sammelausgaben).
 Schritt 2. Sie MÜSSEN deren VOLLSTÄNDIGEN, formellen Namen verwenden (z. B. "Abraham Van Helsing"). Verwenden Sie KEINE lockeren Spitznamen als Hauptnamen.
 Schritt 3. Geben Sie bis zu 3 alternative Namen, Titel oder Spitznamen an, unter denen dieser Charakter bekannt ist, in einem Array `aliases`. Schließen Sie den üblichen Vornamen und Nachnamen ein, falls sie verwendet werden. WICHTIG: Wenn ein Nachname von mehreren Charakteren (z. B. Familienmitgliedern) geteilt wird, schließen Sie ihn für keinen der Charaktere als Alias ein.
-Step 4. Actively scan for NOTABLE REAL people from human history (e.g., Presidents, Authors, Generals). Add them to `historical_figures`.
+Step 4. Actively scan for up to {NUM_HIST} NOTABLE REAL people from human history (e.g., Presidents, Authors, Generals). Add them to `historical_figures`.
 CRITICAL for Characters & Historical Figures:
 - DO NOT extract characters or historical figures mentioned ONLY in non-narrative frontmatter or backmatter (e.g., Acknowledgments, Author Bio, Dedications, Title Page, Copyright).
 - Historical Figures MUST be verified real-world people with widespread historical recognition.
@@ -57,7 +57,7 @@ CRITICAL for Characters & Historical Figures:
 KEINE SPOILER: Hören Sie genau bei der %d%%-Marke auf.
 
 ALGORITHMUS FÜR ORTE:
-Schritt 1. Extrahieren Sie 5-10 bedeutende Orte. KEINE SPOILER: Hören Sie genau bei der %d%%-Marke auf.
+Schritt 1. Extrahieren Sie {NUM_LOCS} bedeutende Orte. KEINE SPOILER: Hören Sie genau bei der %d%%-Marke auf.
 
 STRIKTE SPOILER-REGELN:
 - ABSOLUT KEINE Informationen nach dem aktuellen Lesefortschritt. Hören Sie genau bei der %d%%-Marke auf.
@@ -77,25 +77,25 @@ ERFORDERLICHES JSON-FORMAT:
       "role": "Rolle bis zum aktuellen Fortschritt",
       "gender": "Männlich / Weiblich / Unbekannt",
       "occupation": "Beruf/Status",
-      "description": "Tiefgehende Analyse mit Details aus dem bisherigen Text. KEINE SPOILER. (Max. 300 Zeichen)"
+      "description": "Tiefgehende Analyse mit Details aus dem bisherigen Text. KEINE SPOILER. (Max {MAX_CHAR_DESC} Zeichen)"
     }
   ],
   "historical_figures": [
     {
       "name": "Name der realen historischen Person",
       "role": "Historische Rolle",
-      "biography": "Kurze Biografie (MAX. 100 Zeichen)",
+      "biography": "Kurze Biografie (MAX. {MAX_HIST_BIO} Zeichen)",
       "importance_in_book": "Bedeutung bis zum aktuellen Fortschritt",
       "context_in_book": "Wie sie erwähnt werden (MAX. 100 Zeichen)"
     }
   ],
   "locations": [
-    {"name": "Name des Ortes", "description": "Kurzbeschreibung (MAX. 100 Zeichen)"}
+    {"name": "Name des Ortes", "description": "Kurzbeschreibung (MAX. {MAX_LOC_DESC} Zeichen)"}
   ],
   "timeline": [
     {
       "chapter": "Exakter Kapiteltitel aus den Stichproben",
-      "event": "Wichtiges erzählerisches Ereignis aus diesem Kapitel (Max. 100 Zeichen)"
+      "event": "Wichtiges erzählerisches Ereignis aus diesem Kapitel (Max. {MAX_TIMELINE_EVENT} Zeichen)"
     }
   ]
 } ]],
@@ -109,7 +109,7 @@ AUFGABE: Extrahieren Sie GENAU 10 ZUSÄTZLICHE wichtige Charaktere aus dem Text.
 Geben Sie NUR ein gültiges JSON-Objekt aus.
 
 PRÄZISIONS-MANDAT (WICHTIG):
-Um eine Kürzung der AI-Antwort zu vermeiden, halten Sie die Charakterbeschreibungen unter 250 Zeichen.
+Um eine Kürzung der AI-Antwort zu vermeiden, halten Sie die Charakterbeschreibungen unter {MAX_CHAR_DESC} Zeichen.
 
 KRITISCHE ANWEISUNG:
 Schließen Sie KEINEN der folgenden Charaktere ein, da diese bereits extrahiert wurden:
@@ -128,7 +128,7 @@ ERFORDERLICHES JSON-FORMAT:
       "role": "Rolle bis zum aktuellen Fortschritt",
       "gender": "Männlich / Weiblich / Unbekannt",
       "occupation": "Beruf/Status",
-      "description": "Tiefgehende Analyse mit Details aus dem bisherigen Text. KEINE SPOILER. (Max. 300 Zeichen)"
+      "description": "Tiefgehende Analyse mit Details aus dem bisherigen Text. KEINE SPOILER. (Max {MAX_CHAR_DESC} Zeichen)"
     }
   ]
 }]],

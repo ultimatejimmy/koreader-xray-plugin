@@ -267,7 +267,7 @@ function Localization:t(key, ...)
             linked_entries_disabled = "Disabled",
             linked_entries_setting_desc = "Linked Entries automatically connects characters, locations, and historical figures when they are mentioned in each other's descriptions.\n\nDisabling this will hide the 'Linked Entries' button from detail dialogs.",
             quick_menu_title = "X-Ray Quick Menu",
-            merge_duplicates = "⇄ Merge Duplicates...",
+            merge_duplicates = "⋈ Merge Duplicates...",
             merge_pick_primary = "Choose the entry to KEEP",
             merge_pick_secondary = "Choose the entry to REMOVE",
             merge_confirm = "Merge %s into %s? The secondary entry will be deleted and its aliases absorbed.",
@@ -283,6 +283,15 @@ function Localization:t(key, ...)
             custom_api_model_hint = "e.g., google/gemini-2.5-flash or openai/gpt-4o",
             custom_api_saved = "Custom API %d configuration saved.",
             custom_api_not_configured = "(not configured — tap to set up)",
+            menu_desc_length_settings = "Description Length Settings",
+            desc_len_short = "Short",
+            desc_len_default = "Default",
+            desc_len_detailed = "Detailed",
+            desc_len_v_detailed = "Very Detailed",
+            desc_len_about_chars = "CHARACTER DESCRIPTIONS\n\n• Short (~80 chars): Name, role, and a brief note.\n• Default (~200 chars): Standard analysis.\n• Detailed (~350 chars): Rich character study with traits and motivations.\n• Very Detailed (~500 chars): Deep analysis.\n\nTRADE-OFF\nLonger descriptions → fewer characters returned during initial/full fetches. Subsequent 'Fetch More' runs are unaffected.",
+            desc_len_about_locs = "LOCATION DESCRIPTIONS\n\n• Short (~50 chars): Place name and one-line context.\n• Default (~100 chars): Standard description.\n• Detailed (~200 chars): Atmosphere, significance, and events.\n• Very Detailed (~300 chars): Full description.\n\nTRADE-OFF\nLonger descriptions → fewer locations returned during initial/full fetches.",
+            desc_len_about_hist = "HISTORICAL FIGURE BIOGRAPHIES\n\n• Short (~50 chars): Name and primary role.\n• Default (~100 chars): Standard biography.\n• Detailed (~200 chars): Life, significance, and book context.\n• Very Detailed (~300 chars): Comprehensive biography.\n\nTRADE-OFF\nLonger biographies → fewer historical figures returned during initial/full fetches.",
+            desc_len_about_timeline = "TIMELINE — ONE EVENT PER CHAPTER (always)\n\nTimeline always has exactly one entry per chapter. This setting only affects how much detail is included in each summary.\n\n• Short (~50 chars): Brief one-phrase summary.\n• Default (~80 chars): Standard summary.\n• Detailed (~150 chars): Includes context and consequences.\n• Very Detailed (~200 chars): Full narrative description.\n\nThere is no count trade-off for the timeline.",
         }
         translation = fallbacks[key] or key
     end

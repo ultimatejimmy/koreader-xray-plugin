@@ -302,10 +302,22 @@ function ChapterAnalyzer:findCharactersInText(text, characters)
     
     for _, char in ipairs(characters) do
         local name = char.name
-        if name and #name > 2 then
-            -- Check full name
+        if name and #name >= 1 then
             local name_lower = string.lower(name)
-            if string.find(text_lower, name_lower, 1, true) then
+            
+            -- Helper to check word boundaries for short names
+            local function findWithBoundaries(text, needle)
+                if #needle < 4 then
+                    local safe_needle = needle:gsub("([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1")
+                    local pattern = "%f[%w]" .. safe_needle .. "%f[%W]"
+                    return string.find(text, pattern)
+                else
+                    return string.find(text, needle, 1, true)
+                end
+            end
+            
+            -- Check full name
+            if findWithBoundaries(text_lower, name_lower) then
                 table.insert(found_characters, {
                     character = char,
                     count = self:countMentions(text_lower, name_lower)
@@ -313,9 +325,9 @@ function ChapterAnalyzer:findCharactersInText(text, characters)
             else
                 -- Check first name only
                 local first_name = string.match(name, "^(%S+)")
-                if first_name and #first_name > 2 then
+                if first_name and #first_name >= 1 then
                     local first_name_lower = string.lower(first_name)
-                    if string.find(text_lower, first_name_lower, 1, true) then
+                    if findWithBoundaries(text_lower, first_name_lower) then
                         table.insert(found_characters, {
                             character = char,
                             count = self:countMentions(text_lower, first_name_lower)
@@ -774,8 +786,19 @@ function ChapterAnalyzer:countMentions(text, name)
     local count = 0
     local pos = 1
     
+    local pattern
+    if #name < 4 then
+        local safe_name = name:gsub("([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1")
+        pattern = "%f[%w]" .. safe_name .. "%f[%W]"
+    end
+    
     while true do
-        local start_pos = string.find(text, name, pos, true)
+        local start_pos
+        if pattern then
+            start_pos = text:lower():find(pattern, pos)
+        else
+            start_pos = text:lower():find(name:lower(), pos, true)
+        end
         if not start_pos then break end
         count = count + 1
         pos = start_pos + 1
@@ -837,27 +860,15 @@ function ChapterAnalyzer:findMentionsInChapter(ui, entity, toc_entry, next_toc_e
 
     local text_lower = raw_text:lower()
 
-    -- Count plain occurrences of a needle in text_lower (used for frequency check)
+    -- Count occurrences of a needle in text_lower (used for frequency check)
     local function countIn(needle)
-        local count, pos = 0, 1
-        while true do
-            local p = text_lower:find(needle, pos, true)
-            if not p then break end
-            count = count + 1
-            pos = p + math.max(1, #needle)
+        local escaped = needle:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1")
+        local pattern = escaped
+        if #needle < 4 then
+            pattern = "%f[%w]" .. escaped .. "%f[%W]"
         end
-        return count
-    end
-
-    -- Frequency-ratio guard: if a candidate term appears 5× more often than the
-    -- entity's full name, it is too generic to be a meaningful identifier.
-    -- This is language-agnostic — "The", "Le", "Der" all fail naturally.
-    -- The minimum is 3 chars (not 4) so short but valid names like "Ada" or
-    -- "Jon" are still evaluated by the ratio rather than hard-rejected.
-    local name_freq = math.max(1, countIn(name_lower))
-    local function isTooGeneric(term)
-        if #term < 3 then return true end
-        return countIn(term) > name_freq * 5
+        local _, n = text_lower:gsub(pattern, "")
+        return n
     end
 
     -- Honorifics: fast-path blocklist for known titles.
@@ -865,13 +876,29 @@ function ChapterAnalyzer:findMentionsInChapter(ui, entity, toc_entry, next_toc_e
     -- 3-char ones (mr., mrs, sir, dr., etc.) need explicit listing since they
     -- can have plausible frequency ratios in heavily character-focused chapters.
     local honorifics = {
-        ["mr."] = true, ["mrs"] = true, ["ms."] = true, ["sir"] = true,
-        ["dr."] = true, ["rev"] = true, ["rev."] = true, ["lt."] = true,
-        ["col"] = true, ["col."] = true, ["sgt"] = true, ["sgt."] = true,
-        ["gen"] = true, ["gen."] = true, ["miss"] = true, ["lord"] = true,
-        ["lady"] = true, ["dame"] = true, ["prof"] = true, ["prof."] = true,
-        ["capt"] = true, ["capt."] = true,
+        ["mr"] = true, ["mr."] = true, ["mrs"] = true, ["mrs."] = true, ["ms"] = true, ["ms."] = true,
+        ["dr"] = true, ["dr."] = true, ["sir"] = true, ["rev"] = true, ["rev."] = true, ["lt"] = true, ["lt."] = true,
+        ["col"] = true, ["col."] = true, ["sgt"] = true, ["sgt."] = true, ["gen"] = true, ["gen."] = true,
+        ["miss"] = true, ["lord"] = true, ["lady"] = true, ["dame"] = true, ["prof"] = true, ["prof."] = true,
+        ["capt"] = true, ["capt."] = true, ["st"] = true, ["st."] = true, ["jr"] = true, ["jr."] = true,
+        
+        -- International
+        ["m"] = true, ["m."] = true, ["mme"] = true, ["mme."] = true, ["mlle"] = true, ["mlle."] = true, ["mgr"] = true,
+        ["herr"] = true, ["frau"] = true, ["hr"] = true, ["hr."] = true, ["fr"] = true, ["fr."] = true,
+        ["sr"] = true, ["sr."] = true, ["sra"] = true, ["sra."] = true, ["don"] = true, ["dona"] = true, ["doña"] = true,
+        ["bey"] = true, ["hanım"] = true,
+        ["пан"] = true, ["пані"] = true, ["г-н"] = true, ["г-жа"] = true,
     }
+
+    -- Frequency-ratio guard: if a candidate term appears 5× more often than the
+    -- entity's full name, it is too generic to be a meaningful identifier.
+    -- This is language-agnostic — "The", "Le", "Der" all fail naturally.
+    local name_freq = math.max(1, countIn(name_lower))
+    local function isTooGeneric(term)
+        local term_l = term:lower()
+        if #term < 2 or honorifics[term_l] then return true end
+        return countIn(term_l) > name_freq * 5
+    end
 
     -- Always start with the full name
     local terms = { { s = name_lower, l = #name_lower } }
@@ -913,8 +940,15 @@ function ChapterAnalyzer:findMentionsInChapter(ui, entity, toc_entry, next_toc_e
     local pos = 1
 
     -- Pre-calculate the first match position for each term
+    -- For short terms (< 4 chars), enforce word boundaries
     for _, t in ipairs(terms) do
-        t.next_p = text_lower:find(t.s, pos, true)
+        if t.l < 4 then
+            local safe_s = t.s:gsub("([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1")
+            t.pattern = "%f[%w]" .. safe_s .. "%f[%W]"
+            t.next_p = text_lower:find(t.pattern, pos)
+        else
+            t.next_p = text_lower:find(t.s, pos, true)
+        end
     end
 
 
@@ -959,7 +993,11 @@ function ChapterAnalyzer:findMentionsInChapter(ui, entity, toc_entry, next_toc_e
         -- Update ONLY the term we just found. Others are still valid if their next_p >= pos.
         for _, t in ipairs(terms) do
             if not t.next_p or t.next_p < pos then
-                t.next_p = text_lower:find(t.s, pos, true)
+                if t.pattern then
+                    t.next_p = text_lower:find(t.pattern, pos)
+                else
+                    t.next_p = text_lower:find(t.s, pos, true)
+                end
             end
         end
 

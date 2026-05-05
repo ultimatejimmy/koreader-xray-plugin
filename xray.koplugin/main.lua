@@ -581,14 +581,14 @@ function XRayPlugin:getSubMenuItems()
             keep_menu_open = true,
             sub_item_table = {
                 {
-                    text = self.loc:t("spoiler_preference_title") or "Spoiler Settings",
+                    text = self.loc:t("menu_auto_update_frequency") or "Auto X-Ray Settings",
                     keep_menu_open = true,
-                    callback = function() self:showSpoilerSettings() end,
+                    callback = function() self:showAutoUpdateSettings() end,
                 },
                 {
-                    text = self.loc:t("mentions_setting_title") or "Mentions Settings",
+                    text = self.loc:t("menu_desc_length_settings") or "Description Length Settings",
                     keep_menu_open = true,
-                    callback = function() self:showMentionsSettings() end,
+                    callback = function() self:showDescriptionLengthSettings() end,
                 },
                 {
                     text = self.loc:t("menu_linked_entries_settings") or "Linked Entries Settings",
@@ -596,14 +596,20 @@ function XRayPlugin:getSubMenuItems()
                     callback = function() self:showLinkedEntriesSettings() end,
                 },
                 {
-                    text = self.loc:t("menu_auto_update_frequency") or "Auto X-Ray Settings",
+                    text = self.loc:t("mentions_setting_title") or "Mentions Settings",
                     keep_menu_open = true,
-                    callback = function() self:showAutoUpdateSettings() end,
+                    callback = function() self:showMentionsSettings() end,
+                },
+                {
+                    text = self.loc:t("spoiler_preference_title") or "Spoiler Settings",
+                    keep_menu_open = true,
+                    callback = function() self:showSpoilerSettings() end,
                 },
                 {
                     text = self.loc:t("menu_xray_mode"),
                     keep_menu_open = true,
                     callback = function() self:toggleXRayMode() end,
+                    separator = true,
                 },
                 {
                     text = self.loc:t("menu_language") or "Language",

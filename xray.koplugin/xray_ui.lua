@@ -264,7 +264,7 @@ function M:showCharacters()
 
     local items = {
         { text = "⌕ " .. self.loc:t("search_character"), callback = function() self:showCharacterSearch() end },
-        { text = "⇄ " .. (self.loc:t("merge_duplicates") or "Merge Duplicates..."), callback = function() self:showMergeFlow(self.characters, "characters") end },
+        { text = "⋈ " .. (self.loc:t("merge_duplicates") or "Merge Duplicates..."), callback = function() self:showMergeFlow(self.characters, "characters") end },
         { text = "✚ " .. (self.loc:t("menu_fetch_more_chars") or "Fetch More Characters"), keep_menu_open = true, callback = function() self:fetchMoreCharacters() end, separator = true },
     }
     for _, char in ipairs(self.characters) do
@@ -311,12 +311,18 @@ function M:findRelatedEntities(text, exclude_name)
     -- 3-char titles (mr., mrs, sir, dr., etc.) are listed here since they can
     -- have plausible frequency ratios in densely character-focused descriptions.
     local honorifics = {
-        ["mr."] = true, ["mrs"] = true, ["ms."] = true, ["sir"] = true,
-        ["dr."] = true, ["rev"] = true, ["rev."] = true, ["lt."] = true,
-        ["col"] = true, ["col."] = true, ["sgt"] = true, ["sgt."] = true,
-        ["gen"] = true, ["gen."] = true, ["miss"] = true, ["lord"] = true,
-        ["lady"] = true, ["dame"] = true, ["prof"] = true, ["prof."] = true,
-        ["capt"] = true, ["capt."] = true,
+        ["mr"] = true, ["mr."] = true, ["mrs"] = true, ["mrs."] = true, ["ms"] = true, ["ms."] = true,
+        ["dr"] = true, ["dr."] = true, ["sir"] = true, ["rev"] = true, ["rev."] = true, ["lt"] = true, ["lt."] = true,
+        ["col"] = true, ["col."] = true, ["sgt"] = true, ["sgt."] = true, ["gen"] = true, ["gen."] = true,
+        ["miss"] = true, ["lord"] = true, ["lady"] = true, ["dame"] = true, ["prof"] = true, ["prof."] = true,
+        ["capt"] = true, ["capt."] = true, ["st"] = true, ["st."] = true, ["jr"] = true, ["jr."] = true,
+        
+        -- International
+        ["m"] = true, ["m."] = true, ["mme"] = true, ["mme."] = true, ["mlle"] = true, ["mlle."] = true, ["mgr"] = true,
+        ["herr"] = true, ["frau"] = true, ["hr"] = true, ["hr."] = true, ["fr"] = true, ["fr."] = true,
+        ["sr"] = true, ["sr."] = true, ["sra"] = true, ["sra."] = true, ["don"] = true, ["dona"] = true, ["doña"] = true,
+        ["bey"] = true, ["hanım"] = true,
+        ["пан"] = true, ["пані"] = true, ["г-н"] = true, ["г-жа"] = true,
     }
 
     -- Frequency-ratio guard: if a candidate term appears 5× more often than the
@@ -325,13 +331,18 @@ function M:findRelatedEntities(text, exclude_name)
     -- one-word aliases will all fail this test naturally.
     local function countInText(term)
         local escaped = term:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1")
-        local _, n = lower_text:gsub(escaped, "")
+        local pattern = escaped
+        if #term < 4 then
+            pattern = "%f[%w]" .. escaped .. "%f[%W]"
+        end
+        local _, n = lower_text:gsub(pattern, "")
         return n
     end
     local function isTooGeneric(term, entity_name)
-        if #term < 3 then return true end
+        local term_l = term:lower()
+        if #term < 2 or honorifics[term_l] then return true end
         local name_freq = math.max(1, countInText(entity_name:lower()))
-        return countInText(term) > name_freq * 5
+        return countInText(term_l) > name_freq * 5
     end
 
     -- Check if a term appears in the text surrounded by non-word characters.
@@ -1020,6 +1031,119 @@ function M:showSpoilerSettings()
     showSettings()
 end
 
+function M:showDescriptionLengthSettings()
+    local menu_items = {
+        {
+            text = self.loc:t("menu_characters"),
+            callback = function() self:showEntityLengthPresets("char_desc_len", self.loc:t("menu_characters")) end,
+        },
+        {
+            text = self.loc:t("menu_locations"),
+            callback = function() self:showEntityLengthPresets("loc_desc_len", self.loc:t("menu_locations")) end,
+        },
+        {
+            text = self.loc:t("menu_timeline"),
+            callback = function() self:showEntityLengthPresets("timeline_event_len", self.loc:t("menu_timeline"), true) end,
+        },
+        {
+            text = self.loc:t("menu_historical_figures"),
+            callback = function() self:showEntityLengthPresets("hist_fig_bio_len", self.loc:t("menu_historical_figures")) end,
+        },
+    }
+
+    local menu = Menu:new{
+        title = self.loc:t("menu_desc_length_settings"),
+        item_table = menu_items,
+    }
+    UIManager:show(menu)
+end
+
+function M:showEntityLengthPresets(setting_key, entity_name, is_timeline)
+    local info_dialog
+
+    local function showSettings()
+        if info_dialog then UIManager:close(info_dialog) end
+
+        local s = self.ai_helper and self.ai_helper.settings or {}
+        local defaults = {
+            char_desc_len    = 200,
+            loc_desc_len     = 100,
+            timeline_event_len = 80,
+            hist_fig_bio_len = 100,
+        }
+        local current_val = s[setting_key] or (is_timeline and 80 or defaults[setting_key] or 100)
+
+        local presets = {
+            { name = self.loc:t("desc_len_short"),      val = is_timeline and 50  or (setting_key == "char_desc_len" and 80  or 50)  },
+            { name = self.loc:t("desc_len_default"),    val = is_timeline and 80  or (setting_key == "char_desc_len" and 200 or 100) },
+            { name = self.loc:t("desc_len_detailed"),   val = is_timeline and 150 or (setting_key == "char_desc_len" and 350 or 200) },
+            { name = self.loc:t("desc_len_v_detailed"), val = is_timeline and 200 or (setting_key == "char_desc_len" and 500 or 300) },
+        }
+
+        local buttons = {}
+        for _, p in ipairs(presets) do
+            local label = (current_val == p.val and "[✓] " or "[  ] ") .. p.name
+            local pval = p.val
+            table.insert(buttons, {{
+                text = label,
+                align = "left",
+                callback = function()
+                    if self.ai_helper then
+                        local updates = {}
+                        updates[setting_key] = pval
+                        self.ai_helper:saveSettings(updates)
+                    end
+                    UIManager:nextTick(function() showSettings() end)
+                end,
+            }})
+        end
+
+        -- About text varies by entity type
+        local about_text
+        if is_timeline then
+            about_text = self.loc:t("desc_len_about_timeline") or
+                "TIMELINE — ONE EVENT PER CHAPTER (always)\n\nTimeline always has exactly one entry per chapter. This setting only affects how much detail is included in each summary.\n\n• Short (~50 chars): Brief one-phrase summary.\n• Default (~80 chars): Standard summary.\n• Detailed (~150 chars): Includes context and consequences.\n• Very Detailed (~200 chars): Full narrative description.\n\nThere is no count trade-off for the timeline."
+        elseif setting_key == "char_desc_len" then
+            about_text = self.loc:t("desc_len_about_chars") or
+                "CHARACTER DESCRIPTIONS\n\n• Short (~80 chars): Name, role, and a brief note.\n• Default (~200 chars): Standard analysis.\n• Detailed (~350 chars): Rich character study with traits and motivations.\n• Very Detailed (~500 chars): Deep analysis.\n\nTRADE-OFF\nLonger descriptions → fewer characters returned during initial/full fetches. Subsequent 'Fetch More' runs are unaffected."
+        elseif setting_key == "loc_desc_len" then
+            about_text = self.loc:t("desc_len_about_locs") or
+                "LOCATION DESCRIPTIONS\n\n• Short (~50 chars): Place name and one-line context.\n• Default (~100 chars): Standard description.\n• Detailed (~200 chars): Atmosphere, significance, and events.\n• Very Detailed (~300 chars): Full description.\n\nTRADE-OFF\nLonger descriptions → fewer locations returned during initial/full fetches."
+        else
+            about_text = self.loc:t("desc_len_about_hist") or
+                "HISTORICAL FIGURE BIOGRAPHIES\n\n• Short (~50 chars): Name and primary role.\n• Default (~100 chars): Standard biography.\n• Detailed (~200 chars): Life, significance, and book context.\n• Very Detailed (~300 chars): Comprehensive biography.\n\nTRADE-OFF\nLonger biographies → fewer historical figures returned during initial/full fetches."
+        end
+
+        table.insert(buttons, {
+            {
+                text = self.loc:t("menu_about") or "About",
+                callback = function()
+                    UIManager:show(InfoMessage:new{
+                        text = about_text,
+                        timeout = 120,
+                    })
+                end,
+            },
+            {
+                text = self.loc:t("close") or "Close",
+                callback = function()
+                    UIManager:close(info_dialog)
+                end,
+            },
+        })
+
+        info_dialog = ButtonDialog:new{
+            title = entity_name .. " — " .. (self.loc:t("menu_desc_length_settings") or "Description Length"),
+            buttons = buttons,
+        }
+        UIManager:show(info_dialog)
+    end
+
+    showSettings()
+end
+
+
+
 function M:showAuthorInfo()
     if not self.author_info or not self.author_info.description or self.author_info.description == "" or self.author_info.description == (self.loc:t("msg_no_bio") or "No biography available.") then
         local ButtonDialog = require("ui/widget/buttondialog")
@@ -1037,7 +1161,7 @@ function M:showLocations()
         return 
     end
     local items = {
-        { text = "⇄ " .. (self.loc:t("merge_duplicates") or "Merge Duplicates..."), callback = function() self:showMergeFlow(self.locations, "locations") end, separator = true },
+        { text = "⋈ " .. (self.loc:t("merge_duplicates") or "Merge Duplicates..."), callback = function() self:showMergeFlow(self.locations, "locations") end, separator = true },
     }
     for _, loc in ipairs(self.locations) do 
         if type(loc) == "table" then

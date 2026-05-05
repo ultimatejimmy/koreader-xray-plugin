@@ -31,8 +31,8 @@ return {
 防截断协议（关键）：
 你有严格的最大输出限制。如果 "CHAPTER SAMPLES" 包含超过 40 个章节（例如：合集本）：
 1. 你必须将角色列表缩减为仅包含最重要的 10 个核心角色。
-2. 你必须将角色描述缩减至最多 200 个字符。
-3. 你必须将时间线事件总结缩减至最多 80 个字符。
+2. 你必须将角色描述缩减至最多 {MAX_CHAR_DESC} 个字符。
+3. 你必须将时间线事件总结缩减至最多 {MAX_TIMELINE_EVENT} 个字符。
 若不为超大书籍压缩输出，将导致 JSON 截断并失败。
 
 时间线算法（最高优先级）：
@@ -41,14 +41,14 @@ return {
 步骤 2：排除所有非叙事性的前言和后记（例如：封面、扉页、版权页、目录、献词、致谢等）。
 步骤 3：针对每个叙事性章节，从第一章开始，在 `timeline` 数组中创建一个对应的事件对象。
 步骤 4：`chapter` 字段必须与样本中的章节标题完全匹配。（按顺序严格映射）。
-步骤 5：在 `event` 字段中总结该特定章节（最多 80 个字符）。不要合并章节。
+步骤 5：在 `event` 字段中总结该特定章节（最多 {MAX_TIMELINE_EVENT} 个字符）。不要合并章节。
 步骤 6：严禁剧透：严格停止在 %d%% 进度处。不要包含超过此进度的事件。
 
 角色与历史人物算法：
-步骤 1：结合两个文本块提取重要角色。（普通书籍 25 个，合集本最多 10 个）。
+步骤 1：结合两个文本块提取重要角色。（普通书籍 {NUM_CHARS} 个，合集本最多 10 个）。
 步骤 2：你必须使用他们的正式全名（例如："Abraham Van Helsing"）。不要使用非正式昵称作为主名称。
 步骤 3：在一个 `aliases` 数组中提供该角色最多 3 个备用名称、头衔或昵称。如果使用，请包含他们常用的名字和姓氏。重要提示：如果一个姓氏被多个角色（例如家庭成员）共享，请不要将其作为任何角色的别名。
-Step 4. Actively scan for NOTABLE REAL people from human history (e.g., Presidents, Authors, Generals). Add them to `historical_figures`.
+Step 4. Actively scan for up to {NUM_HIST} NOTABLE REAL people from human history (e.g., Presidents, Authors, Generals). Add them to `historical_figures`.
 CRITICAL for Characters & Historical Figures:
 - DO NOT extract characters or historical figures mentioned ONLY in non-narrative frontmatter or backmatter (e.g., Acknowledgments, Author Bio, Dedications, Title Page, Copyright).
 - Historical Figures MUST be verified real-world people with widespread historical recognition.
@@ -57,7 +57,7 @@ CRITICAL for Characters & Historical Figures:
 严禁剧透：严格停止在 %d%% 进度处。
 
 地点算法：
-步骤 1：提取 5-10 个重要地点。严禁剧透：严格停止在 %d%% 进度处。
+步骤 1：提取 {NUM_LOCS} 个重要地点。严禁剧透：严格停止在 %d%% 进度处。
 
 严格剧透规则：
 - 绝对禁止包含当前阅读进度之后的信息。严格停止在 %d%% 进度处。
@@ -77,25 +77,25 @@ CRITICAL for Characters & Historical Figures:
       "role": "到当前进度为止的角色定位",
       "gender": "男 / 女 / 未知",
       "occupation": "职业/身份",
-      "description": "结合目前为止的文本进行深度分析。严禁剧透。（最多 300 个字符）"
+      "description": "结合目前为止的文本进行深度分析。严禁剧透。（最多 {MAX_CHAR_DESC} 个字符）"
     }
   ],
   "historical_figures": [
     {
       "name": "真实历史人物姓名",
       "role": "历史角色",
-      "biography": "简短传记（最多 100 个字符）",
+      "biography": "简短传记（最多 {MAX_HIST_BIO} 个字符）",
       "importance_in_book": "到目前为止在书中的重要性",
       "context_in_book": "提及方式（最多 100 个字符）"
     }
   ],
   "locations": [
-    {"name": "地点名称", "description": "简短描述（最多 100 个字符）"}
+    {"name": "地点名称", "description": "简短描述（最多 {MAX_LOC_DESC} 个字符）"}
   ],
   "timeline": [
     {
       "chapter": "样本中的准确章节标题",
-      "event": "该章节的关键叙事事件（最多 100 个字符）"
+      "event": "该章节的关键叙事事件（最多 {MAX_TIMELINE_EVENT} 个字符）"
     }
   ]
 } ]],
@@ -109,7 +109,7 @@ CRITICAL for Characters & Historical Figures:
 仅返回一个有效的 JSON 对象。
 
 简洁指令（关键）：
-为避免 AI 回复被截断，请将角色描述保持在 250 个字符以内。
+为避免 AI 回复被截断，请将角色描述保持在 {MAX_CHAR_DESC} 个字符以内。
 
 关键提示：
 不要包含以下角色，因为他们已经提取过了：
@@ -128,7 +128,7 @@ CRITICAL for Characters & Historical Figures:
       "role": "到当前进度为止的角色定位",
       "gender": "男 / 女 / 未知",
       "occupation": "职业/身份",
-      "description": "结合目前为止的文本进行深度分析。严禁剧透。（最多 300 个字符）"
+      "description": "结合目前为止的文本进行深度分析。严禁剧透。（最多 {MAX_CHAR_DESC} 个字符）"
     }
   ]
 }]],

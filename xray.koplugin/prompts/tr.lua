@@ -30,9 +30,9 @@ Bu istemin sonunda sağlanan iki metin bloğunu işliyorsunuz:
 
 ANTI-TRUNCATION PROTOKOLÜ (KRİTİK):
 Katı bir maksimum çıktı sınırınız var. Eğer "CHAPTER SAMPLES" 40'tan FAZLA bölüm içeriyorsa (örn. bir omnibus baskısı):
-1. Karakter listesini SADECE en önemli ilk 10 karakterle sınırlamalısınız.
-2. Karakter açıklamalarını MAKSİMUM 200 karakterle sınırlamalısınız.
-3. Zaman çizelgesi olay özetlerini MAKSİMUM 80 karakterle sınırlamalısınız.
+1. Karakter listesini SADECE en önemli ilk {NUM_CHARS} karakterle sınırlamalısınız.
+2. Karakter açıklamalarını MAKSİMUM {MAX_CHAR_DESC} karakterle sınırlamalısınız.
+3. Zaman çizelgesi olay özetlerini MAKSİMUM {MAX_TIMELINE_EVENT} karakterle sınırlamalısınız.
 Çıktınızı devasa kitaplar için sıkıştırmazsanız, JSON kesilecek ve hata verecektir.
 
 ZAMAN ÇİZELGESİ İÇİN ALGORİTMA (EN YÜKSEK ÖNCELİK):
@@ -41,14 +41,14 @@ Adım 1. SADECE "CHAPTER SAMPLES" bloğuna bak. Anlatı bölümlerini belirle.
 Adım 2. Anlatı olmayan tüm ön madde ve arka maddeleri HARİÇ TUT (örn., Kapak, Başlık Sayfası, Telif Hakkı, İçindekiler, İthaf, Teşekkür, Ayrıca Yazan).
 Adım 3. Her anlatı bölümü için, en ilk bölümden başlayarak, `timeline` dizisinde TAM OLARAK BİR olay objesi oluştur.
 Adım 4. `chapter` alanı, örnekteki bölüm başlığıyla tam olarak eşleşmelidir. (Bunları kesinlikle sıralı düzende eşle).
-Adım 5. Bu özel bölümü `event` alanında özetle (MAKS 80 karakter). Bölümleri GRUPLANDIRMA.
+Adım 5. Bu özel bölümü `event` alanında özetle (MAKS {MAX_TIMELINE_EVENT} karakter). Bölümleri GRUPLANDIRMA.
 Adım 6. SPOILER YOK: Tam olarak %%%d noktasında dur. Bu ilerlemeden sonraki olayları dahil etme.
 
 KARAKTERLER VE TARİHİ KİŞİLER İÇİN ALGORİTMA:
-Adım 1. Her iki metin bloğunu da kullanarak önemli karakterleri çıkar. (Normalde 25, omnibus ise MAKSİMUM 10).
+Adım 1. Her iki metin bloğunu da kullanarak önemli karakterleri çıkar. (Normalde {NUM_CHARS}, omnibus ise MAKSİMUM 10).
 Adım 2. Karakterlerin TAM resmi isimlerini kullanmalısın (örn. "Abraham Van Helsing"). Gündelik takma adları ana isim olarak kullanma.
 Adım 3. Bu karakterin bilindiği 3 adede kadar alternatif isim, unvan veya takma adı bir `aliases` dizisinde sağla. Kullanılıyorsa ortak adlarını ve soyadlarını dahil et. ÖNEMLİ: Eğer bir soyadı birden fazla karakter (örn. aile üyeleri) tarafından paylaşılıyorsa, bunu hiçbir karakter için bir takma ad olarak dahil ETME.
-Step 4. Actively scan for NOTABLE REAL people from human history (e.g., Presidents, Authors, Generals). Add them to `historical_figures`.
+Step 4. Actively scan for up to {NUM_HIST} NOTABLE REAL people from human history (e.g., Presidents, Authors, Generals). Add them to `historical_figures`.
 CRITICAL for Characters & Historical Figures:
 - DO NOT extract characters or historical figures mentioned ONLY in non-narrative frontmatter or backmatter (e.g., Acknowledgments, Author Bio, Dedications, Title Page, Copyright).
 - Historical Figures MUST be verified real-world people with widespread historical recognition.
@@ -57,7 +57,7 @@ CRITICAL for Characters & Historical Figures:
 SPOILER YOK: Tam olarak %%%d noktasında dur.
 
 MEKANLAR İÇİN ALGORİTMA:
-Adım 1. 5-10 önemli mekanı çıkar. SPOILER YOK: Tam olarak %%%d noktasında dur.
+Adım 1. {NUM_LOCS} önemli mekanı çıkar. SPOILER YOK: Tam olarak %%%d noktasında dur.
 
 KESİN SPOILER KURALLARI:
 - Mevcut okuma ilerlemesinden sonrası hakkında KESİNLİKLE hiçbir bilgi verme. Tam olarak %%%d noktasında dur.
@@ -77,25 +77,25 @@ GEREKLİ JSON FORMATI:
       "role": "Mevcut ilerlemeye kadar olan rolü",
       "gender": "Erkek / Kadın / Bilinmiyor",
       "occupation": "Meslek/Durum",
-      "description": "Şu ana kadarki metinden detaylarla derin analiz. SPOILER YOK. (Maks 200 karakter)"
+      "description": "Şu ana kadarki metinden detaylarla derin analiz. SPOILER YOK. (Maks {MAX_CHAR_DESC} karakter)"
     }
   ],
   "historical_figures": [
     {
       "name": "Gerçek Tarihi Kişi Adı",
       "role": "Tarihi Rolü",
-      "biography": "Kısa biyografi (MAKS 100 karakter)",
+      "biography": "Kısa biyografi (MAKS {MAX_HIST_BIO} karakter)",
       "importance_in_book": "Mevcut ilerlemeye kadar olan önemi",
       "context_in_book": "Nasıl bahsediliyor (MAKS 100 karakter)"
     }
   ],
   "locations": [
-    {"name": "Mekan Adı", "description": "Kısa açıklama (MAKS 100 karakter)"}
+    {"name": "Mekan Adı", "description": "Kısa açıklama (MAKS {MAX_LOC_DESC} karakter)"}
   ],
   "timeline": [
     {
       "chapter": "Örneklerdeki Tam Bölüm Başlığı",
-      "event": "Bu bölümdeki temel anlatı olayı (Maks 100 karakter)"
+      "event": "Bu bölümdeki temel anlatı olayı (Maks {MAX_TIMELINE_EVENT} karakter)"
     }
   ]
 } ]],
@@ -109,7 +109,7 @@ GÖREV: Metinden TAM OLARAK 10 EK önemli karakter çıkar.
 SADECE geçerli bir JSON objesi döndür.
 
 ÖZET MANDATI (KRİTİK):
-AI yanıtının kesilmesini önlemek için karakter açıklamalarını 250 karakterin altında tutun.
+AI yanıtının kesilmesini önlemek için karakter açıklamalarını {MAX_CHAR_DESC} karakterin altında tutun.
 
 KRİTİK TALİMAT:
 Daha önceden çıkarıldıkları için aşağıdaki karakterleri KESİNLİKLE dahil etme:
@@ -128,7 +128,7 @@ GEREKLİ JSON FORMATI:
       "role": "Mevcut ilerlemeye kadar olan rolü",
       "gender": "Erkek / Kadın / Bilinmiyor",
       "occupation": "Meslek/Durum",
-      "description": "Şu ana kadarki metinden detaylarla derin analiz. SPOILER YOK. (Maks 300 karakter)"
+      "description": "Şu ana kadarki metinden detaylarla derin analiz. SPOILER YOK. (Maks {MAX_CHAR_DESC} karakter)"
     }
   ]
 }]],

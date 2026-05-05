@@ -694,6 +694,12 @@ function AIHelper:loadSettings()
     if not settings.gemini_primary_model then settings.gemini_primary_model = self.providers.gemini.primary_model end
     if not settings.gemini_secondary_model then settings.gemini_secondary_model = self.providers.gemini.secondary_model end
     if not settings.chatgpt_model then settings.chatgpt_model = self.providers.chatgpt.model end
+
+    -- Description length defaults (chars per entity type)
+    if not settings.char_desc_len     then settings.char_desc_len     = 200 end
+    if not settings.loc_desc_len      then settings.loc_desc_len      = 100 end
+    if not settings.timeline_event_len then settings.timeline_event_len = 80  end
+    if not settings.hist_fig_bio_len  then settings.hist_fig_bio_len  = 100 end
     
     -- Migration to unified Primary and Secondary AI logic
     if type(settings.primary_ai) ~= "table" or type(settings.secondary_ai) ~= "table" then
@@ -859,7 +865,8 @@ function AIHelper:createPrompt(title, author, context, section_name, targeted_wo
         if context.annotations then extra_context = extra_context .. "\n\nUSER HIGHLIGHTS:\n" .. context.annotations end
         -- Merge mode: tell AI what we already know
         local has_merge_data = false
-        local merge_instructions = "\n\nMERGE MODE INSTRUCTIONS:\nYou are UPDATING an existing X-Ray.\n- For entities (Characters, Locations, Historical Figures) that already exist, synthesize a completely rewritten, cohesive summary combining the EXISTING KNOWLEDGE with any new information found in the text.\n- Write a solid summary that is not repetitive.\n- Descriptions MUST NOT exceed 500 characters.\n- If there is no new information, return the existing description (or a refined version of it under 500 characters)."
+        local _merge_char_len = (self.settings and self.settings.char_desc_len) or 200
+        local merge_instructions = "\n\nMERGE MODE INSTRUCTIONS:\nYou are UPDATING an existing X-Ray.\n- For entities (Characters, Locations, Historical Figures) that already exist, synthesize a completely rewritten, cohesive summary combining the EXISTING KNOWLEDGE with any new information found in the text.\n- Write a solid summary that is not repetitive.\n- Descriptions MUST NOT exceed " .. tostring(_merge_char_len) .. " characters.\n- If there is no new information, return the existing description (or a refined version of it under " .. tostring(_merge_char_len) .. " characters)."
         
         if context.existing_characters and #context.existing_characters > 0 then
             local existing_lines = {}
@@ -929,6 +936,30 @@ function AIHelper:createPrompt(title, author, context, section_name, targeted_wo
     end
     if not success then final_prompt = string.format("Extract %s data.", section_name) end
     if #extra_context > 0 then final_prompt = final_prompt .. extra_context end
+
+    -- Inject dynamic description-length placeholders.
+    -- These replace {MAX_CHAR_DESC}, {NUM_CHARS}, etc. in all prompt templates so
+    -- the user's Description Length setting is honoured without needing separate
+    -- per-language prompt edits for numeric values.
+    do
+        local s = self.settings or {}
+        local char_len  = math.max(100, math.min(500, s.char_desc_len     or 200))
+        local loc_len   = math.max(50,  math.min(300, s.loc_desc_len      or 100))
+        local tl_len    = math.max(50,  math.min(200, s.timeline_event_len or 80))
+        local hist_len  = math.max(50,  math.min(400, s.hist_fig_bio_len  or 100))
+        -- Count scaling: inversely proportional to description length, with floor/cap.
+        local num_chars = math.min(40, math.max(10, math.floor(25 * 200 / char_len)))
+        local num_locs  = math.min(20, math.max(3,  math.floor(8  * 100 / loc_len)))
+        local num_hist  = math.min(15, math.max(3,  math.floor(8  * 100 / hist_len)))
+        final_prompt = final_prompt
+            :gsub("{MAX_CHAR_DESC}",    tostring(char_len))
+            :gsub("{NUM_CHARS}",        tostring(num_chars))
+            :gsub("{MAX_LOC_DESC}",     tostring(loc_len))
+            :gsub("{NUM_LOCS}",         tostring(num_locs))
+            :gsub("{MAX_TIMELINE_EVENT}",tostring(tl_len))
+            :gsub("{MAX_HIST_BIO}",     tostring(hist_len))
+            :gsub("{NUM_HIST}",         tostring(num_hist))
+    end
 
     -- Strip invalid UTF-8 introduced by byte-based truncation of multi-byte
     -- text (Cyrillic, CJK, curly quotes, etc.) before the prompt is JSON-encoded.

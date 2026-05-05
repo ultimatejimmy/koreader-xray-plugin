@@ -97,7 +97,7 @@ function LookupManager:lookupAll(text)
         
         -- Contains / Contained (Pass 2 & 3 combined)
         local function checkContains(text_norm)
-            if not text_norm or #text_norm < 3 then return false end
+            if not text_norm or #text_norm < 2 then return false end
             return query:find(text_norm, 1, true) or text_norm:find(query, 1, true)
         end
 

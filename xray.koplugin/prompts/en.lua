@@ -31,8 +31,8 @@ You are processing a massive document with two text blocks provided at the end o
 ANTI-TRUNCATION PROTOCOL (CRITICAL):
 You have a strict maximum output limit. If the "CHAPTER SAMPLES" contains MORE THAN 40 chapters (e.g., an omnibus edition):
 1. You MUST reduce the characters list to ONLY the top 10 absolute most important characters.
-2. You MUST reduce character descriptions to MAX 200 characters.
-3. You MUST reduce timeline event summaries to MAX 80 characters.
+2. You MUST reduce character descriptions to MAX {MAX_CHAR_DESC} characters.
+3. You MUST reduce timeline event summaries to MAX {MAX_TIMELINE_EVENT} characters.
 Failure to compress your output for massive books will cause the JSON to truncate and fail.
 
 ALGORITHM FOR TIMELINE (HIGHEST PRIORITY):
@@ -41,14 +41,14 @@ Step 1. Look ONLY at the "CHAPTER SAMPLES" block. Identify the narrative chapter
 Step 2. EXCLUDE all non-narrative frontmatter and backmatter (e.g., Cover, Title Page, Copyright, Table of Contents, Dedication, Acknowledgments, Also By).
 Step 3. For each narrative chapter, starting from the very first one, create EXACTLY ONE event object in the `timeline` array.
 Step 4. The `chapter` field MUST exactly match the chapter header in the sample. (Map them strictly in sequential order).
-Step 5. Summarize that specific chapter in the `event` field (MAX 80 chars). Do NOT group chapters.
+Step 5. Summarize that specific chapter in the `event` field (MAX {MAX_TIMELINE_EVENT} chars). Do NOT group chapters.
 Step 6. NO SPOILERS: Stop exactly at the %d%% mark. Do not include events past this progress.
 
 ALGORITHM FOR CHARACTERS & HISTORICAL FIGURES:
-Step 1. Extract important characters using both text blocks. (25 normal, MAX 10 if omnibus).
+Step 1. Extract important characters using both text blocks. ({NUM_CHARS} normal, MAX 10 if omnibus).
 Step 2. You MUST use their FULL, formal names (e.g., "Abraham Van Helsing"). Do NOT use casual nicknames as the main name.
 Step 3. Provide up to 3 alternative names, titles, or nicknames this character goes by in an `aliases` array. Include their common first name and last name if used. IMPORTANT: If a last name is shared by multiple characters (e.g., family members), DO NOT include it as an alias for either character.
-Step 4. Actively scan for NOTABLE REAL people from human history (e.g., Presidents, Authors, Generals). Add them to `historical_figures`.
+Step 4. Actively scan for up to {NUM_HIST} NOTABLE REAL people from human history (e.g., Presidents, Authors, Generals). Add them to `historical_figures`.
 CRITICAL for Characters & Historical Figures:
 - DO NOT extract characters or historical figures mentioned ONLY in non-narrative frontmatter or backmatter (e.g., Acknowledgments, Author Bio, Dedications, Title Page, Copyright).
 - Historical Figures MUST be verified real-world people with widespread historical recognition.
@@ -57,7 +57,7 @@ CRITICAL for Characters & Historical Figures:
 NO SPOILERS: Stop exactly at the %d%% mark.
 
 ALGORITHM FOR LOCATIONS:
-Step 1. Extract 5-10 significant locations. NO SPOILERS: Stop exactly at the %d%% mark.
+Step 1. Extract {NUM_LOCS} significant locations. NO SPOILERS: Stop exactly at the %d%% mark.
 
 STRICT SPOILER RULES:
 - ABSOLUTELY NO information from after the current reading progress. Stop exactly at the %d%% mark.
@@ -77,25 +77,25 @@ REQUIRED JSON FORMAT:
       "role": "Role up to current progress",
       "gender": "Male / Female / Unknown",
       "occupation": "Job/Status",
-      "description": "Deep analysis with details from the text so far. NO SPOILERS. (Max 200 chars)"
+      "description": "Deep analysis with details from the text so far. NO SPOILERS. (Max {MAX_CHAR_DESC} chars)"
     }
   ],
   "historical_figures": [
     {
       "name": "Real Historical Person Name",
       "role": "Historical Role",
-      "biography": "Short biography (MAX 100 chars)",
+      "biography": "Short biography (MAX {MAX_HIST_BIO} chars)",
       "importance_in_book": "Significance up to current progress",
       "context_in_book": "How they are mentioned (MAX 100 chars)"
     }
   ],
   "locations": [
-    {"name": "Place Name", "description": "Short desc (MAX 100 chars)"}
+    {"name": "Place Name", "description": "Short desc (MAX {MAX_LOC_DESC} chars)"}
   ],
   "timeline": [
     {
       "chapter": "Exact Chapter Title from Samples",
-      "event": "Key narrative event from this chapter (Max 100 chars)"
+      "event": "Key narrative event from this chapter (Max {MAX_TIMELINE_EVENT} chars)"
     }
   ]
 } ]],
@@ -109,7 +109,7 @@ TASK: Extract EXACTLY 10 ADDITIONAL important characters from the text.
 Return ONLY a valid JSON object.
 
 CONCISENESS MANDATE (CRITICAL):
-To avoid AI response truncation, keep character descriptions under 250 characters.
+To avoid AI response truncation, keep character descriptions under {MAX_CHAR_DESC} characters.
 
 CRITICAL INSTRUCTION:
 Do NOT include any of the following characters, as they have already been extracted:
@@ -128,7 +128,7 @@ REQUIRED JSON FORMAT:
       "role": "Role up to current progress",
       "gender": "Male / Female / Unknown",
       "occupation": "Job/Status",
-      "description": "Deep analysis with details from the text so far. NO SPOILERS. (Max 300 chars)"
+      "description": "Deep analysis with details from the text so far. NO SPOILERS. (Max {MAX_CHAR_DESC} chars)"
     }
   ]
 }]],
@@ -137,9 +137,9 @@ REQUIRED JSON FORMAT:
     single_word_lookup = [[The user highlighted the word "%s".
 TASK: Determine if this word represents a Character, Location, or Historical Figure in the book.
 
-CRITICAL FOR CHARACTERS AND LOCATIONS: Use ONLY the provided "BOOK TEXT CONTEXT". Outside knowledge is strictly forbidden. Do not hallucinate.
+CRITICAL FOR CHARACTERS AND LOCATIONS: Use the provided "BOOK TEXT CONTEXT" to identify the entity. If the word is provided in a "SEARCH TARGET" or "DIRECT REFERENCE" hint, it IS present in the book at the current position. Do not reject it just because it isn't found exactly in the sub-sampled narrative text. Short names (as short as 2 letters, e.g. "Oz", "Al", "Jo") are valid and should be analyzed.
 CRITICAL FOR HISTORICAL FIGURES: You MAY use your internal knowledge to verify their identity and provide their biography/role, ONLY if they are a real, notable historical figure. You MUST still use the text context for their relevance in the book.
-If the word is NOT a character, location, or historical figure in the text, set `is_valid` to false.
+If the word is NOT a character, location, or historical figure, set `is_valid` to false.
 
 REQUIRED JSON FORMAT:
 {
@@ -172,7 +172,7 @@ Secondary Description: %s
 
 REQUIRED JSON FORMAT:
 {
-  "merged_description": "Combined and polished description (MAX 300 chars)"
+  "merged_description": "Combined and polished description (Max {MAX_CHAR_DESC} chars)"
 }]],
 
     -- Fallback strings

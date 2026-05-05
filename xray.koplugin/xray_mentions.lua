@@ -359,15 +359,11 @@ function M:buildMentionsMenuItems(entity)
             keep_menu_open = true,
             callback = function()
                 if is_scanning then return end
-                if self.mentions_menu then UIManager:close(self.mentions_menu) end
+                self:closeAllMenus()
                 
                 UIManager:nextTick(function()
-                    self:closeAllMenus()
-                    
-                    UIManager:nextTick(function()
-                        local Event = require("ui/event")
-                        self.ui:handleEvent(Event:new("GotoPage", pg))
-                    end)
+                    local Event = require("ui/event")
+                    self.ui:handleEvent(Event:new("GotoPage", pg))
                 end)
             end,
         })
