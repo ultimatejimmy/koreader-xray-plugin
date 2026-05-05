@@ -128,20 +128,20 @@ local function sanitize_utf8(s)
 end
 
 function AIHelper:getChatGPTTokenConfig(model)
-    -- Reasoning models (o1, o3) and newer generations (gpt-5+) require max_completion_tokens.
-    -- Modern standard models (gpt-4o, gpt-4o-mini) also support it and are the new standard.
-    if model:find("^o[13]") or model:find("^gpt%-5") or model:find("^gpt%-4") then
-        return "max_completion_tokens", 16384
-    end
-    -- DeepSeek reasoner and common reasoning model name patterns (for custom slots via OpenRouter etc.)
-    -- These models produce reasoning chains that consume the same token budget as the response,
-    -- so they need a much higher ceiling (DeepSeek's own default is 32k).
-    if model:find("reasoner") or model:find("%-r1") or model:find("/r1") then
+    -- OpenAI reasoning models (o1, o3) and newer generations (gpt-5+) REQUIRE max_completion_tokens.
+    -- Modern flagship models (gpt-4o, gpt-4o-mini) also support it.
+    if model:find("^o[13]") or model:find("^gpt%-5") or model:find("^gpt%-4o") then
         return "max_completion_tokens", 32000
     end
-    -- Raise the default from 8192 to 16384 — this is a ceiling, not a cost, so it's safe.
-    -- Gives standard unknown/custom models enough headroom for a full X-Ray JSON response.
-    return "max_completion_tokens", 16384
+    
+    -- DeepSeek (including R1/reasoner) and older GPT-4 models do NOT support max_completion_tokens 
+    -- in their official APIs and will return a 400 error. They require the standard max_tokens.
+    if model:find("reasoner") or model:find("deepseek") or model:find("%-r1") or model:find("/r1") then
+        return "max_tokens", 32000
+    end
+    
+    -- Raise the default from 8192 to 16384 for other models.
+    return "max_tokens", 16384
 end
 
 function AIHelper:setTrapWidget(trap_widget) self.trap_widget = trap_widget end
@@ -203,10 +203,10 @@ function AIHelper:buildComprehensiveRequest(title, author, context)
                     local effort_map = { low = 1024, medium = 2048, high = 4096, xhigh = 8192 }
                     local budget = effort_map[current_effort] or 2048
                     
-                    -- Gemini 1.5 Pro and 2.0 Flash have a hard output limit of 8,192 tokens.
+                    -- Gemini 1.5 Pro, 1.5 Flash, and 2.0 Flash have a hard output limit of 8,192 tokens.
                     -- Thinking tokens count against this, so we must leave room for the response.
-                    if (model:find("1%.5%-pro") or model:find("2%.0%-flash")) and budget > 2000 then
-                        self:log(string.format("AIHelper: Gemini %s detected — capping thinking budget from %d to 2000 (limit=8192)", model, budget))
+                    if (model:find("1%.5") or model:find("2%.0%-flash")) and budget > 2000 then
+                        self:log(string.format("AIHelper: Constrained Gemini %s detected — capping thinking budget from %d to 2000 (limit=8192)", model, budget))
                         budget = 2000
                         gen_config.maxOutputTokens = 8192
                     elseif model:find("2%.5") or model:find("3%.0") then
@@ -273,32 +273,47 @@ function AIHelper:buildComprehensiveRequest(title, author, context)
                 url = config.endpoint or "https://api.openai.com/v1/chat/completions"
                 headers = { ["Content-Type"] = "application/json", ["Authorization"] = "Bearer " .. config.api_key }
                 local system_instruction_text = self.prompts and self.prompts.system_instruction or "Return valid JSON ONLY."
+                local is_openai_reasoning = (model:find("^gpt%-5") or model:find("^o[13]"))
+                if is_openai_reasoning then
+                    system_instruction_text = system_instruction_text .. " You MUST output strictly valid JSON, starting with '{'."
+                end
+
+                local instruction_role = "system"
+                if is_openai_reasoning then
+                    instruction_role = "developer"
+                end
+
                 local token_param, token_val = self:getChatGPTTokenConfig(model)
                 local req_body = { 
                     model = model, 
                     messages = {
-                        { role = "system", content = system_instruction_text },
+                        { role = instruction_role, content = system_instruction_text },
                         { role = "user", content = prompt }
                     }, 
                     response_format = { type = "json_object" },
                     [token_param] = token_val
                 }
                 
+                -- DeepSeek-R1 reasons inherently; official API does not support reasoning_effort and will return a 400 error.
+                -- We only apply token ceiling adjustments here.
                 if ai.provider == "deepseek" and model:find("reasoner") then
-                    local current_effort = self.settings and self.settings.reasoning_effort or "medium"
-                    local effort_map = { low = "low", medium = "medium", high = "high", xhigh = "max" }
-                    req_body.reasoning_effort = effort_map[current_effort] or "medium"
+                    -- No effort mapping for official DeepSeek API to avoid 400 errors.
+                    -- The 32k token ceiling is already handled by getChatGPTTokenConfig.
                 end
 
                 -- OpenAI gpt-5 and o-series: inject reasoning_effort (xhigh is a valid OpenAI value).
-                -- At high/xhigh effort, raise max_completion_tokens since reasoning tokens count against it.
+                -- IMPORTANT: response_format={json_object} is incompatible with reasoning_effort and causes a 400 error.
+                -- When reasoning is active, drop response_format and rely on the system prompt JSON instruction.
+                -- Also raise max_completion_tokens: GPT-5 models support 128k output; at xhigh effort
+                -- OpenAI recommends reserving ~25k for reasoning, so 65k is a safe ceiling.
                 if (ai.provider == "chatgpt" or ai.provider == "custom1" or ai.provider == "custom2")
                     and (model:find("^gpt%-5") or model:find("^o[13]")) then
                     local current_effort = self.settings and self.settings.reasoning_effort or "medium"
                     req_body.reasoning_effort = current_effort
+                    req_body.response_format = nil  -- incompatible with reasoning_effort
                     if current_effort == "high" or current_effort == "xhigh" then
-                        req_body[token_param] = 32000
-                        self:log(string.format("AIHelper: OpenAI %s at %s effort — raising max_completion_tokens to 32000", model, current_effort))
+                        req_body[token_param] = 65000
+                        self:log(string.format("AIHelper: OpenAI %s at %s effort — dropping json_object mode, raising max_completion_tokens to 65000", model, current_effort))
                     end
                 end
                 
@@ -1154,14 +1169,18 @@ function AIHelper:callChatGPT(prompt, config, current_model)
 
     self:log("AIHelper: ChatGPT Prompt prepared")
     local system_instruction_text = self.prompts and self.prompts.system_instruction or "Return valid JSON ONLY."
-    local token_param, token_val = self:getChatGPTTokenConfig(model)
+    local is_openai_reasoning = (model:find("^gpt%-5") or model:find("^o[13]"))
+    if is_openai_reasoning then
+        system_instruction_text = system_instruction_text .. " You MUST output strictly valid JSON, starting with '{'."
+    end
     
     -- Modern models (gpt-5, o1, o3) use 'developer' role instead of 'system'
     local instruction_role = "system"
-    if model:find("^gpt%-5") or model:find("^o[13]") then
+    if is_openai_reasoning then
         instruction_role = "developer"
     end
 
+    local token_param, token_val = self:getChatGPTTokenConfig(model)
     local request_payload = { 
         model = model, 
         messages = {
@@ -1174,14 +1193,17 @@ function AIHelper:callChatGPT(prompt, config, current_model)
 
     -- Add reasoning_effort if configured and supported.
     -- xhigh is a valid OpenAI API value; pass through directly.
-    -- At high/xhigh effort, reasoning tokens count against max_completion_tokens,
-    -- so raise from 16384 to 32000 to prevent the reasoning chain from starving the JSON output.
+    -- IMPORTANT: response_format={json_object} is incompatible with reasoning_effort and causes a 400.
+    -- When reasoning is active, drop response_format and rely on the system prompt's JSON instruction.
+    -- Also raise max_completion_tokens: GPT-5 supports 128k output; at xhigh OpenAI recommends ~25k buffer,
+    -- so 65k is a safe ceiling that leaves ample room for both reasoning and the X-Ray JSON.
     if self.settings.reasoning_effort and (model:find("^gpt%-5") or model:find("^o[13]")) then
         local effort = self.settings.reasoning_effort
         request_payload.reasoning_effort = effort
+        request_payload.response_format = nil  -- incompatible with reasoning_effort
         if effort == "high" or effort == "xhigh" then
-            request_payload[token_param] = 32000
-            self:log(string.format("AIHelper: OpenAI %s at %s effort — raising max_completion_tokens to 32000", model, effort))
+            request_payload[token_param] = 65000
+            self:log(string.format("AIHelper: OpenAI %s at %s effort — dropping json_object mode, raising max_completion_tokens to 65000", model, effort))
         end
     end
 
