@@ -147,6 +147,7 @@ CRITICAL FOR HISTORICAL FIGURES: You MAY use your internal knowledge to verify t
   "type": "character",
   "item": {
     "name": "Повне ім'я",
+    "aliases": ["Alias 1", "Alias 2"],
     "role": "Роль",
     "gender": "Чоловіча/Жіноча/Невідомо",
     "occupation": "Рід занять",

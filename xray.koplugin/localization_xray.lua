@@ -9,6 +9,12 @@ if not ok then
     logger.error("Localization: lfs module not found!")
 end
 local plugin_path = ((...) or ""):match("(.-)[^%.]+$") or ""
+if plugin_path ~= "" then
+    local path_to_dir = plugin_path:gsub("%.", "/")
+    if not package.path:find(path_to_dir) then
+        package.path = package.path .. ";" .. path_to_dir .. "?.lua"
+    end
+end
 
 
 local Localization = {
@@ -240,6 +246,7 @@ function Localization:t(key, ...)
             character_not_found = "No character found matching '%s'",
             multiple_matches = "Multiple matches for '%s'. Which did you mean?",
             label_name = "NAME",
+            label_aliases = "ALIASES",
             label_role = "ROLE",
             label_gender = "GENDER",
             label_occupation = "OCCUPATION",

@@ -788,7 +788,7 @@ function ChapterAnalyzer:countMentions(text, name)
     
     local pattern
     if #name < 4 then
-        local safe_name = name:gsub("([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1")
+        local safe_name = name:lower():gsub("([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1")
         pattern = "%f[%w]" .. safe_name .. "%f[%W]"
     end
     
@@ -1012,12 +1012,16 @@ end
 
 function ChapterAnalyzer:scanMentionsAsync(ui, entity, toc, max_page, on_progress, on_complete)
     if not ui or not ui.document or not entity or not entity.name or not toc or #toc == 0 then 
-        if on_complete then on_complete({}) end
+        if on_complete then
+            -- Schedule the callback so it executes asynchronously, preventing 
+            -- a nil reference crash in the caller's assignment logic.
+            local UIManager = require("ui/uimanager")
+            UIManager:scheduleIn(0, function() on_complete({}) end)
+        end
         return { cancel = function() end } 
     end
 
     local UIManager = require("ui/uimanager")
-    local XRayConfig = require(plugin_path .. "xray_config")
     local cancel_handle = { _cancelled = false }
     function cancel_handle:cancel()
         self._cancelled = true

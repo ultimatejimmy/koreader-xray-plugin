@@ -77,6 +77,57 @@ msgstr "DEFINIDO"
 msgid "current_language"
 msgstr "en"
 
+msgid "custom_api_endpoint_hint"
+msgstr "e.g., https://openrouter.ai/api/v1/chat/completions"
+
+msgid "custom_api_endpoint_title"
+msgstr "Custom API %d — Endpoint URL"
+
+msgid "custom_api_is_reasoning"
+msgstr "Is Reasoning Model (e.g. DeepSeek-R1)"
+
+msgid "custom_api_key_title"
+msgstr "Custom API %d — API Key"
+
+msgid "custom_api_model_hint"
+msgstr "e.g., google/gemini-2.5-flash or openai/gpt-4o"
+
+msgid "custom_api_model_title"
+msgstr "Custom API %d — Default Model"
+
+msgid "custom_api_name"
+msgstr "Custom API %d (OpenAI-compatible)"
+
+msgid "custom_api_not_configured"
+msgstr "(not configured — tap to set up)"
+
+msgid "custom_api_saved"
+msgstr "Custom API %d configuration saved."
+
+msgid "desc_len_about_chars"
+msgstr "CHARACTER DESCRIPTIONS\n\n• Short (~80 chars): Name, role, and a brief note.\n• Default (~200 chars): Standard analysis.\n• Detailed (~350 chars): Rich character study with traits and motivations.\n• Very Detailed (~500 chars): Deep analysis.\n\nTRADE-OFF\nLonger descriptions → fewer characters returned during initial/full fetches. Subsequent 'Fetch More' runs are unaffected."
+
+msgid "desc_len_about_hist"
+msgstr "HISTORICAL FIGURE BIOGRAPHIES\n\n• Short (~50 chars): Name and primary role.\n• Default (~100 chars): Standard biography.\n• Detailed (~200 chars): Life, significance, and book context.\n• Very Detailed (~300 chars): Comprehensive biography.\n\nTRADE-OFF\nLonger biographies → fewer historical figures returned during initial/full fetches."
+
+msgid "desc_len_about_locs"
+msgstr "LOCATION DESCRIPTIONS\n\n• Short (~50 chars): Place name and one-line context.\n• Default (~100 chars): Standard description.\n• Detailed (~200 chars): Atmosphere, significance, and events.\n• Very Detailed (~300 chars): Full description.\n\nTRADE-OFF\nLonger descriptions → fewer locations returned during initial/full fetches."
+
+msgid "desc_len_about_timeline"
+msgstr "TIMELINE — ONE EVENT PER CHAPTER (always)\n\nTimeline always has exactly one entry per chapter. This setting only affects how much detail is included in each summary.\n\n• Short (~50 chars): Brief one-phrase summary.\n• Default (~80 chars): Standard summary.\n• Detailed (~150 chars): Includes context and consequences.\n• Very Detailed (~200 chars): Full narrative description.\n\nThere is no count trade-off for the timeline."
+
+msgid "desc_len_default"
+msgstr "Default"
+
+msgid "desc_len_detailed"
+msgstr "Detailed"
+
+msgid "desc_len_short"
+msgstr "Short"
+
+msgid "desc_len_v_detailed"
+msgstr "Very Detailed"
+
 msgid "dont_ask_again"
 msgstr "Não perguntar novamente"
 
@@ -236,6 +287,9 @@ msgstr "--- Configuração Atual ---"
 msgid "menu_custom_model_title"
 msgstr "Modelo %s personalizado"
 
+msgid "menu_desc_length_settings"
+msgstr "Description Length"
+
 msgid "menu_enter_custom_model"
 msgstr "Inserir modelo personalizado..."
 
@@ -244,9 +298,6 @@ msgstr "Obter Info do Autor (IA)"
 
 msgid "menu_fetch_more_chars"
 msgstr "Buscar mais personagens"
-
-msgid "menu_fetch_xray"
-msgstr "Buscar Dados X-Ray"
 
 msgid "menu_historical_figures"
 msgstr "Figuras Históricas"
@@ -334,6 +385,9 @@ msgstr "Este livro está em %s. Alterar o idioma do X-Ray para corresponder?"
 
 msgid "multiple_matches"
 msgstr "Várias correspondências para '%s'. Qual você quis dizer?"
+
+msgid "next"
+msgstr "Next"
 
 msgid "no"
 msgstr "Não"
@@ -497,30 +551,3 @@ msgstr "Adiciona um botão 'X-Ray' aos menus de dicionário e seleção para con
 msgid "yes"
 msgstr "Sim"
 
-
-msgid "custom_api_name"
-msgstr "Custom API %d (OpenAI-compatible)"
-
-msgid "custom_api_endpoint_title"
-msgstr "Custom API %d — Endpoint URL"
-
-msgid "custom_api_key_title"
-msgstr "Custom API %d — API Key"
-
-msgid "custom_api_model_title"
-msgstr "Custom API %d — Default Model"
-
-msgid "custom_api_endpoint_hint"
-msgstr "e.g., https://openrouter.ai/api/v1/chat/completions"
-
-msgid "custom_api_model_hint"
-msgstr "e.g., google/gemini-2.5-flash or openai/gpt-4o"
-
-msgid "custom_api_saved"
-msgstr "Custom API %d configuration saved."
-
-msgid "custom_api_not_configured"
-msgstr "(not configured — tap to set up)"
-
-msgid "custom_api_is_reasoning"
-msgstr "Is Reasoning Model (e.g. DeepSeek-R1)"

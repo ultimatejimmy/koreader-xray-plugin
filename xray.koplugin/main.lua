@@ -1,13 +1,10 @@
 -- X-Ray Plugin for KOReader v2.0.0
 local logger = require("logger")
-logger.info("X-Ray: main.lua parsing...")
-
 
 local ok_ui, UIManager = pcall(require, "ui/uimanager")
 local ok_wc, WidgetContainer = pcall(require, "ui/widget/container/widgetcontainer")
 local ok_log, logger = pcall(require, "logger")
 if not ok_log then logger = { info = function() end, warn = function() end, error = function() end } end
-logger.info("X-Ray: main.lua parsing...")
 
 local plugin_path = ((...) or ""):match("(.-)[^%.]+$") or ""
 local ok_xl, XRayLogger = pcall(require, plugin_path .. "xray_logger")
@@ -30,7 +27,6 @@ local function _t(self, key, default)
 end
 
 local function applyMixin(target, source)
-
     for k, v in pairs(source) do
         target[k] = v
     end
@@ -57,15 +53,19 @@ function XRayPlugin:init()
             self.ui.menu:registerToMainMenu(self)
         end
         
-        -- Register to Reader Menu Order if available
-        local ok_order, reader_menu_order = pcall(require, "ui/elements/reader_menu_order")
-        if ok_order and reader_menu_order and reader_menu_order.tools then
-            local found = false
-            for _, v in ipairs(reader_menu_order.tools) do
-                if v == "xray" then found = true; break end
+        -- Force plugin to be first in the tools menu order (enforced on every document load)
+        pcall(function()
+            local ok_order, reader_menu_order = pcall(require, "ui/elements/reader_menu_order")
+            if not ok_order then
+                ok_order, reader_menu_order = pcall(require, "apps/reader/modules/readermenuorder")
             end
-            if not found then table.insert(reader_menu_order.tools, 1, "xray") end
-        end
+            if ok_order and reader_menu_order and reader_menu_order.tools then
+                for i, v in ipairs(reader_menu_order.tools) do
+                    if v == "xray" then table.remove(reader_menu_order.tools, i); break end
+                end
+                table.insert(reader_menu_order.tools, 1, "xray")
+            end
+        end)
 
 
     -- Clean up legacy un-prefixed module files from older versions to prevent namespace collisions
@@ -176,7 +176,9 @@ function XRayPlugin:init()
     end)
     if not ok then
         logger.error("XRayPlugin: CRITICAL INIT ERROR: " .. tostring(err))
-        if XRayLogger then XRayLogger:log("CRITICAL INIT ERROR: " .. tostring(err)) end
+        if XRayLogger and type(XRayLogger) == "table" and XRayLogger.log then
+            XRayLogger:log("CRITICAL INIT ERROR: " .. tostring(err))
+        end
     end
 end
 
@@ -243,20 +245,35 @@ function XRayPlugin:onReaderReady()
         self:checkWeeklyUpdate()
     end)
 
+    -- Enforce X-Ray as the first item in the Tools menu for all KOReader versions
+    UIManager:scheduleIn(1, function()
+        local order_module
+        -- Strategy A: Check newer path (ui/elements/reader_menu_order)
+        local status_new, res_new = pcall(require, "ui/elements/reader_menu_order")
+        if status_new then
+            order_module = res_new
+        else
+            -- Strategy B: Fallback to older path (apps/reader/modules/readermenuorder)
+            local status_old, res_old = pcall(require, "apps/reader/modules/readermenuorder")
+            if status_old then order_module = res_old end
+        end
+        if order_module and order_module.insertSorted then
+            order_module.insertSorted("tools", "xray", 1)
+        end
+    end)
+
+
 end
 
 function XRayPlugin:onPageUpdate(pageno)
-    self:log("XRayPlugin: onPageUpdate for pageno " .. tostring(pageno))
     self.last_pageno = pageno
     if not self.auto_fetch_enabled then return end
     
-    self:log("XRayPlugin: onPageUpdate for pageno " .. tostring(pageno))
     if not self.ui or not self.ui.document then return end
 
     -- Resolve current chapter title from TOC
     local toc = self.ui.document:getToc()
     if not toc or #toc == 0 then
-        self:log("XRayPlugin: No TOC found for page " .. tostring(pageno))
         return
     end
 
@@ -272,7 +289,6 @@ function XRayPlugin:onPageUpdate(pageno)
     end
 
     if not chapter_title then
-        self:log("XRayPlugin: No chapter found for page " .. tostring(pageno))
         return
     end
 
@@ -346,13 +362,11 @@ function XRayPlugin:onPageUpdate(pageno)
         return
     end
     self.last_pageno = pageno
-    self:log("XRayPlugin: onPageUpdate for " .. unique_id)
 
     if not self.auto_fetch_enabled then return end
 
     -- Already fetched this chapter this session?
     if self.chapters_fetched[unique_id] then 
-        self:log("XRayPlugin: Already fetched chapter this session: " .. tostring(unique_id))
         return 
     end
 
@@ -362,7 +376,6 @@ function XRayPlugin:onPageUpdate(pageno)
 
     -- Debounce: ignore if a fetch is already scheduled
     if self.bg_fetch_pending or self.bg_fetch_active then 
-        self:log("XRayPlugin: Fetch already pending/active. Skipping trigger for " .. tostring(chapter_title))
         return 
     end
     self.bg_fetch_pending = true
@@ -375,7 +388,6 @@ function XRayPlugin:onPageUpdate(pageno)
 end
 
 function XRayPlugin:triggerBackgroundMergeFetch(chapter_title)
-    self:log("XRayPlugin: triggerBackgroundMergeFetch called for: " .. tostring(chapter_title))
     if self.bg_fetch_active then return end
     if not self.ui or not self.ui.document then return end
 
@@ -384,7 +396,6 @@ function XRayPlugin:triggerBackgroundMergeFetch(chapter_title)
     if NetworkMgr:isOnline() then
         -- Safety Check: Ensure API keys are configured before background activity
         if not self.ai_helper:hasApiKey() then
-            self:log("XRayPlugin: Skipping auto-fetch (No API keys configured)")
             return
         end
 
@@ -392,7 +403,6 @@ function XRayPlugin:triggerBackgroundMergeFetch(chapter_title)
         local cooldown = self.ai_helper.settings and self.ai_helper.settings.auto_fetch_cooldown or 300
         local now = os.time()
         if self.last_bg_fetch_time and (now - self.last_bg_fetch_time) < cooldown then
-            self:log("XRayPlugin: Skipping auto-fetch (cooldown active: " .. (cooldown - (now - self.last_bg_fetch_time)) .. "s left)")
             return
         end
         self.last_bg_fetch_time = now
@@ -422,7 +432,6 @@ function XRayPlugin:triggerBackgroundMergeFetch(chapter_title)
         self:continueWithFetch(reading_percent, is_update, last_fetch_page, true) -- is_silent=true
     else
         -- Silently skip if offline
-        self:log("XRayPlugin: Skipping auto-merge (offline)")
     end
 end
 
@@ -464,7 +473,6 @@ function XRayPlugin:autoLoadCache()
     end
     
     local book_path = self.ui.document.file
-    logger.info("XRayPlugin: Auto-loading cache for:", book_path)
     self:log("XRayPlugin: Auto-loading cache for: " .. tostring(book_path))
     local cached_data = self.cache_manager:loadCache(book_path)
     
@@ -508,9 +516,6 @@ function XRayPlugin:autoLoadCache()
                 self:assignTimelinePages(self.timeline, toc, false)
                 self:sortTimelineByTOC(self.timeline)
 
-                -- Safely extract text for frequency sorting.
-                -- document:getText() does not exist on all platforms (e.g. Android/crengine).
-                -- Use ChapterAnalyzer which has the proper multi-method fallback chain.
                 local full_text = ""
                 local ok_ca, result_text = pcall(function()
                     if not self.chapter_analyzer then
@@ -520,8 +525,6 @@ function XRayPlugin:autoLoadCache()
                 end)
                 if ok_ca and type(result_text) == "string" then
                     full_text = result_text
-                else
-                    self:log("XRayPlugin: Stage 3 - text extraction failed, skipping frequency sort: " .. tostring(result_text))
                 end
 
                 self.characters = self:sortDataByFrequency(self.characters, full_text, "name")
@@ -533,9 +536,21 @@ function XRayPlugin:autoLoadCache()
 
                 self:log("XRayPlugin: Chunked post-load complete")
             end)
+        UIManager:scheduleIn(200, function()
+            pcall(function()
+                local ok_order, reader_menu_order = pcall(require, "ui/elements/reader_menu_order")
+                if not ok_order then
+                    ok_order, reader_menu_order = pcall(require, "apps/reader/modules/readermenuorder")
+                end
+                if ok_order and reader_menu_order and reader_menu_order.tools then
+                    for i, v in ipairs(reader_menu_order.tools) do
+                        if v == "xray" then table.remove(reader_menu_order.tools, i); break end
+                    end
+                    table.insert(reader_menu_order.tools, 1, "xray")
+                end
+            end)
         end)
-    else
-        self:log("XRayPlugin: No cache found or failed to load")
+        end)
     end
 end
 
@@ -547,9 +562,6 @@ function XRayPlugin:getMenuCounts()
         historical_figures = self.historical_figures and #self.historical_figures or 0,
     }
 end
-
--- reader_menu_order registration moved to init()
-
 
 
 function XRayPlugin:getSubMenuItems()
@@ -580,11 +592,7 @@ function XRayPlugin:getSubMenuItems()
             callback = function() self:showAuthorInfo() end,
             separator = true,
         },
-        {
-            text = self.loc:t("menu_fetch_xray") or "Fetch X-Ray Data",
-            keep_menu_open = true,
-            callback = function() self:fetchFromAI() end,
-        },
+
         {
             text = self.loc:t("menu_update_xray") or "Update X-Ray Data (Merge)",
             keep_menu_open = true,
@@ -715,8 +723,6 @@ function XRayPlugin:addToMainMenu(menu_items)
 end
 
 
-
 -- Extracted functions are now loaded via mixins (xray_data, xray_ui, xray_fetch, xray_mentions)
 
 return XRayPlugin
-

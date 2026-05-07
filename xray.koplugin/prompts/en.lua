@@ -5,7 +5,7 @@ return {
     -- Author-only prompt (For quick bio lookup)
     author_only = [[Identify and provide biography for the author of the book "%s". 
 Metadata suggests the author is "%s". 
-
+1
 CRITICAL: Verify the author using the BOOK TEXT CONTEXT (if provided at the end of this prompt) to ensure 100% accuracy and avoid incorrect identifications.
 
 REQUIRED JSON FORMAT:
@@ -74,7 +74,7 @@ REQUIRED JSON FORMAT:
     {
       "name": "Full Formal Name",
       "aliases": ["Alias 1", "Alias 2"],
-      "role": "Role up to current progress",
+      "role": "Short archetype label (3-5 words, e.g. 'Antagonist', 'Protagonist', 'The Victim')",
       "gender": "Male / Female / Unknown",
       "occupation": "Job/Status",
       "description": "Deep analysis with details from the text so far. NO SPOILERS. (Max {MAX_CHAR_DESC} chars)"
@@ -125,7 +125,7 @@ REQUIRED JSON FORMAT:
     {
       "name": "Full Formal Name",
       "aliases": ["Alias 1", "Alias 2"],
-      "role": "Role up to current progress",
+      "role": "Short archetype label (3-5 words, e.g. 'Antagonist', 'Protagonist', 'The Victim')",
       "gender": "Male / Female / Unknown",
       "occupation": "Job/Status",
       "description": "Deep analysis with details from the text so far. NO SPOILERS. (Max {MAX_CHAR_DESC} chars)"
@@ -147,7 +147,8 @@ REQUIRED JSON FORMAT:
   "type": "character",
   "item": {
     "name": "Full Name",
-    "role": "Role",
+    "aliases": ["Alias 1", "Alias 2"],
+    "role": "Short archetype label (3-5 words, e.g. 'Antagonist', 'Protagonist', 'The Victim')",
     "gender": "Male/Female/Unknown",
     "occupation": "Occupation",
     "description": "Short description (MAX 250 chars)"

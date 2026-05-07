@@ -147,6 +147,7 @@ FORMAT JSON REQUIS :
   "type": "character",
   "item": {
     "name": "Nom complet",
+    "aliases": ["Alias 1", "Alias 2"],
     "role": "Rôle",
     "gender": "Masculin/Féminin/Inconnu",
     "occupation": "Profession",
