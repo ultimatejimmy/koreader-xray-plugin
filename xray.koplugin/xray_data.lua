@@ -113,11 +113,48 @@ function M:sortDataByFrequency(list, text, key)
     return list
 end
 
+function M:isMoreCompleteName(new_name, old_name)
+    if not new_name or not old_name then return false end
+    if #new_name <= #old_name then return false end
+    
+    local nl = new_name:lower()
+    local ol = old_name:lower()
+    local escaped_ol = ol:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1")
+    if nl:find("%f[%w]" .. escaped_ol .. "%f[%W]") then
+        return true
+    end
+    if nl:find("^" .. escaped_ol) or nl:find(escaped_ol .. "$") then
+        return true
+    end
+    return false
+end
+
+function M:promoteName(entity, new_name)
+    if not entity or not new_name then return end
+    local old_name = entity.name
+    if not old_name then
+        entity.name = new_name
+        return
+    end
+    
+    entity.aliases = entity.aliases or {}
+    local found = false
+    for _, alias in ipairs(entity.aliases) do
+        if type(alias) == "string" and alias:lower() == old_name:lower() then 
+            found = true; break 
+        end
+    end
+    if not found then
+        table.insert(entity.aliases, old_name)
+    end
+    entity.name = new_name
+end
+
 function M:deduplicateByName(list, key)
     key = key or "name"
     if not list or #list == 0 then return list end
-    local seen = {}       -- canonical names (lowercased) -> true
-    local alias_map = {}  -- known alias (lowercased) -> true
+    local seen = {}       -- canonical names (lowercased) -> item ref
+    local alias_map = {}  -- known alias (lowercased) -> item ref
     local deduped = {}
 
     for _, item in ipairs(list) do
@@ -126,29 +163,54 @@ function M:deduplicateByName(list, key)
             table.insert(deduped, item)
         else
             -- Check 1: exact canonical name duplicate
-            local is_dup = seen[k] or false
+            local existing = seen[k]
 
             -- Check 2: canonical name matches a known alias of an accepted entry
-            if not is_dup then
-                is_dup = alias_map[k] or false
+            if not existing then
+                existing = alias_map[k]
             end
 
             -- Check 3: first-name component of canonical name matches a known alias
-            if not is_dup then
+            if not existing then
                 local first = k:match("^(%S+)")
                 if first and first ~= k and #first >= 5 then
-                    is_dup = alias_map[first] or false
+                    existing = alias_map[first]
                 end
             end
 
-            if not is_dup then
-                seen[k] = true
+            if not existing then
+                seen[k] = item
                 table.insert(deduped, item)
                 -- Register all aliases of this accepted entry
                 if item.aliases and type(item.aliases) == "table" then
                     for _, alias in ipairs(item.aliases) do
                         if type(alias) == "string" and alias ~= "" then
-                            alias_map[alias:lower()] = true
+                            alias_map[alias:lower()] = item
+                        end
+                    end
+                end
+            else
+                -- Handle duplicate: dynamically promote name if incoming is more complete
+                if key == "name" and self:isMoreCompleteName(item.name, existing.name) then
+                    self:promoteName(existing, item.name)
+                    seen[item.name:lower()] = existing
+                end
+                
+                -- Merge aliases from incoming duplicate
+                if item.aliases and type(item.aliases) == "table" then
+                    existing.aliases = existing.aliases or {}
+                    for _, new_alias in ipairs(item.aliases) do
+                        if type(new_alias) == "string" and new_alias ~= "" then
+                            local found = false
+                            for _, old_alias in ipairs(existing.aliases) do
+                                if type(old_alias) == "string" and old_alias:lower() == new_alias:lower() then
+                                    found = true; break
+                                end
+                            end
+                            if not found and new_alias:lower() ~= existing.name:lower() then
+                                table.insert(existing.aliases, new_alias)
+                                alias_map[new_alias:lower()] = existing
+                            end
                         end
                     end
                 end
@@ -338,13 +400,18 @@ function M:mergeEntries(list, primary_name, secondary_name, ai_merged_desc)
     end
     if not primary or not secondary then return false end
 
-    -- 1. Absorb secondary's name as an alias of primary (if not already present)
-    primary.aliases = primary.aliases or {}
-    local already = false
-    for _, a in ipairs(primary.aliases) do
-        if a:lower() == secondary.name:lower() then already = true; break end
+    -- 1. Check for Name Promotion (if secondary name is more complete)
+    if self:isMoreCompleteName(secondary.name, primary.name) then
+        self:promoteName(primary, secondary.name)
+    else
+        -- Absorb secondary's name as an alias of primary (if not already present)
+        primary.aliases = primary.aliases or {}
+        local already = false
+        for _, a in ipairs(primary.aliases) do
+            if type(a) == "string" and a:lower() == secondary.name:lower() then already = true; break end
+        end
+        if not already then table.insert(primary.aliases, secondary.name) end
     end
-    if not already then table.insert(primary.aliases, secondary.name) end
 
     -- 2. Absorb secondary's aliases (deduplicated)
     local existing_aliases = {}

@@ -3,7 +3,6 @@
 local UIManager = require("ui/uimanager")
 local InfoMessage = require("ui/widget/infomessage")
 local ConfirmBox = require("ui/widget/confirmbox")
-local MultiConfirmBox = require("ui/widget/multiconfirmbox")
 local ButtonDialog = require("ui/widget/buttondialog")
 local Menu = require("ui/widget/menu")
 local Screen = require("device").screen
@@ -270,6 +269,8 @@ function M:showCharacters()
     for _, char in ipairs(self.characters) do
         local name = char.name or "Unknown"
         local text = "• " .. name
+        -- Aliases are no longer listed in the main character list to reduce clutter,
+        -- as they are still visible in the individual character infobox.
         if char.description and #char.description > 0 then text = text .. "\n  " .. char.description:sub(1, 80) .. (#char.description > 80 and "..." or "") end
         table.insert(items, { 
             text = text, 
@@ -443,7 +444,18 @@ function M:showCharacterDetails(character)
         (self.loc:t("label_name") or "NAME") .. ": " .. (character.name or "???")
     }
     if character.aliases and type(character.aliases) == "table" and #character.aliases > 0 then
-        table.insert(lines, (self.loc:t("label_aliases") or "ALIASES") .. ": " .. table.concat(character.aliases, ", "))
+        local meaningful_aliases = {}
+        local name_lower = (character.name or ""):lower()
+        -- Filter out aliases that are already trivial parts of the name
+        for _, alias in ipairs(character.aliases) do
+            local al_lower = tostring(alias):lower()
+            if #al_lower > 1 and not name_lower:find(al_lower, 1, true) then
+                table.insert(meaningful_aliases, alias)
+            end
+        end
+        if #meaningful_aliases > 0 then
+            table.insert(lines, (self.loc:t("label_aliases") or "ALIASES") .. ": " .. table.concat(meaningful_aliases, ", "))
+        end
     end
     table.insert(lines, (self.loc:t("label_role") or "ROLE") .. ": " .. (character.role or "---"))
     table.insert(lines, (self.loc:t("label_gender") or "GENDER") .. ": " .. (character.gender or "---"))
@@ -1719,6 +1731,15 @@ function M:findCharacterByName(word)
         local name_lower = string.lower(char.name or "")
         if name_lower == word_lower or string.find(name_lower, word_lower, 1, true) then
             return char
+        end
+        -- Also check aliases if primary name doesn't match
+        if char.aliases and type(char.aliases) == "table" then
+            for _, alias in ipairs(char.aliases) do
+                local alias_lower = string.lower(tostring(alias))
+                if alias_lower == word_lower or string.find(alias_lower, word_lower, 1, true) then
+                    return char
+                end
+            end
         end
     end
     return nil

@@ -18,7 +18,7 @@ end
 
 
 local AIHelper = {
-    path = nil,
+    path = ".",
     providers = {
         gemini = {
             name = "Google Gemini",
@@ -73,7 +73,7 @@ end
 -- Byte-based string.sub() throughout the plugin can slice multi-byte UTF-8
 -- characters mid-sequence, leaving an invalid prefix/suffix that makes the
 -- JSON request body non-parseable to strict APIs like OpenAI's.
-local function sanitize_utf8(s)
+function AIHelper:sanitize_utf8(s)
     if not s or s == "" then return s or "" end
     local out, i, len = {}, 1, #s
     while i <= len do
@@ -127,6 +127,9 @@ local function sanitize_utf8(s)
     return table.concat(out)
 end
 
+-- Backward compatibility for internal calls
+local sanitize_utf8 = function(s) return AIHelper:sanitize_utf8(s) end
+
 function AIHelper:getChatGPTTokenConfig(model)
     -- OpenAI reasoning models (o1, o3) and newer generations (gpt-5+) REQUIRE max_completion_tokens.
     -- Modern flagship models (gpt-4o, gpt-4o-mini) also support it.
@@ -148,7 +151,8 @@ function AIHelper:setTrapWidget(trap_widget) self.trap_widget = trap_widget end
 function AIHelper:resetTrapWidget() self.trap_widget = nil end
 
 function AIHelper:makeRequest(url, headers, request_body, timeout, maxtime)
-    timeout = timeout or 300; maxtime = maxtime or 900
+    -- Increased default timeout to 600s (10m) to accommodate reasoning models at xhigh effort
+    timeout = timeout or 600; maxtime = maxtime or 1200
     local function performRequest()
         local http_req = require("socket.http"); local https_req = require("ssl.https")
         local ltn12_req = require("ltn12"); local socketutil_req = require("socketutil")
@@ -168,11 +172,9 @@ function AIHelper:makeRequest(url, headers, request_body, timeout, maxtime)
         return ok, code, response_text, status
     end
     
-    if self.trap_widget then
+    if self.trap_widget and Trapper and Trapper.dismissableRunInSubprocess then
         local completed, ok, code, response_text, status = Trapper:dismissableRunInSubprocess(performRequest, self.trap_widget)
         if not completed then return nil, "USER_CANCELLED", "Request cancelled" end
-        -- Note: Subprocess results can sometimes be nil if not handled perfectly, fallback to sync if needed
-        if ok == nil and code == nil then return performRequest() end
         return ok, code, response_text, status
     else
         return performRequest()
@@ -181,8 +183,8 @@ end
 
 -- Build all possible HTTP request parameters (primary and fallback) for a comprehensive fetch.
 -- Returns: { {url, headers, body, provider, model}, ... } or nil, error_code, error_msg
-function AIHelper:buildComprehensiveRequest(title, author, context)
-    local prompt = self:createPrompt(title, author, context, "comprehensive_xray")
+function AIHelper:buildComprehensiveRequest(title, author, context, prompt_override)
+    local prompt = prompt_override or self:createPrompt(title, author, context, "comprehensive_xray")
     local primary = self.settings.primary_ai or { provider = "gemini", model = "gemini-2.5-flash" }
     local secondary = self.settings.secondary_ai or { provider = "gemini", model = "gemini-2.5-flash-lite" }
 
@@ -199,25 +201,37 @@ function AIHelper:buildComprehensiveRequest(title, author, context)
                 
                 local gen_config = { temperature = 0.2, maxOutputTokens = 16384 } -- default
                 local current_effort = self.settings and self.settings.reasoning_effort
-                if current_effort and (model:find("thinking") or model:find("2%.5") or model:find("3%.0") or model:find("pro") or model:find("flash")) then
-                    local effort_map = { low = 1024, medium = 2048, high = 4096 }
-                    local budget = effort_map[current_effort] or 2048
-                    
-                    -- Gemini 1.5 Pro, 1.5 Flash, and 2.0 Flash have a hard output limit of 8,192 tokens.
-                    -- Thinking tokens count against this, so we must leave room for the response.
-                    if (model:find("1%.5") or model:find("2%.0%-flash")) and budget > 2000 then
-                        self:log(string.format("AIHelper: Constrained Gemini %s detected — capping thinking budget from %d to 2000 (limit=8192)", model, budget))
-                        budget = 2000
-                        gen_config.maxOutputTokens = 8192
-                    elseif model:find("2%.5") or model:find("3%.0") then
-                        -- For newer models with 65k limits, scale maxOutputTokens to budget + 16000 reserve
-                        gen_config.maxOutputTokens = budget + 16000
+                
+                -- Check for thinking support (Gemini 2.5 series and Gemini 3 series)
+                if current_effort and (model:find("thinking") or model:find("2%.5") or model:find("3%.0") or model:find("3%.1") or model:find("pro") or model:find("flash")) then
+                    if model:find("gemini%-3") then
+                        -- Gemini 3 series uses thinkingLevel
+                        local level_map = { low = "low", medium = "medium", high = "high" }
+                        gen_config.thinkingConfig = { 
+                            includeThoughts = true,
+                            thinkingLevel = level_map[current_effort] or "medium" 
+                        }
+                        -- Ensure maxOutputTokens leaves room for the response
+                        gen_config.maxOutputTokens = 16384
                     else
-                        -- Standard fallback for other models
-                        gen_config.maxOutputTokens = budget + 8000
+                        -- Gemini 2.5 series uses thinkingBudget (integer)
+                        local budget_map = { low = 1024, medium = 4096, high = 16384 }
+                        local budget = budget_map[current_effort] or 4096
+                        
+                        -- Capping for constrained models if necessary (1.5 models were pre-thinking, 2.0-flash is 8k limit)
+                        if (model:find("1%.5") or model:find("2%.0%-flash")) and budget > 2000 then
+                            self:log(string.format("AIHelper: Constrained Gemini %s detected — capping thinking budget from %d to 2000 (limit=8192)", model, budget))
+                            budget = 2000
+                            gen_config.maxOutputTokens = 8192
+                        else
+                            gen_config.maxOutputTokens = budget + 8000
+                        end
+                        
+                        gen_config.thinkingConfig = { 
+                            includeThoughts = true,
+                            thinkingBudget = budget 
+                        }
                     end
-                    
-                    gen_config.thinkingConfig = { thinkingBudgetTokens = budget }
                 end
                 
                 body = json.encode({
@@ -372,7 +386,8 @@ function AIHelper:makeRequestAsync(request_params, result_file)
             local ltn12_req = require("ltn12")
             local socketutil_req = require("socketutil")
             https_req.cert_verify = false
-            socketutil_req:set_timeout(60, 120)  -- shorter timeout for background
+            -- Increased timeout to 600s (10m) to accommodate reasoning models computing in the background
+            socketutil_req:set_timeout(600, 1200)
 
             local requests = request_params
             if request_params.url then requests = { request_params } end -- Handle single request fallback
@@ -402,11 +417,14 @@ function AIHelper:makeRequestAsync(request_params, result_file)
                     if parse_ok and parsed then
                         -- Gemini wraps content in candidates[].content.parts[].text
                         if parsed.candidates and parsed.candidates[1] then
-                            local ai_text = parsed.candidates[1].content and 
-                                parsed.candidates[1].content.parts and 
-                                parsed.candidates[1].content.parts[1] and 
-                                parsed.candidates[1].content.parts[1].text
-                            if ai_text then
+                            local ai_text = ""
+                            local parts = parsed.candidates[1].content and parsed.candidates[1].content.parts or {}
+                            for _, p in ipairs(parts) do
+                                if p.text and not p.thought then
+                                    ai_text = ai_text .. p.text
+                                end
+                            end
+                            if #ai_text > 0 then
                                 local inner_ok, inner = pcall(json_req.decode, ai_text)
                                 valid_json = inner_ok and inner ~= nil
                                 if not valid_json then
@@ -522,7 +540,7 @@ function AIHelper:makeRequestAsync(request_params, result_file)
                 end)
             end
             self._async_child_pid = pid
-            return true
+            return pid
         end
     end
 
@@ -554,7 +572,7 @@ function AIHelper:makeRequestAsync(request_params, result_file)
         elseif pid and pid > 0 then
             self:log("AIHelper: Manual fork started PID " .. tostring(pid))
             self._async_child_pid = pid
-            return true
+            return pid
         end
     end
 
@@ -585,11 +603,11 @@ function AIHelper:checkAsyncResult(result_file)
 
     -- Parse: first line = code, second line = provider, rest = response body
     local first_newline = content:find("\n")
-    if not first_newline then return false, "error_parse", "Malformed async result" end
+    if not first_newline then return false, "error_parse", "Malformed async result (empty or no newline)" end
     local code_str = content:sub(1, first_newline - 1)
     local rest = content:sub(first_newline + 1)
     local second_newline = rest:find("\n")
-    if not second_newline then return false, "error_parse", "Malformed async result" end
+    if not second_newline then return false, "error_parse", "Malformed async result (no provider line)" end
     local provider = rest:sub(1, second_newline - 1)
     local response_text = rest:sub(second_newline + 1)
 
@@ -606,12 +624,16 @@ function AIHelper:checkAsyncResult(result_file)
     local success, data = pcall(json.decode, response_text)
     if not success then return false, "error_parse", "JSON decode failed" end
 
-    local ai_text
+    local ai_text = ""
     if provider == "gemini" then
         if data.candidates and data.candidates[1] and
-           data.candidates[1].content and data.candidates[1].content.parts and
-           data.candidates[1].content.parts[1] then
-            ai_text = data.candidates[1].content.parts[1].text
+           data.candidates[1].content and data.candidates[1].content.parts then
+            local parts = data.candidates[1].content.parts
+            for _, p in ipairs(parts) do
+                if p.text and not p.thought then
+                    ai_text = ai_text .. p.text
+                end
+            end
         end
     elseif provider == "claude" then
         if data.content and data.content[1] and data.content[1].text then
@@ -636,8 +658,25 @@ end
 
 function AIHelper:init(path)
     self.path = path or "plugins/xray.koplugin"
+    
+    -- Cleanup orphaned temporary files from previous sessions
+    pcall(function()
+        local ok, lfs = pcall(require, "libs/libkoreader-lfs")
+        if not ok or type(lfs) ~= "table" then
+            ok, lfs = pcall(require, "lfs")
+        end
+        if ok and lfs and lfs.dir then
+            for file in lfs.dir(self.path) do
+                if file:find("^tmp_ai_res_.-%.json$") then
+                    os.remove(self.path .. "/" .. file)
+                end
+            end
+        end
+    end)
+    
     self:loadConfig()
     self:loadSettings()
+    self:loadLanguage()
     self:log("AIHelper initialized")
 end
 
@@ -1095,9 +1134,15 @@ function AIHelper:getMoreCharacters(title, author, provider_name, context)
     return self:getBookDataSection(title, author, provider_name, context, "more_characters")
 end
 
-function AIHelper:getBookDataComprehensive(title, author, provider_name, context)
-    local prompt = self:createPrompt(title, author, context, "comprehensive_xray")
-    return self:executeUnifiedRequest(prompt)
+function AIHelper:startAIRequest(title, author, context, section_name, targeted_word)
+    local prompt = self:createPrompt(title, author, context, section_name, targeted_word)
+    local requests, error_code, error_msg = self:buildComprehensiveRequest(nil, nil, nil, prompt)
+    if not requests then return nil, error_code, error_msg end
+    
+    local unique_id = tostring(os.time()) .. "_" .. tostring(math.random(1000, 9999))
+    local result_file = self.path .. "/tmp_ai_res_" .. unique_id .. ".json"
+    local pid = self:makeRequestAsync(requests, result_file)
+    return pid, result_file
 end
 
 function AIHelper:lookupSingleWord(text, context)
@@ -1142,9 +1187,15 @@ function AIHelper:callGemini(prompt, config, current_model)
     if code_num == 200 and response_text then
         local success, data = pcall(json.decode, response_text)
         if success and data.candidates and data.candidates[1] then
-            local candidate = data.candidates[1]
-            if candidate.content and candidate.content.parts and candidate.content.parts[1] then
-                local ai_text = candidate.content.parts[1].text
+            local ai_text = ""
+            local parts = data.candidates[1].content and data.candidates[1].content.parts or {}
+            for _, p in ipairs(parts) do
+                if p.text and not p.thought then
+                    ai_text = ai_text .. p.text
+                end
+            end
+            
+            if #ai_text > 0 then
                 local parsed_data, err = self:parseAIResponse(ai_text)
                 if parsed_data then
                     return parsed_data
@@ -1274,7 +1325,7 @@ local function normalizeKeys(t)
     return res
 end
 
-local function fixTruncatedJSON(s)
+function AIHelper:fixTruncatedJSON(s)
     local stack, in_string, escaped = {}, false, false
     for i = 1, #s do
         local c = s:sub(i,i)
@@ -1302,6 +1353,9 @@ local function fixTruncatedJSON(s)
     end
     return res
 end
+
+-- Backward compatibility for internal calls
+local fixTruncatedJSON = function(s) return AIHelper:fixTruncatedJSON(s) end
 
 function AIHelper:parseAIResponse(text)
     if not text or #text == 0 then return nil, "Empty response" end
@@ -1356,11 +1410,12 @@ function AIHelper:validateAndCleanData(data)
     for _, c in ipairs(chars) do
         if type(c) == "table" then
             table.insert(valid_chars, {
-                name = ensureString(c.name or c.full_formal_name or c.Name, strings.unnamed_character),
-                role = ensureString(c.role or c.Role, strings.not_specified),
+                name = ensureString(c.name or c.full_formal_name or c.full_name or c.formal_name or c.Name, strings.unnamed_character),
+                role = ensureString(c.role or c.Role, strings.not_specified):sub(1, 40),
                 description = ensureString(c.description or c.bio or c.history or c.desc, strings.no_description),
                 gender = ensureString(c.gender or c.Gender, ""),
-                occupation = ensureString(c.occupation or c.job or c.Occupation, "")
+                occupation = ensureString(c.occupation or c.job or c.Occupation, ""),
+                aliases = (type(c.aliases) == "table") and c.aliases or {}
             })
         end
     end
@@ -1373,7 +1428,7 @@ function AIHelper:validateAndCleanData(data)
             table.insert(valid_hists, {
                 name = ensureString(h.name or h.Name, strings.unnamed_person),
                 biography = ensureString(h.biography or h.bio or h.description, strings.no_biography),
-                role = ensureString(h.role or h.historical_role, ""),
+                role = ensureString(h.role or h.historical_role, ""):sub(1, 40),
                 importance_in_book = ensureString(h.importance_in_book or h.significance, "Mentioned"),
                 context_in_book = ensureString(h.context_in_book or h.context, "Historical")
             })

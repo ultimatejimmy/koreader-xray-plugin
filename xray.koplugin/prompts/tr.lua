@@ -147,6 +147,7 @@ GEREKLİ JSON FORMATI:
   "type": "character",
   "item": {
     "name": "Tam ad",
+    "aliases": ["Alias 1", "Alias 2"],
     "role": "Rol",
     "gender": "Erkek/Kadın/Bilinmiyor",
     "occupation": "Meslek",

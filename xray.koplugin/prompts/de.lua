@@ -147,6 +147,7 @@ ERFORDERLICHES JSON-FORMAT:
   "type": "character",
   "item": {
     "name": "Vollständiger Name",
+    "aliases": ["Alias 1", "Alias 2"],
     "role": "Rolle",
     "gender": "Männlich/Weiblich/Unbekannt",
     "occupation": "Beruf",

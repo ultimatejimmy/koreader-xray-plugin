@@ -147,6 +147,7 @@ CRITICAL FOR HISTORICAL FIGURES: You MAY use your internal knowledge to verify t
   "type": "character",
   "item": {
     "name": "全名",
+    "aliases": ["Alias 1", "Alias 2"],
     "role": "角色/定位",
     "gender": "男/女/未知",
     "occupation": "职业",

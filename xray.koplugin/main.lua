@@ -1,13 +1,10 @@
 -- X-Ray Plugin for KOReader v2.0.0
 local logger = require("logger")
-logger.info("X-Ray: main.lua parsing...")
-
 
 local ok_ui, UIManager = pcall(require, "ui/uimanager")
 local ok_wc, WidgetContainer = pcall(require, "ui/widget/container/widgetcontainer")
 local ok_log, logger = pcall(require, "logger")
 if not ok_log then logger = { info = function() end, warn = function() end, error = function() end } end
-logger.info("X-Ray: main.lua parsing...")
 
 local plugin_path = ((...) or ""):match("(.-)[^%.]+$") or ""
 local ok_xl, XRayLogger = pcall(require, plugin_path .. "xray_logger")
@@ -30,7 +27,6 @@ local function _t(self, key, default)
 end
 
 local function applyMixin(target, source)
-
     for k, v in pairs(source) do
         target[k] = v
     end
@@ -57,15 +53,19 @@ function XRayPlugin:init()
             self.ui.menu:registerToMainMenu(self)
         end
         
-        -- Register to Reader Menu Order if available
-        local ok_order, reader_menu_order = pcall(require, "ui/elements/reader_menu_order")
-        if ok_order and reader_menu_order and reader_menu_order.tools then
-            local found = false
-            for _, v in ipairs(reader_menu_order.tools) do
-                if v == "xray" then found = true; break end
+        -- Force plugin to be first in the tools menu order (enforced on every document load)
+        pcall(function()
+            local ok_order, reader_menu_order = pcall(require, "ui/elements/reader_menu_order")
+            if not ok_order then
+                ok_order, reader_menu_order = pcall(require, "apps/reader/modules/readermenuorder")
             end
-            if not found then table.insert(reader_menu_order.tools, 1, "xray") end
-        end
+            if ok_order and reader_menu_order and reader_menu_order.tools then
+                for i, v in ipairs(reader_menu_order.tools) do
+                    if v == "xray" then table.remove(reader_menu_order.tools, i); break end
+                end
+                table.insert(reader_menu_order.tools, 1, "xray")
+            end
+        end)
 
 
     -- Clean up legacy un-prefixed module files from older versions to prevent namespace collisions
@@ -170,31 +170,50 @@ function XRayPlugin:init()
                 }
             end)
         end
+
+        -- Register X-Ray button with new KOReader dict API (PR #15184+)
+        -- Safe no-op on older versions where addToDictButtons doesn't exist.
+        if self.ui and self.ui.dictionary
+                and type(self.ui.dictionary.addToDictButtons) == "function" then
+            self.ui.dictionary:addToDictButtons({
+                id = "xray_lookup",
+                menu_text = _t(self, "menu_xray", "X-Ray"),
+                text = "X-Ray",
+                show_func = function() return self.xray_mode_enabled end,
+                callback = self:_buildXRayDictButton(nil).callback,
+            })
+        end
     end
     
         logger.info("XRayPlugin: Initialized successfully")
     end)
     if not ok then
         logger.error("XRayPlugin: CRITICAL INIT ERROR: " .. tostring(err))
-        if XRayLogger then XRayLogger:log("CRITICAL INIT ERROR: " .. tostring(err)) end
+        if XRayLogger and type(XRayLogger) == "table" and XRayLogger.log then
+            XRayLogger:log("CRITICAL INIT ERROR: " .. tostring(err))
+        end
     end
 end
 
 
--- Hook for Dictionary/Selection Popup (single word)
-function XRayPlugin:onDictButtonsReady(dict_popup, dict_buttons)
-    if not self.xray_mode_enabled then return end
-    
-    local xray_button = {
+-- Builds the X-Ray button spec for the dict popup.
+-- Used by both the new addToDictButtons API and the legacy onDictButtonsReady hook.
+function XRayPlugin:_buildXRayDictButton(dict_popup_arg)
+    -- dict_popup_arg is either:
+    --   new API: the DictQuickLookup widget instance (passed by KOReader as arg to callback)
+    --   old API: the dict_popup captured as upvalue in onDictButtonsReady
+    return {
         text = "X-Ray",
-        callback = function()
-            -- Extract text and position data BEFORE closing
-            local text = dict_popup and (dict_popup.word or dict_popup.text or dict_popup.selection_text)
-            local pos0 = dict_popup and dict_popup.pos0
-            local pos1 = dict_popup and dict_popup.pos1
+        callback = function(widget_instance)
+            if not self.xray_mode_enabled then return end
+            -- In new API, widget_instance is passed. In old API, use upvalue.
+            local popup = widget_instance or dict_popup_arg
+            local text = popup and (popup.word or popup.text or popup.selection_text)
+            local pos0 = popup and popup.pos0
+            local pos1 = popup and popup.pos1
             
             -- Close the native dictionary popup immediately so it doesn't linger
-            if dict_popup then pcall(function() UIManager:close(dict_popup) end) end
+            if popup then pcall(function() UIManager:close(popup) end) end
             
             -- Execute optimized clear and clear selection
             self:closeAllMenus()
@@ -207,6 +226,23 @@ function XRayPlugin:onDictButtonsReady(dict_popup, dict_buttons)
                 self.lookup_manager:handleLookup(text, pos0, pos1)
             end
         end,
+    }
+end
+
+-- Hook for Dictionary/Selection Popup (single word)
+function XRayPlugin:onDictButtonsReady(dict_popup, dict_buttons)
+    if not self.xray_mode_enabled then return end
+    -- If new KOReader API is present, we already registered at init() time.
+    -- This hook won't be called on new KOReader anyway, but guard for safety.
+    if self.ui and self.ui.dictionary
+            and type(self.ui.dictionary.addToDictButtons) == "function" then
+        return
+    end
+
+    local btn = self:_buildXRayDictButton(dict_popup)
+    local xray_button = {
+        text = btn.text,
+        callback = function() btn.callback(nil) end, -- nil => uses dict_popup upvalue
     }
 
     -- KOReader expects rows of buttons. Wrap our button in a row.
@@ -243,20 +279,35 @@ function XRayPlugin:onReaderReady()
         self:checkWeeklyUpdate()
     end)
 
+    -- Enforce X-Ray as the first item in the Tools menu for all KOReader versions
+    UIManager:scheduleIn(1, function()
+        local order_module
+        -- Strategy A: Check newer path (ui/elements/reader_menu_order)
+        local status_new, res_new = pcall(require, "ui/elements/reader_menu_order")
+        if status_new then
+            order_module = res_new
+        else
+            -- Strategy B: Fallback to older path (apps/reader/modules/readermenuorder)
+            local status_old, res_old = pcall(require, "apps/reader/modules/readermenuorder")
+            if status_old then order_module = res_old end
+        end
+        if order_module and order_module.insertSorted then
+            order_module.insertSorted("tools", "xray", 1)
+        end
+    end)
+
+
 end
 
 function XRayPlugin:onPageUpdate(pageno)
-    self:log("XRayPlugin: onPageUpdate for pageno " .. tostring(pageno))
     self.last_pageno = pageno
     if not self.auto_fetch_enabled then return end
     
-    self:log("XRayPlugin: onPageUpdate for pageno " .. tostring(pageno))
     if not self.ui or not self.ui.document then return end
 
     -- Resolve current chapter title from TOC
     local toc = self.ui.document:getToc()
     if not toc or #toc == 0 then
-        self:log("XRayPlugin: No TOC found for page " .. tostring(pageno))
         return
     end
 
@@ -272,7 +323,6 @@ function XRayPlugin:onPageUpdate(pageno)
     end
 
     if not chapter_title then
-        self:log("XRayPlugin: No chapter found for page " .. tostring(pageno))
         return
     end
 
@@ -346,13 +396,11 @@ function XRayPlugin:onPageUpdate(pageno)
         return
     end
     self.last_pageno = pageno
-    self:log("XRayPlugin: onPageUpdate for " .. unique_id)
 
     if not self.auto_fetch_enabled then return end
 
     -- Already fetched this chapter this session?
     if self.chapters_fetched[unique_id] then 
-        self:log("XRayPlugin: Already fetched chapter this session: " .. tostring(unique_id))
         return 
     end
 
@@ -362,7 +410,6 @@ function XRayPlugin:onPageUpdate(pageno)
 
     -- Debounce: ignore if a fetch is already scheduled
     if self.bg_fetch_pending or self.bg_fetch_active then 
-        self:log("XRayPlugin: Fetch already pending/active. Skipping trigger for " .. tostring(chapter_title))
         return 
     end
     self.bg_fetch_pending = true
@@ -375,7 +422,6 @@ function XRayPlugin:onPageUpdate(pageno)
 end
 
 function XRayPlugin:triggerBackgroundMergeFetch(chapter_title)
-    self:log("XRayPlugin: triggerBackgroundMergeFetch called for: " .. tostring(chapter_title))
     if self.bg_fetch_active then return end
     if not self.ui or not self.ui.document then return end
 
@@ -384,7 +430,6 @@ function XRayPlugin:triggerBackgroundMergeFetch(chapter_title)
     if NetworkMgr:isOnline() then
         -- Safety Check: Ensure API keys are configured before background activity
         if not self.ai_helper:hasApiKey() then
-            self:log("XRayPlugin: Skipping auto-fetch (No API keys configured)")
             return
         end
 
@@ -392,7 +437,6 @@ function XRayPlugin:triggerBackgroundMergeFetch(chapter_title)
         local cooldown = self.ai_helper.settings and self.ai_helper.settings.auto_fetch_cooldown or 300
         local now = os.time()
         if self.last_bg_fetch_time and (now - self.last_bg_fetch_time) < cooldown then
-            self:log("XRayPlugin: Skipping auto-fetch (cooldown active: " .. (cooldown - (now - self.last_bg_fetch_time)) .. "s left)")
             return
         end
         self.last_bg_fetch_time = now
@@ -422,7 +466,6 @@ function XRayPlugin:triggerBackgroundMergeFetch(chapter_title)
         self:continueWithFetch(reading_percent, is_update, last_fetch_page, true) -- is_silent=true
     else
         -- Silently skip if offline
-        self:log("XRayPlugin: Skipping auto-merge (offline)")
     end
 end
 
@@ -464,7 +507,6 @@ function XRayPlugin:autoLoadCache()
     end
     
     local book_path = self.ui.document.file
-    logger.info("XRayPlugin: Auto-loading cache for:", book_path)
     self:log("XRayPlugin: Auto-loading cache for: " .. tostring(book_path))
     local cached_data = self.cache_manager:loadCache(book_path)
     
@@ -507,20 +549,42 @@ function XRayPlugin:autoLoadCache()
                 local toc = self.ui.document:getToc()
                 self:assignTimelinePages(self.timeline, toc, false)
                 self:sortTimelineByTOC(self.timeline)
-                
-                local full_text = self.ui.document:getText() or ""
+
+                local full_text = ""
+                local ok_ca, result_text = pcall(function()
+                    if not self.chapter_analyzer then
+                        self.chapter_analyzer = require(plugin_path .. "xray_chapteranalyzer"):new()
+                    end
+                    return self.chapter_analyzer:getTextForAnalysis(self.ui, 50000, nil, self.ui:getCurrentPage()) or ""
+                end)
+                if ok_ca and type(result_text) == "string" then
+                    full_text = result_text
+                end
+
                 self.characters = self:sortDataByFrequency(self.characters, full_text, "name")
                 self.characters = self:deduplicateByName(self.characters, "name")
                 self.historical_figures = self:sortDataByFrequency(self.historical_figures, full_text, "name")
                 self.historical_figures = self:deduplicateByName(self.historical_figures, "name")
                 self.locations = self:sortDataByFrequency(self.locations, full_text, "name")
                 self.locations = self:deduplicateByName(self.locations, "name")
-                
+
                 self:log("XRayPlugin: Chunked post-load complete")
             end)
+        UIManager:scheduleIn(200, function()
+            pcall(function()
+                local ok_order, reader_menu_order = pcall(require, "ui/elements/reader_menu_order")
+                if not ok_order then
+                    ok_order, reader_menu_order = pcall(require, "apps/reader/modules/readermenuorder")
+                end
+                if ok_order and reader_menu_order and reader_menu_order.tools then
+                    for i, v in ipairs(reader_menu_order.tools) do
+                        if v == "xray" then table.remove(reader_menu_order.tools, i); break end
+                    end
+                    table.insert(reader_menu_order.tools, 1, "xray")
+                end
+            end)
         end)
-    else
-        self:log("XRayPlugin: No cache found or failed to load")
+        end)
     end
 end
 
@@ -532,9 +596,6 @@ function XRayPlugin:getMenuCounts()
         historical_figures = self.historical_figures and #self.historical_figures or 0,
     }
 end
-
--- reader_menu_order registration moved to init()
-
 
 
 function XRayPlugin:getSubMenuItems()
@@ -565,11 +626,7 @@ function XRayPlugin:getSubMenuItems()
             callback = function() self:showAuthorInfo() end,
             separator = true,
         },
-        {
-            text = self.loc:t("menu_fetch_xray") or "Fetch X-Ray Data",
-            keep_menu_open = true,
-            callback = function() self:fetchFromAI() end,
-        },
+
         {
             text = self.loc:t("menu_update_xray") or "Update X-Ray Data (Merge)",
             keep_menu_open = true,
@@ -700,8 +757,6 @@ function XRayPlugin:addToMainMenu(menu_items)
 end
 
 
-
 -- Extracted functions are now loaded via mixins (xray_data, xray_ui, xray_fetch, xray_mentions)
 
 return XRayPlugin
-

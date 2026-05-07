@@ -56,13 +56,23 @@ function M:fetchSingleWord(text, pos0, pos1)
         local limit_percent = reading_percent
         if spoiler_setting == "full_book" then limit_percent = 100 end
 
-        local wait_msg = InfoMessage:new{
-            text = self.loc:t("looking_up_msg", text:sub(1, 30)),
-            timeout = 60
+        local ButtonDialog = require("ui/widget/buttondialog")
+        local is_cancelled = false
+        local wait_msg = ButtonDialog:new{
+            title = self.loc:t("looking_up_msg", text:sub(1, 30)),
+            text = text,
+            buttons = {{{
+                text = self.loc:t("cancel") or "Cancel",
+                callback = function()
+                    is_cancelled = true
+                    if wait_msg then UIManager:close(wait_msg) end
+                end
+            }}}
         }
         UIManager:show(wait_msg)
 
         UIManager:scheduleIn(0.5, function()
+            if is_cancelled then return end
             if not self.chapter_analyzer then self.chapter_analyzer = require(plugin_path .. "xray_chapteranalyzer"):new() end
             
             -- 1. Distributed chapter samples (Start/Mid/End of each chapter up to current)
@@ -90,7 +100,7 @@ function M:fetchSingleWord(text, pos0, pos1)
             }
 
             local result, error_code, error_msg = self.ai_helper:lookupSingleWord(text, context)
-            UIManager:close(wait_msg)
+            if wait_msg then UIManager:close(wait_msg) end
 
             if not result then
                 UIManager:show(InfoMessage:new{ text = error_msg or "Lookup failed.", timeout = 5 })
@@ -151,9 +161,7 @@ function M:fetchSingleWord(text, pos0, pos1)
 end
 
 function M:continueWithFetch(reading_percent, is_update, last_fetch_page, is_silent)
-    if is_silent then
-        self.bg_fetch_active = true
-    end
+    self.bg_fetch_active = true
     if not self.ai_helper then
         local AIHelper = require(plugin_path .. "xray_aihelper")
         self.ai_helper = AIHelper
@@ -162,29 +170,41 @@ function M:continueWithFetch(reading_percent, is_update, last_fetch_page, is_sil
     local props = self.ui.document:getProps() or {}
     local title = sanitizeMetadata(props.title)
     local author = sanitizeMetadata(props.authors)
+
+    -- For manual (non-silent) fetches, show a ButtonDialog with a Cancel button.
+    -- We use the async path for ALL fetches so we never need Trapper:dismissableRunInSubprocess
+    -- (which requires an InfoMessage widget and breaks with ButtonDialog).
     local wait_msg
     local is_cancelled = false
-    
+
     if not is_silent then
-        local fetch_text = is_update and self.loc:t("updating_ai", self.ai_provider or "AI") or self.loc:t("fetching_ai", self.ai_provider or "AI")
-        wait_msg = InfoMessage:new{ text = fetch_text .. "\n\n" .. title .. "\n\n" .. self.loc:t("fetching_wait"), timeout = 120 }
+        local ButtonDialog = require("ui/widget/buttondialog")
+        local fetch_text = is_update
+            and (self.loc:t("updating_ai", self.ai_provider or "AI") or "Updating X-Ray...")
+            or  (self.loc:t("fetching_ai",  self.ai_provider or "AI") or "Fetching X-Ray...")
+        wait_msg = ButtonDialog:new{
+            title = fetch_text,
+            text  = title .. "\n\n" .. (self.loc:t("fetching_wait") or "This may take a moment.\nTap Cancel to stop."),
+            buttons = {{{
+                text = self.loc:t("cancel") or "Cancel",
+                callback = function()
+                    is_cancelled = true
+                    self:log("XRayPlugin: Fetch cancelled by user (button pressed)")
+                    if wait_msg then UIManager:close(wait_msg) end
+                end
+            }}}
+        }
         UIManager:show(wait_msg)
     end
-    
+
     UIManager:scheduleIn(0.5, function()
-        if is_cancelled then return end
+        if is_cancelled then self.bg_fetch_active = false; return end
         if not self.chapter_analyzer then self.chapter_analyzer = require(plugin_path .. "xray_chapteranalyzer"):new() end
 
-        -- 1a. Lightweight prep: resolve current page and find first missing page
         local current_page = self.ui:getCurrentPage()
-        
-        -- Find the earliest missing narrative chapter to ensure we recover it (Repair logic)
         local first_missing_page = last_fetch_page
         if is_update then
             local toc = self.ui.document:getToc() or {}
-            
-            -- OMNIBUS OPTIMIZATION: Instead of checking the whole book, 
-            -- find the 3 most recent narrative chapters before the current page.
             local candidate_chapters = {}
             for i = #toc, 1, -1 do
                 local entry = toc[i]
@@ -195,21 +215,15 @@ function M:continueWithFetch(reading_percent, is_update, last_fetch_page, is_sil
                     end
                 end
             end
-            
             for _, entry in ipairs(candidate_chapters) do
                 local norm = self:normalizeChapterName(entry.title)
                 local found = false
                 for _, ev in ipairs(self.timeline or {}) do
-                    -- Match by title and page for omnibus support
                     if self:normalizeChapterName(ev.chapter or "") == norm then
-                        if not ev.page or ev.page == entry.page then
-                            found = true
-                            break
-                        end
+                        if not ev.page or ev.page == entry.page then found = true; break end
                     end
                 end
                 if not found then
-                    -- This chapter is missing! Start extraction from here to recover it.
                     if not first_missing_page or entry.page < first_missing_page then
                         first_missing_page = entry.page
                         self:log("XRayPlugin: Repair mode active: recovering missing chapter '" .. tostring(entry.title) .. "' starting at page " .. tostring(entry.page))
@@ -218,90 +232,114 @@ function M:continueWithFetch(reading_percent, is_update, last_fetch_page, is_sil
             end
         end
 
-        -- 1b. First heavy extraction: recent book text (for context / frequency scoring)
         local book_text = self.chapter_analyzer:getTextForAnalysis(self.ui, 20000, nil, current_page, first_missing_page)
-        
-        -- Build set of already-known chapters for smart sampling
         local known_chapters = {}
         if is_update and self.timeline then
             for _, ev in ipairs(self.timeline) do
-                if ev.chapter then
-                    known_chapters[self:normalizeChapterName(ev.chapter)] = true
-                end
+                if ev.chapter then known_chapters[self:normalizeChapterName(ev.chapter)] = true end
             end
         end
-        
-        -- Yield to the UI between the two heavy extraction calls.
-        UIManager:scheduleIn(0, function()
-            if is_cancelled then return end
-            if not self.ui or not self.ui.document then return end
 
-            -- 1c. Second heavy extraction: per-chapter samples for AI prompt
+        UIManager:scheduleIn(0, function()
+            if is_cancelled then self.bg_fetch_active = false; return end
+            if not self.ui or not self.ui.document then self.bg_fetch_active = false; return end
+
             local samples, chapter_titles = self.chapter_analyzer:getDetailedChapterSamples(self.ui, 200, 150000, reading_percent == 100, first_missing_page, known_chapters)
             local annots = self.chapter_analyzer:getAnnotationsForAnalysis(self.ui)
-        
+
             if (not book_text or #book_text < 10) and not samples then
                 if wait_msg then UIManager:close(wait_msg) end
-                if not is_silent then
-                    UIManager:show(InfoMessage:new{ text = self.loc:t("error_extract_text") or "Error: Could not extract book text.", timeout = 5 })
-                end
+                if not is_silent then UIManager:show(InfoMessage:new{ text = self.loc:t("error_extract_text") or "Error: Could not extract book text.", timeout = 5 }) end
                 self:log("XRayPlugin: Text extraction failed" .. (is_silent and " (silent)" or ""))
+                self.bg_fetch_active = false
                 return
             end
-        
-            local context = { 
-                reading_percent = reading_percent, 
-                spoiler_free = reading_percent < 100, 
-                filename = self.ui.document.file:match("([^/\\]+)$"), 
-                series = props.series or props.Series, 
-                chapter_samples = samples, 
+
+            local context = {
+                reading_percent = reading_percent,
+                spoiler_free = reading_percent < 100,
+                filename = self.ui.document.file:match("([^/\\]+)$"),
+                series = props.series or props.Series,
+                chapter_samples = samples,
                 chapter_titles = chapter_titles,
-                annotations = annots, 
+                annotations = annots,
                 book_text = book_text,
-                -- For merge fetches, pass existing data so AI only returns new information
                 existing_characters = is_update and self.characters or nil,
                 existing_locations = is_update and self.locations or nil,
                 existing_historical_figures = is_update and self.historical_figures or nil,
             }
-            
-            -- 2. AI Request
-            if is_silent then
-                local req_params, err_code, err_msg = self.ai_helper:buildComprehensiveRequest(title, author, context)
-                if not req_params then
-                    self:log("XRayPlugin: Failed to build async request: " .. tostring(err_msg))
+
+            local req_params, err_code, err_msg = self.ai_helper:buildComprehensiveRequest(title, author, context)
+            if not req_params then
+                if wait_msg then UIManager:close(wait_msg) end
+                self:log("XRayPlugin: Failed to build request: " .. tostring(err_msg))
+                self.bg_fetch_active = false
+                if not is_silent then
+                    local ButtonDialog = require("ui/widget/buttondialog")
+                    local err_dialog
+                    err_dialog = ButtonDialog:new{ title = self.loc:t("error_fetch_title") or "Fetch Failed", text = err_msg or "Failed to build request.", buttons = {{{ text = self.loc:t("ok"), callback = function() UIManager:close(err_dialog) end }}} }
+                    UIManager:show(err_dialog)
+                end
+                return
+            end
+
+            local DataStorage = require("datastorage")
+            local result_file = DataStorage:getSettingsDir() .. "/xray/bg_fetch_" .. tostring(os.time()) .. ".json"
+            local started = self.ai_helper:makeRequestAsync(req_params, result_file)
+            if not started then
+                if wait_msg then UIManager:close(wait_msg) end
+                self:log("XRayPlugin: Failed to start async fetch")
+                self.bg_fetch_active = false
+                return
+            end
+
+            local poll_count = 0
+            local max_polls = 300 -- 10 minutes at 2s intervals
+            local function poll()
+                if is_cancelled then
+                    pcall(function() os.remove(result_file) end)
+                    self.bg_fetch_active = false
+                    self:log("XRayPlugin: Fetch cancelled by user")
+                    return
+                end
+                if not self.ui or not self.ui.document then
+                    pcall(function() os.remove(result_file) end)
                     self.bg_fetch_active = false
                     return
                 end
-                
-                local DataStorage = require("datastorage")
-                local result_file = DataStorage:getSettingsDir() .. "/xray/bg_fetch_" .. tostring(os.time()) .. ".json"
-                local started = self.ai_helper:makeRequestAsync(req_params, result_file)
-                if started then
-                    self:pollBackgroundFetch(result_file, title, author, book_text, is_update, current_page)
-                else
+                poll_count = poll_count + 1
+                local data, p_err_code, p_err_msg = self.ai_helper:checkAsyncResult(result_file)
+                if data == nil then
+                    if poll_count < max_polls then
+                        UIManager:scheduleIn(2, poll)
+                    else
+                        if wait_msg then UIManager:close(wait_msg) end
+                        self.bg_fetch_active = false
+                        self:log("XRayPlugin: Fetch timed out")
+                        if not is_silent then UIManager:show(InfoMessage:new{ text = "Fetch timed out. Please try again.", timeout = 5 }) end
+                    end
+                elseif data == false then
+                    if wait_msg then UIManager:close(wait_msg) end
                     self.bg_fetch_active = false
-                    self:log("XRayPlugin: Failed to start async background fetch")
+                    self:log("XRayPlugin: Fetch failed: " .. tostring(p_err_msg))
+                    if not is_silent then
+                        local user_msg = p_err_msg or self.loc:t("error_fetch_desc") or "Failed to fetch data."
+                        if tostring(p_err_msg):find("429") then
+                            user_msg = "Rate Limit Exceeded (HTTP 429).\n\nThe AI provider rejected the request. This typically means your free API quota is exhausted for today.\n\n• Wait ~1 minute, then try again\n• Or switch to a Claude or OpenRouter model in Settings → API Provider"
+                        end
+                        local ButtonDialog = require("ui/widget/buttondialog")
+                        local err_dialog
+                        err_dialog = ButtonDialog:new{ title = self.loc:t("error_fetch_title") or "Fetch Failed", text = user_msg, buttons = {{{ text = self.loc:t("ok"), callback = function() UIManager:close(err_dialog) end }}} }
+                        UIManager:show(err_dialog)
+                    end
+                else
+                    if wait_msg then UIManager:close(wait_msg) end
+                    self.bg_fetch_active = false
+                    self:finalizeXRayData(data, title, author, book_text, is_update, is_silent, current_page)
                 end
-                return
             end
-
-            self.ai_helper:setTrapWidget(wait_msg)
-            local final_book_data, error_code, error_msg = self.ai_helper:getBookDataComprehensive(title, author, nil, context)
-            self.ai_helper:resetTrapWidget()
-
-            if wait_msg then UIManager:close(wait_msg) end
-            if is_cancelled or error_code == "USER_CANCELLED" then return end
-
-            if not final_book_data then
-                local error_dialog
-                local ButtonDialog = require("ui/widget/buttondialog")
-                error_dialog = ButtonDialog:new{ title = self.loc:t("error_fetch_title") or "Fetch Failed", text = error_msg or self.loc:t("error_fetch_desc") or "Failed to fetch data.", buttons = {{{ text = self.loc:t("ok"), callback = function() UIManager:close(error_dialog) end }}} }
-                UIManager:show(error_dialog)
-                return
-            end
-
-            self:finalizeXRayData(final_book_data, title, author, book_text, is_update, false, current_page)
-        end) -- end scheduleIn(0) yield
+            UIManager:scheduleIn(2, poll)
+        end)
     end)
 end
 
@@ -529,7 +567,18 @@ function M:fetchMoreCharacters()
 
         local wait_msg
         local is_cancelled = false
-        wait_msg = InfoMessage:new{ text = (self.loc:t("fetching_ai") or "Fetching from %s...") .. "\n\n" .. title .. "\n\n" .. (self.loc:t("extracting_more_characters") or "Extracting additional characters..."), timeout = 120 }
+        local ButtonDialog = require("ui/widget/buttondialog")
+        wait_msg = ButtonDialog:new{
+            title = self.loc:t("fetching_ai") or "Fetching AI...",
+            text = (self.loc:t("extracting_more_characters") or "Extracting additional characters...") .. "\n\n" .. title,
+            buttons = {{{
+                text = self.loc:t("cancel") or "Cancel",
+                callback = function()
+                    is_cancelled = true
+                    if wait_msg then UIManager:close(wait_msg) end
+                end
+            }}}
+        }
         UIManager:show(wait_msg)
         
         UIManager:scheduleIn(0.5, function()
@@ -661,7 +710,18 @@ function M:fetchAuthorInfo()
     local author = sanitizeMetadata(props.authors)
     local wait_msg
     local is_cancelled = false
-    wait_msg = InfoMessage:new{ text = self.loc:t("fetching_author", "AI") .. "\n\n" .. title .. " - " .. author .. "\n\n" .. self.loc:t("fetching_wait"), timeout = 120 }
+    local ButtonDialog = require("ui/widget/buttondialog")
+    wait_msg = ButtonDialog:new{
+        title = self.loc:t("fetching_author", "AI") or "Fetching Author...",
+        text = title .. " - " .. author,
+        buttons = {{{
+            text = self.loc:t("cancel") or "Cancel",
+            callback = function()
+                is_cancelled = true
+                if wait_msg then UIManager:close(wait_msg) end
+            end
+        }}}
+    }
     UIManager:show(wait_msg)
     UIManager:scheduleIn(0.5, function()
         if is_cancelled then return end
@@ -681,9 +741,7 @@ function M:fetchAuthorInfo()
         if is_cancelled or error_code == "USER_CANCELLED" then return end
 
         if not author_data then
-            local error_dialog
-            local ButtonDialog = require("ui/widget/buttondialog")
-            error_dialog = ButtonDialog:new{ title = self.loc:t("error_author_fetch_title") or "Error: Author Fetch", text = (error_msg or self.loc:t("error_author_fetch_desc") or "Failed to fetch author info.") .. "\n\n(See crash.log in root for details)", buttons = {{{ text = self.loc:t("ok"), callback = function() UIManager:close(error_dialog) end }}} }
+            local error_dialog = ButtonDialog:new{ title = self.loc:t("error_author_fetch_title") or "Error: Author Fetch", text = (error_msg or self.loc:t("error_author_fetch_desc") or "Failed to fetch author info.") .. "\n\n(See crash.log in root for details)", buttons = {{{ text = self.loc:t("ok"), callback = function() UIManager:close(error_dialog) end }}} }
             UIManager:show(error_dialog)
             return
         end
@@ -723,4 +781,3 @@ function M:checkWeeklyUpdate()
 end
 
 return M
-
