@@ -36,7 +36,7 @@ For full setup instructions and a deep dive into features, check out the **[GitH
 
 ## Support me
 
-[liberapay](https://liberapay.com/ultimatejimmy) 
-![liberapay](https://img.shields.io/liberapay/patrons/ultimatejimmy.svg?logo=liberapay)
+![liberapay](https://img.shields.io/liberapay/patrons/ultimatejimmy.svg?logo=liberapay) [liberapay](https://liberapay.com/ultimatejimmy) 
+
 [Buy me a coffee](https://www.buymeacoffee.com/ultimatejimmy)
 
