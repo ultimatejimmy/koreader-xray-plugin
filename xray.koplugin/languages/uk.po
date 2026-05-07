@@ -270,7 +270,7 @@ msgid "menu_primary_ai_model"
 msgstr "Основна модель ШІ"
 
 msgid "menu_reasoning_effort"
-msgstr "Рівень міркування GPT"
+msgstr "AI Reasoning Effort"
 
 msgid "menu_secondary_ai_model"
 msgstr "Запасна модель ШІ"
@@ -372,7 +372,7 @@ msgid "quick_menu_title"
 msgstr "Швидке меню X-Ray"
 
 msgid "reasoning_about"
-msgstr "Controls "
+msgstr "Controls 'thinking' depth for reasoning models:\n\n• Unset: No specific instruction sent; model uses its internal defaults.\n• Low: Fast, economical extraction for simple books.\n• Medium: Balanced depth for most narratives.\n• High: Detailed analysis for complex character webs.\n\nApplies to: GPT-5.x, DeepSeek Reasoner, Claude 4.5+ (extended thinking), and Gemini 2.5+."
 
 msgid "reasoning_high"
 msgstr "Високий"
@@ -383,8 +383,8 @@ msgstr "Низький"
 msgid "reasoning_medium"
 msgstr "Середній"
 
-msgid "reasoning_xhigh"
-msgstr "Дуже високий"
+msgid "reasoning_unset"
+msgstr "Unset (Default)"
 
 msgid "save"
 msgstr "Зберегти"

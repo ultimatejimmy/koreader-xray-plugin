@@ -631,7 +631,7 @@ function XRayPlugin:getSubMenuItems()
                             sub_item_table_func = function() return self:getAIModelSelectionMenu("secondary") end,
                         },
                         {
-                            text = self.loc:t("menu_reasoning_effort") or "Reasoning Effort",
+                            text = self.loc:t("menu_reasoning_effort") or "AI Reasoning Effort",
                             keep_menu_open = true,
                             callback = function() self:showReasoningEffortSettings() end,
                             separator = true,

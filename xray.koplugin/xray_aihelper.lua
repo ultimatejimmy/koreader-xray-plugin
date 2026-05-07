@@ -198,9 +198,9 @@ function AIHelper:buildComprehensiveRequest(title, author, context)
                 headers = { ["Content-Type"] = "application/json", ["x-goog-api-key"] = config.api_key }
                 
                 local gen_config = { temperature = 0.2, maxOutputTokens = 16384 } -- default
-                local current_effort = self.settings and self.settings.reasoning_effort or "medium"
-                if model:find("thinking") or model:find("2%.5") or model:find("3%.0") or model:find("pro") or model:find("flash") then
-                    local effort_map = { low = 1024, medium = 2048, high = 4096, xhigh = 8192 }
+                local current_effort = self.settings and self.settings.reasoning_effort
+                if current_effort and (model:find("thinking") or model:find("2%.5") or model:find("3%.0") or model:find("pro") or model:find("flash")) then
+                    local effort_map = { low = 1024, medium = 2048, high = 4096 }
                     local budget = effort_map[current_effort] or 2048
                     
                     -- Gemini 1.5 Pro, 1.5 Flash, and 2.0 Flash have a hard output limit of 8,192 tokens.
@@ -248,23 +248,25 @@ function AIHelper:buildComprehensiveRequest(title, author, context)
                 }
                 
                 if model:find("sonnet") or model:find("opus") or model:find("haiku") then
-                    local current_effort = self.settings and self.settings.reasoning_effort or "medium"
-                    local effort_map = { low = 2048, medium = 4096, high = 8192, xhigh = 16384 }
-                    local budget = effort_map[current_effort] or 4096
-                    -- Haiku has a hard max_tokens limit of 8192; silently cap budget to leave room for output.
-                    -- Claude thinking tokens count against max_tokens, so max_tokens must be > budget_tokens.
-                    if model:find("haiku") and budget > 2000 then
-                        self:log(string.format("AIHelper: Haiku detected — capping thinking budget from %d to 2000 (haiku max_tokens=8192)", budget))
-                        budget = 2000
-                        req_body.max_tokens = 8192
-                    else
-                        -- For sonnet/opus: dynamically scale max_tokens to always leave 8000 tokens for the JSON response.
-                        -- Without this, at 'high' effort budget_tokens==max_tokens leaving zero room for output.
-                        local output_reserve = 8000
-                        req_body.max_tokens = budget + output_reserve
+                    local current_effort = self.settings and self.settings.reasoning_effort
+                    if current_effort then
+                        local effort_map = { low = 2048, medium = 4096, high = 8192 }
+                        local budget = effort_map[current_effort] or 4096
+                        -- Haiku has a hard max_tokens limit of 8192; silently cap budget to leave room for output.
+                        -- Claude thinking tokens count against max_tokens, so max_tokens must be > budget_tokens.
+                        if model:find("haiku") and budget > 2000 then
+                            self:log(string.format("AIHelper: Haiku detected — capping thinking budget from %d to 2000 (haiku max_tokens=8192)", budget))
+                            budget = 2000
+                            req_body.max_tokens = 8192
+                        else
+                            -- For sonnet/opus: dynamically scale max_tokens to always leave 8000 tokens for the JSON response.
+                            -- Without this, at 'high' effort budget_tokens==max_tokens leaving zero room for output.
+                            local output_reserve = 8000
+                            req_body.max_tokens = budget + output_reserve
+                        end
+                        -- Claude extended thinking configuration
+                        req_body.thinking = { type = "enabled", budget_tokens = budget }
                     end
-                    -- Claude extended thinking configuration
-                    req_body.thinking = { type = "enabled", budget_tokens = budget }
                 end
                 
                 body = json.encode(req_body)
@@ -308,12 +310,14 @@ function AIHelper:buildComprehensiveRequest(title, author, context)
                 -- OpenAI recommends reserving ~25k for reasoning, so 65k is a safe ceiling.
                 if (ai.provider == "chatgpt" or ai.provider == "custom1" or ai.provider == "custom2")
                     and (model:find("^gpt%-5") or model:find("^o[13]")) then
-                    local current_effort = self.settings and self.settings.reasoning_effort or "medium"
-                    req_body.reasoning_effort = current_effort
-                    req_body.response_format = nil  -- incompatible with reasoning_effort
-                    if current_effort == "high" or current_effort == "xhigh" then
-                        req_body[token_param] = 65000
-                        self:log(string.format("AIHelper: OpenAI %s at %s effort — dropping json_object mode, raising max_completion_tokens to 65000", model, current_effort))
+                    local current_effort = self.settings and self.settings.reasoning_effort
+                    if current_effort then
+                        req_body.reasoning_effort = current_effort
+                        req_body.response_format = nil  -- incompatible with reasoning_effort
+                        if current_effort == "high" then
+                            req_body[token_param] = 65000
+                            self:log(string.format("AIHelper: OpenAI %s at %s effort — dropping json_object mode, raising max_completion_tokens to 65000", model, current_effort))
+                        end
                     end
                 end
                 
@@ -783,6 +787,13 @@ function AIHelper:loadSettings()
     end
     
     if migrated then
+        self.settings = settings
+        self:saveSettings()
+    end
+    
+    -- Migrate Extra High reasoning effort to High (Extra High is being removed)
+    if settings.reasoning_effort == "xhigh" then
+        settings.reasoning_effort = "high"
         self.settings = settings
         self:saveSettings()
     end

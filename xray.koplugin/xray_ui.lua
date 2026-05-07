@@ -1778,12 +1778,21 @@ function M:showReasoningEffortSettings()
     
     local function showSettings()
         if info_dialog then UIManager:close(info_dialog) end
-        local current = self.ai_helper.settings and self.ai_helper.settings.reasoning_effort or "medium"
+        local current = self.ai_helper.settings and self.ai_helper.settings.reasoning_effort or "none"
         
         info_dialog = ButtonDialog:new{
             title = self.loc:t("menu_reasoning_effort") or "AI Model Reasoning Effort",
             text = "Controls internal 'thinking' time for supported reasoning models.",
             buttons = {
+                {
+                    {
+                        text = (current == "none" and "[✓] " or "[  ] ") .. (self.loc:t("reasoning_unset") or "Unset (Default)"),
+                        callback = function()
+                            self.ai_helper:saveSettings({ reasoning_effort = nil })
+                            UIManager:nextTick(function() showSettings() end)
+                        end
+                    }
+                },
                 {
                     {
                         text = (current == "low" and "[✓] " or "[  ] ") .. (self.loc:t("reasoning_low") or "Low"),
@@ -1808,20 +1817,13 @@ function M:showReasoningEffortSettings()
                             UIManager:nextTick(function() showSettings() end)
                         end
                     },
-                    {
-                        text = (current == "xhigh" and "[✓] " or "[  ] ") .. (self.loc:t("reasoning_xhigh") or "Extra High"),
-                        callback = function()
-                            self.ai_helper:saveSettings({ reasoning_effort = "xhigh" })
-                            UIManager:nextTick(function() showSettings() end)
-                        end
-                    }
                 },
                 {
                     {
                         text = self.loc:t("about") or "About",
                         callback = function()
                             UIManager:show(InfoMessage:new{
-                                text = self.loc:t("reasoning_about") or "Controls 'thinking' depth for reasoning models:\n\n• Low: Fast, economical extraction for simple books.\n• Medium: Balanced depth for most narratives.\n• High: Detailed analysis for complex character webs.\n• Extra High: Maximum effort for long books or omnibus editions.\n\nApplies to: GPT-5.x, DeepSeek Reasoner, Claude 4.5+ (extended thinking), and Gemini 2.5+.",
+                                text = self.loc:t("reasoning_about") or "Controls 'thinking' depth for reasoning models:\n\n• Unset: No specific instruction sent; model uses its internal defaults.\n• Low: Fast, economical extraction for simple books.\n• Medium: Balanced depth for most narratives.\n• High: Detailed analysis for complex character webs.\n\nApplies to: GPT-5.x, DeepSeek Reasoner, Claude 4.5+ (extended thinking), and Gemini 2.5+.",
                                 timeout = 12
                             })
                         end
