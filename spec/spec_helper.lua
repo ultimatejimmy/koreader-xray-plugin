@@ -1,5 +1,7 @@
 -- spec_helper.lua
 package.path = package.path .. ";xray.koplugin/?.lua"
+package.path = package.path .. ";/home/jpautz/.luarocks/share/lua/5.1/?.lua"
+package.path = package.path .. ";/home/jpautz/.luarocks/share/lua/5.1/?/init.lua"
 
 -- Mocking KOReader environment
 package.loaded["device"] = {
@@ -7,7 +9,11 @@ package.loaded["device"] = {
     isKindle = function() return true end,
     isPocketBook = function() return false end,
     isKobo = function() return false end,
-    isKoboV2 = function() return false end
+    isKoboV2 = function() return false end,
+    screen = {
+        getWidth = function() return 600 end,
+        getHeight = function() return 800 end
+    }
 }
 
 package.loaded["docsettings"] = {
@@ -38,27 +44,74 @@ package.loaded["logger"] = {
     debug = function(...) end
 }
 
-package.loaded["xray_aihelper"] = {
+package.loaded["xray_logger"] = {
     log = function(...) end,
-    getProvider = function() return "openai" end
 }
 
 package.loaded["datastorage"] = {
     getSettingsDir = function() return "/tmp/koreader/settings" end
 }
 
+-- UI tracking for testing
+_G.ui_tracker = {
+    shown = {},
+    last_shown = nil,
+    closed = {}
+}
+
 package.loaded["ui/uimanager"] = {
-    show = function() end,
-    close = function() end,
-    scheduleIn = function() end
+    show = function(a, b)
+        local w = b or a
+        table.insert(_G.ui_tracker.shown, w)
+        _G.ui_tracker.last_shown = w
+    end,
+    close = function(a, b)
+        local w = b or a
+        table.insert(_G.ui_tracker.closed, w)
+    end,
+    scheduleIn = function(a, b)
+        if type(a) == "function" then a()
+        elseif type(b) == "function" then b() end
+    end,
+    nextTick = function(f) f() end,
+    setDirty = function() end
 }
-package.loaded["ui/widget/infomessage"] = {}
+package.loaded["ui/widget/infomessage"] = {
+    new = function(a, b) return { type = "InfoMessage", args = b or a } end
+}
 package.loaded["ui/widget/buttondialog"] = {
-    new = function() return {} end
+    new = function(a, b) return { type = "ButtonDialog", args = b or a } end
 }
-package.loaded["ui/network/manager"] = {
-    runWhenOnline = function(cb) cb() end
+package.loaded["ui/widget/confirmbox"] = {
+    new = function(a, b) return { type = "ConfirmBox", args = b or a } end
 }
+package.loaded["ui/widget/menu"] = {
+    new = function(a, b) return { type = "Menu", args = b or a } end
+}
+package.loaded["gettext"] = {
+    _ = function(s) return s end,
+    getLanguage = function() return "en" end
+}
+package.loaded["ui/trapper"] = {
+    dismissableRunInSubprocess = function(_, _, f) return true, f() end
+}
+package.loaded["xray_logger"] = {
+    log = function(...) end,
+}
+package.loaded["socket.http"] = {}
+package.loaded["ssl.https"] = {}
+package.loaded["ltn12"] = {}
+package.loaded["socket"] = {}
+package.loaded["socketutil"] = {}
+local json_lib = nil
+pcall(function() json_lib = require("dkjson") end)
+if not json_lib then
+    json_lib = {
+        encode = function(t) return "{}" end,
+        decode = function(s) return {} end
+    }
+end
+package.loaded["json"] = json_lib
 
 function _G.createMockPlugin()
     local plugin = {
@@ -71,7 +124,9 @@ function _G.createMockPlugin()
             getCurrentPage = function() return 10 end
         },
         loc = {
-            t = function(s) return s end
+            t = function(s, s2) return s2 or s end,
+            getLanguage = function() return "en" end,
+            setLanguage = function() end
         },
         ai_helper = {
             log = function() end,

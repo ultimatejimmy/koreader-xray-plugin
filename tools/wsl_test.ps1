@@ -53,7 +53,22 @@ function Run-Workflow {
     }
     Write-Host " SUCCESS" -ForegroundColor Green
 
-    Write-Host "`nReady! Please restart KOReader via the menu to see changes." -ForegroundColor Yellow
+    # 4. Restart KOReader
+    Write-Host "Restarting KOReader..." -ForegroundColor Cyan
+    # Kill any existing processes (WSL and Windows)
+    wsl pkill -f koreader 2>$null
+    Stop-Process -Name "koreader" -ErrorAction SilentlyContinue
+    
+    # Restart if a start command is known, otherwise notify user
+    # You can set $env:KOREADER_START_CMD to your preferred launch command
+    if ($env:KOREADER_START_CMD) {
+        Write-Host "Starting KOReader: $env:KOREADER_START_CMD"
+        Invoke-Expression $env:KOREADER_START_CMD
+    } else {
+        Write-Host "KOReader killed. Manual restart required (set `$env:KOREADER_START_CMD to automate)." -ForegroundColor Yellow
+    }
+
+    Write-Host "`nReady!" -ForegroundColor Green
     return $true
 }
 

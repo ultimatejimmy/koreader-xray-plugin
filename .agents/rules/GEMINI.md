@@ -26,9 +26,10 @@ After approval, write high-level, tested code.
 3. **Create the Plan:** Formulate a detailed, step-by-step implementation plan. Each step should be a clear, actionable instruction. The full plan needs to be presented every time for approval.
 4. **Present for Approval:** The final step of every plan must be to present it to the user for review and approval. Do not proceed with the plan until you have received approval.
 5. **Write the code:** Use human-readable comments where appropriate (don't over-comment) and write concise functional code.
-6. **Verification Workflow:** After any modification, always run the WSL test suite: `powershell -ExecutionPolicy Bypass -File tools/wsl_test.ps1`. This script handles syntax checks, unit tests, and syncing.
-7. **Testing:** Any new logic (especially in `xray_chapteranalyzer.lua` or `xray_fetch.lua`) should include a corresponding test in the `spec/` directory. Use `busted` for unit testing.
-8. **Language translations:** `en.po` is the primary language master. Whenever you add or modify translation keys in the code (e.g., `loc:t("key")`), you MUST run `python tools/sync_translations.py` to propagate changes across all `.po` files. This is as critical as the verification workflow.
+6. **Verification Workflow:** After any modification, you MUST run the full verification and synchronization script: `powershell -ExecutionPolicy Bypass -File tools/wsl_test.ps1`. This ensures syntax is valid, all 53+ unit tests pass, and changes are synced to the test environment.
+7. **Test-Driven Development:** For every new feature or logic modification, you MUST add corresponding unit tests in the `spec/` directory. Coverage should include edge cases, error handling, and expected success paths. Use `busted` and existing mocks in `spec/spec_helper.lua`.
+8. **Language translations:** `en.po` is the primary language master. Whenever you add or modify translation keys in the code (e.g., `loc:t("key")`), you MUST run `python tools/sync_translations.py` to propagate changes across all `.po` files.
+9. **Automated Restart:** The verification workflow attempts to restart KOReader automatically. To enable full automation, set the `$env:KOREADER_START_CMD` environment variable in PowerShell to your launch command (e.g., `wsl ~/koreader/koreader.sh` or the path to your Windows emulator).
 
 ## End User testing
 - I do all user testing my my Kindle Paperwhite 1 (gen 5) from 2012 and my Pixel 8a.

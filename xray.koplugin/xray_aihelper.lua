@@ -18,7 +18,7 @@ end
 
 
 local AIHelper = {
-    path = nil,
+    path = ".",
     providers = {
         gemini = {
             name = "Google Gemini",
@@ -73,7 +73,7 @@ end
 -- Byte-based string.sub() throughout the plugin can slice multi-byte UTF-8
 -- characters mid-sequence, leaving an invalid prefix/suffix that makes the
 -- JSON request body non-parseable to strict APIs like OpenAI's.
-local function sanitize_utf8(s)
+function AIHelper:sanitize_utf8(s)
     if not s or s == "" then return s or "" end
     local out, i, len = {}, 1, #s
     while i <= len do
@@ -126,6 +126,9 @@ local function sanitize_utf8(s)
     end
     return table.concat(out)
 end
+
+-- Backward compatibility for internal calls
+local sanitize_utf8 = function(s) return AIHelper:sanitize_utf8(s) end
 
 function AIHelper:getChatGPTTokenConfig(model)
     -- OpenAI reasoning models (o1, o3) and newer generations (gpt-5+) REQUIRE max_completion_tokens.
@@ -1310,7 +1313,7 @@ local function normalizeKeys(t)
     return res
 end
 
-local function fixTruncatedJSON(s)
+function AIHelper:fixTruncatedJSON(s)
     local stack, in_string, escaped = {}, false, false
     for i = 1, #s do
         local c = s:sub(i,i)
@@ -1338,6 +1341,9 @@ local function fixTruncatedJSON(s)
     end
     return res
 end
+
+-- Backward compatibility for internal calls
+local fixTruncatedJSON = function(s) return AIHelper:fixTruncatedJSON(s) end
 
 function AIHelper:parseAIResponse(text)
     if not text or #text == 0 then return nil, "Empty response" end
