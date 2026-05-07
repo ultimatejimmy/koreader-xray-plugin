@@ -833,8 +833,6 @@ function AIHelper:loadSettings()
     -- Migrate Extra High reasoning effort to High (Extra High is being removed)
     if settings.reasoning_effort == "xhigh" then
         settings.reasoning_effort = "high"
-        self.settings = settings
-        self:saveSettings()
     end
     
     self.settings = settings

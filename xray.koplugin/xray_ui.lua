@@ -1809,7 +1809,8 @@ function M:showReasoningEffortSettings()
                     {
                         text = (current == "none" and "[✓] " or "[  ] ") .. (self.loc:t("reasoning_unset") or "Unset (Default)"),
                         callback = function()
-                            self.ai_helper:saveSettings({ reasoning_effort = nil })
+                            self.ai_helper.settings.reasoning_effort = nil
+                            self.ai_helper:saveSettings()
                             UIManager:nextTick(function() showSettings() end)
                         end
                     }

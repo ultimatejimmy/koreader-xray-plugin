@@ -30,7 +30,6 @@ function Run-Workflow {
 
     # 3. Sync
     Write-Host "Syncing to WSL..." -NoNewline
-    # Ensure dest dir exists
     wsl mkdir -p (Split-Path $WSLDest -Parent)
     
     # Smart Config Merge (mimics xray_updater.lua)
@@ -55,15 +54,12 @@ function Run-Workflow {
 
     # 4. Restart KOReader
     Write-Host "Restarting KOReader..." -ForegroundColor Cyan
-    # Kill any existing processes (WSL and Windows)
-    wsl pkill -f koreader 2>$null
-    Stop-Process -Name "koreader" -ErrorAction SilentlyContinue
-    
-    # Define start command (use env var if set, otherwise use default)
-    $StartCmd = if ($env:KOREADER_START_CMD) { $env:KOREADER_START_CMD } else { 'C:\Windows\System32\wsl.exe --exec dbus-launch --exit-with-session bash -c "cd /mnt/c/Users/jpautz/squashfs-root && ./AppRun"' }
-    
+    wsl pkill -9 -f koreader 2>$null
+    wsl pkill -9 -f AppRun 2>$null
+    Start-Sleep -Seconds 1
+
+    $StartCmd = if ($env:KOREADER_START_CMD) { $env:KOREADER_START_CMD } else { 'wsl /mnt/c/Users/jpautz/squashfs-root/AppRun' }
     Write-Host "Starting KOReader: $StartCmd"
-    # Execute the start command in a fresh, non-blocking session
     try {
         $psi = New-Object System.Diagnostics.ProcessStartInfo
         $psi.FileName = "powershell.exe"
@@ -89,9 +85,6 @@ if ($Watch) {
     $watcher.EnableRaisingEvents = $true
 
     $action = {
-        $path = $Event.SourceEventArgs.FullPath
-        $changeType = $Event.SourceEventArgs.ChangeType
-        Write-Host "`nChange detected: $path ($changeType)" -ForegroundColor Gray
         Run-Workflow
     }
 
