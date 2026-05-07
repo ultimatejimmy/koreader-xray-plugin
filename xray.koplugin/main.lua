@@ -170,6 +170,19 @@ function XRayPlugin:init()
                 }
             end)
         end
+
+        -- Register X-Ray button with new KOReader dict API (PR #15184+)
+        -- Safe no-op on older versions where addToDictButtons doesn't exist.
+        if self.ui and self.ui.dictionary
+                and type(self.ui.dictionary.addToDictButtons) == "function" then
+            self.ui.dictionary:addToDictButtons({
+                id = "xray_lookup",
+                menu_text = _t(self, "menu_xray", "X-Ray"),
+                text = "X-Ray",
+                show_func = function() return self.xray_mode_enabled end,
+                callback = self:_buildXRayDictButton(nil).callback,
+            })
+        end
     end
     
         logger.info("XRayPlugin: Initialized successfully")
@@ -183,20 +196,24 @@ function XRayPlugin:init()
 end
 
 
--- Hook for Dictionary/Selection Popup (single word)
-function XRayPlugin:onDictButtonsReady(dict_popup, dict_buttons)
-    if not self.xray_mode_enabled then return end
-    
-    local xray_button = {
+-- Builds the X-Ray button spec for the dict popup.
+-- Used by both the new addToDictButtons API and the legacy onDictButtonsReady hook.
+function XRayPlugin:_buildXRayDictButton(dict_popup_arg)
+    -- dict_popup_arg is either:
+    --   new API: the DictQuickLookup widget instance (passed by KOReader as arg to callback)
+    --   old API: the dict_popup captured as upvalue in onDictButtonsReady
+    return {
         text = "X-Ray",
-        callback = function()
-            -- Extract text and position data BEFORE closing
-            local text = dict_popup and (dict_popup.word or dict_popup.text or dict_popup.selection_text)
-            local pos0 = dict_popup and dict_popup.pos0
-            local pos1 = dict_popup and dict_popup.pos1
+        callback = function(widget_instance)
+            if not self.xray_mode_enabled then return end
+            -- In new API, widget_instance is passed. In old API, use upvalue.
+            local popup = widget_instance or dict_popup_arg
+            local text = popup and (popup.word or popup.text or popup.selection_text)
+            local pos0 = popup and popup.pos0
+            local pos1 = popup and popup.pos1
             
             -- Close the native dictionary popup immediately so it doesn't linger
-            if dict_popup then pcall(function() UIManager:close(dict_popup) end) end
+            if popup then pcall(function() UIManager:close(popup) end) end
             
             -- Execute optimized clear and clear selection
             self:closeAllMenus()
@@ -209,6 +226,23 @@ function XRayPlugin:onDictButtonsReady(dict_popup, dict_buttons)
                 self.lookup_manager:handleLookup(text, pos0, pos1)
             end
         end,
+    }
+end
+
+-- Hook for Dictionary/Selection Popup (single word)
+function XRayPlugin:onDictButtonsReady(dict_popup, dict_buttons)
+    if not self.xray_mode_enabled then return end
+    -- If new KOReader API is present, we already registered at init() time.
+    -- This hook won't be called on new KOReader anyway, but guard for safety.
+    if self.ui and self.ui.dictionary
+            and type(self.ui.dictionary.addToDictButtons) == "function" then
+        return
+    end
+
+    local btn = self:_buildXRayDictButton(dict_popup)
+    local xray_button = {
+        text = btn.text,
+        callback = function() btn.callback(nil) end, -- nil => uses dict_popup upvalue
     }
 
     -- KOReader expects rows of buttons. Wrap our button in a row.

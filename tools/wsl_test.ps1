@@ -59,13 +59,21 @@ function Run-Workflow {
     wsl pkill -f koreader 2>$null
     Stop-Process -Name "koreader" -ErrorAction SilentlyContinue
     
-    # Restart if a start command is known, otherwise notify user
-    # You can set $env:KOREADER_START_CMD to your preferred launch command
-    if ($env:KOREADER_START_CMD) {
-        Write-Host "Starting KOReader: $env:KOREADER_START_CMD"
-        Invoke-Expression $env:KOREADER_START_CMD
-    } else {
-        Write-Host "KOReader killed. Manual restart required (set `$env:KOREADER_START_CMD to automate)." -ForegroundColor Yellow
+    # Define start command (use env var if set, otherwise use default)
+    $StartCmd = if ($env:KOREADER_START_CMD) { $env:KOREADER_START_CMD } else { 'C:\Windows\System32\wsl.exe --exec dbus-launch --exit-with-session bash -c "cd /mnt/c/Users/jpautz/squashfs-root && ./AppRun"' }
+    
+    Write-Host "Starting KOReader: $StartCmd"
+    # Execute the start command in a fresh, non-blocking session
+    try {
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = "powershell.exe"
+        $psi.Arguments = "-NoProfile -Command `"$StartCmd`""
+        $psi.UseShellExecute = $true
+        $psi.WindowStyle = "Normal"
+        [System.Diagnostics.Process]::Start($psi) | Out-Null
+        Write-Host "Restart command sent successfully." -ForegroundColor Green
+    } catch {
+        Write-Host "Failed to start KOReader: $($_.Exception.Message)" -ForegroundColor Red
     }
 
     Write-Host "`nReady!" -ForegroundColor Green
