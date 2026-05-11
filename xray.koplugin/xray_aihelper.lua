@@ -395,19 +395,51 @@ function AIHelper:makeRequestAsync(request_params, result_file)
             local success_found = false
             for i, req in ipairs(requests) do
                 self:log(string.format("AIHelper Child: Sending request %d/%d to %s (%s)", i, #requests, req.provider, req.model or "default"))
-                local response_body = {}
-                local request = {
-                    url = req.url,
-                    method = "POST",
-                    headers = req.headers or {},
-                    source = ltn12_req.source.string(req.body or ""),
-                    sink = socketutil_req.table_sink(response_body)
-                }
-                local ok, code, response_headers, status = http_req.request(request)
-                local response_text = table.concat(response_body)
-                local code_num = tonumber(code)
+                
+                local ok, code, response_headers, status, response_text, code_num
+                local attempts = 0
+                local max_attempts = 2
+
+                while attempts < max_attempts do
+                    attempts = attempts + 1
+                    local response_body = {}
+                    local request = {
+                        url = req.url,
+                        method = "POST",
+                        headers = req.headers or {},
+                        source = ltn12_req.source.string(req.body or ""),
+                        sink = socketutil_req.table_sink(response_body)
+                    }
+                    ok, code, response_headers, status = http_req.request(request)
+                    response_text = table.concat(response_body)
+                    code_num = tonumber(code)
+
+                    if code_num == 503 and attempts < max_attempts then
+                        self:log("AIHelper Child: 503 Service Overloaded — retrying in 2s...")
+                        socket.sleep(2)
+                    else
+                        break
+                    end
+                end
+
+                -- Mirror the content-length completeness check from makeRequest (lines 167-170)
+                if response_headers and response_headers["content-length"] then
+                    local clen = tonumber(response_headers["content-length"])
+                    if clen and #response_text < clen then
+                        self:log(string.format(
+                            "AIHelper Child: Incomplete response from %s — got %d bytes, expected %d. Treating as failure.",
+                            req.provider, #response_text, clen))
+                        code_num = nil -- prevents falling into the code_num==200 block below
+                    end
+                end
 
                 self:log("AIHelper Child: Request finished with code " .. tostring(code))
+
+                -- Add pacing after transient failures to avoid "cascading" quota/load issues on fallback
+                if code_num == 429 or code_num == 503 then
+                    self:log("AIHelper Child: Transient error " .. tostring(code_num) .. " — pacing fallback (2s)")
+                    socket.sleep(2)
+                end
 
                 if code_num == 200 then
                     -- Quick JSON validation before accepting the response
@@ -424,6 +456,10 @@ function AIHelper:makeRequestAsync(request_params, result_file)
                                     ai_text = ai_text .. p.text
                                 end
                             end
+                            local finish_reason = (parsed.candidates[1] and parsed.candidates[1].finishReason) or "STOP"
+                            if #ai_text == 0 then
+                                self:log("AIHelper Child: Gemini ai_text empty. finishReason=" .. finish_reason)
+                            end
                             if #ai_text > 0 then
                                 local inner_ok, inner = pcall(json_req.decode, ai_text)
                                 valid_json = inner_ok and inner ~= nil
@@ -431,7 +467,23 @@ function AIHelper:makeRequestAsync(request_params, result_file)
                                     -- Try to find JSON boundaries for truncated responses
                                     local first_brace = ai_text:find("{", 1, true)
                                     if first_brace then
-                                        valid_json = true -- Let main thread's fixTruncatedJSON handle it
+                                        -- Part B: Try to repair before giving up
+                                        local repaired = self:fixTruncatedJSON(ai_text:sub(first_brace))
+                                        local repair_ok, repair_data = pcall(json_req.decode, repaired)
+                                        if repair_ok and repair_data then
+                                            self:log("AIHelper Child: fixTruncatedJSON succeeded for " .. req.provider)
+                                            local synthetic = json_req.encode({
+                                                candidates = {{
+                                                    content = { parts = {{ text = repaired }} },
+                                                    finishReason = "STOP"
+                                                }}
+                                            })
+                                            response_text = synthetic
+                                            valid_json = true
+                                        else
+                                            self:log("AIHelper Child: Quick repair unsuccessful; handing off to main thread for advanced parsing")
+                                            valid_json = true -- Fall back to main thread's repair if child fails but it has a brace
+                                        end
                                     end
                                 end
                             end
@@ -444,7 +496,21 @@ function AIHelper:makeRequestAsync(request_params, result_file)
                                 if not valid_json then
                                     local first_brace = content:find("{", 1, true)
                                     if first_brace then
-                                        valid_json = true
+                                        local repaired = self:fixTruncatedJSON(content:sub(first_brace))
+                                        local repair_ok, repair_data = pcall(json_req.decode, repaired)
+                                        if repair_ok and repair_data then
+                                            self:log("AIHelper Child: fixTruncatedJSON succeeded for ChatGPT/" .. req.provider)
+                                            local synthetic = json_req.encode({
+                                                choices = {{
+                                                    message = { content = repaired, role = "assistant" }
+                                                }}
+                                            })
+                                            response_text = synthetic
+                                            valid_json = true
+                                        else
+                                            self:log("AIHelper Child: Quick repair unsuccessful; handing off to main thread for advanced parsing")
+                                            valid_json = true
+                                        end
                                     end
                                 end
                             end
@@ -646,7 +712,11 @@ function AIHelper:checkAsyncResult(result_file)
         end
     end
 
-    if not ai_text then return false, "error_parse", "No text in AI response" end
+    if not ai_text or #ai_text == 0 then
+        local finish_reason = (data.candidates and data.candidates[1] and data.candidates[1].finishReason) or "unknown"
+        self:log("AIHelper: Gemini ai_text empty. finishReason=" .. finish_reason)
+        return false, "error_parse", "No text in AI response (finishReason=" .. finish_reason .. ")"
+    end
 
     local parsed_data, parse_err = self:parseAIResponse(ai_text)
     if parsed_data then
@@ -1174,6 +1244,12 @@ function AIHelper:callGemini(prompt, config, current_model)
     local request_body = json.encode({
         contents = {{ role = "user", parts = {{ text = prompt }} }},
         system_instruction = { parts = {{ text = system_instruction_text }} },
+        safetySettings = {
+            { category = "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold = "BLOCK_NONE" },
+            { category = "HARM_CATEGORY_HATE_SPEECH",       threshold = "BLOCK_NONE" },
+            { category = "HARM_CATEGORY_HARASSMENT",        threshold = "BLOCK_NONE" },
+            { category = "HARM_CATEGORY_DANGEROUS_CONTENT", threshold = "BLOCK_NONE" }
+        },
         generationConfig = { temperature = 0.2, maxOutputTokens = 16384 }
     })
     self:log("AIHelper: Sending Gemini request (" .. #request_body .. " bytes)")

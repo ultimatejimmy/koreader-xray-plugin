@@ -19,6 +19,16 @@ function Run-Workflow {
     }
     Write-Host " PASSED" -ForegroundColor Green
 
+    # 1.5 Translation Sync Check
+    Write-Host "Checking translation sync..." -NoNewline
+    $transResult = python tools/check_translations.py
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host " FAILED" -ForegroundColor Red
+        Write-Host $transResult
+        return $false
+    }
+    Write-Host " PASSED" -ForegroundColor Green
+
     # 2. Unit Tests
     Write-Host "Running unit tests (Busted in WSL)..."
     wsl busted spec/

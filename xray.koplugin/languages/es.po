@@ -35,6 +35,9 @@ msgstr "Frecuencia de obtención en segundo plano:"
 msgid "auto_update_sparse"
 msgstr "Escaso: comprueba cada 30 min máximo"
 
+msgid "back_to_reading"
+msgstr "Back to Reading"
+
 msgid "cache_cleared"
 msgstr "¡Caché borrada!\n\nAhora puedes obtener nuevos datos:\nMenú → X-Ray → Obtener datos de IA"
 
@@ -230,17 +233,14 @@ msgstr "Buscando '%s'..."
 msgid "mention_dismiss_btn"
 msgstr "✕"
 
-msgid "mention_next"
-msgstr "Next"
-
-msgid "mention_prev"
-msgstr "Prev"
-
 msgid "mention_return_btn"
 msgstr "← Back"
 
 msgid "mention_return_label"
 msgstr "← Back to p.%d"
+
+msgid "mentions_at_location"
+msgstr "Mention: %s"
 
 msgid "mentions_disabled"
 msgstr "Desactivado"
@@ -268,9 +268,6 @@ msgstr "Configuración de menciones"
 
 msgid "mentions_title"
 msgstr "Menciones: %s"
-
-msgid "mentions_wait_scan"
-msgstr "Espere a que termine el escaneo antes de navegar..."
 
 msgid "menu_about"
 msgstr "Acerca de"

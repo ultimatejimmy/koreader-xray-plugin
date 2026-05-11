@@ -60,5 +60,39 @@ describe("xray_fetch", function()
             assert.are.equal(1, #plugin.timeline)
             assert.are.equal("Chapter 1", plugin.timeline[1].chapter)
         end)
+
+        it("aborts and protects existing data when AI returns all-empty results", function()
+            -- Set up existing data
+            plugin.characters = { { name = "Alice", description = "Existing" } }
+            plugin.locations = { { name = "Wonderland", description = "Existing" } }
+            plugin.timeline = { { chapter = "Start", page = 1 } }
+            plugin.historical_figures = { { name = "Lewis Carroll", biography = "Existing" } }
+
+            local empty_data = {
+                characters = {},
+                locations = {},
+                historical_figures = {},
+                timeline = {}
+            }
+
+            -- Spy on cache save to ensure it's NOT called
+            local save_called = false
+            plugin.cache_manager.saveCache = function()
+                save_called = true
+                return true
+            end
+
+            plugin:finalizeXRayData(empty_data, "Test Title", "Test Author", "Some text", true, true, 20)
+
+            -- Existing data should be UNTOUCHED
+            assert.are.equal(1, #plugin.characters)
+            assert.are.equal("Alice", plugin.characters[1].name)
+            assert.are.equal(1, #plugin.locations)
+            assert.are.equal(1, #plugin.timeline)
+            assert.are.equal(1, #plugin.historical_figures)
+            
+            -- Cache save should NOT have happened
+            assert.is_false(save_called)
+        end)
     end)
 end)

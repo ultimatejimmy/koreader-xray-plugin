@@ -401,6 +401,22 @@ function M:finalizeXRayData(final_book_data, title, author, book_text, is_update
         final_book_data.timeline = filtered_timeline
     end
 
+    -- Guard: never overwrite existing data with an all-empty result
+    local char_count = #(final_book_data.characters or {})
+    local loc_count  = #(final_book_data.locations or {})
+    local tl_count   = #(final_book_data.timeline or {})
+    local hist_count = #(final_book_data.historical_figures or {})
+
+    if char_count == 0 and loc_count == 0 and tl_count == 0 and hist_count == 0 then
+        self:log("XRayPlugin: AI returned all-empty data — aborting cache write to protect existing data")
+        if not is_silent then
+            local msg = "The AI returned no data.\n\nThis usually means the book sample was too short. Try reading further into the book, then fetch again."
+            UIManager:show(InfoMessage:new{ text = msg, timeout = 8 })
+        end
+        self.bg_fetch_active = false
+        return  -- do NOT touch self.characters / self.locations / cache
+    end
+
     if is_update then
         -- Ensure tables exist before attempting to merge/insert
         self.characters = self.characters or {}

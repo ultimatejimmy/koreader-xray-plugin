@@ -35,6 +35,9 @@ msgstr "Fréquence de récupération en arrière-plan :"
 msgid "auto_update_sparse"
 msgstr "Clairsemé : vérifie max toutes les 30 min"
 
+msgid "back_to_reading"
+msgstr "Back to Reading"
+
 msgid "cache_cleared"
 msgstr "Cache vidé !\n\nVous pouvez maintenant récupérer de nouvelles données :\nMenu → X-Ray → Récupérer les données IA"
 
@@ -230,17 +233,14 @@ msgstr "Recherche de '%s'..."
 msgid "mention_dismiss_btn"
 msgstr "✕"
 
-msgid "mention_next"
-msgstr "Next"
-
-msgid "mention_prev"
-msgstr "Prev"
-
 msgid "mention_return_btn"
 msgstr "← Back"
 
 msgid "mention_return_label"
 msgstr "← Back to p.%d"
+
+msgid "mentions_at_location"
+msgstr "Mention: %s"
 
 msgid "mentions_disabled"
 msgstr "Disabled"
@@ -268,9 +268,6 @@ msgstr "Mentions Settings"
 
 msgid "mentions_title"
 msgstr "Mentions: %s"
-
-msgid "mentions_wait_scan"
-msgstr "Wait for scan to finish before navigating..."
 
 msgid "menu_about"
 msgstr "À propos"

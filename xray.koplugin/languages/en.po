@@ -35,6 +35,9 @@ msgstr "Background fetching frequency:"
 msgid "auto_update_sparse"
 msgstr "Sparse: checks at most every 30 mins"
 
+msgid "back_to_reading"
+msgstr "Back to Reading"
+
 msgid "cache_cleared"
 msgstr "Cache cleared!\n\nYou can now fetch new data:\nMenu → X-Ray → Fetch AI Data"
 
@@ -95,15 +98,8 @@ msgstr "e.g., google/gemini-2.5-flash or openai/gpt-4o"
 msgid "custom_api_model_title"
 msgstr "Custom API %d — Default Model"
 
-msgid "back_to_reading"
-msgstr "Back to Reading"
-
-msgid "mentions_at_location"
-msgstr "Mention: %s"
-
 msgid "custom_api_name"
 msgstr "Custom API %d (OpenAI-compatible)"
-
 
 msgid "custom_api_not_configured"
 msgstr "(not configured — tap to set up)"
@@ -237,17 +233,14 @@ msgstr "Looking up '%s'..."
 msgid "mention_dismiss_btn"
 msgstr "✕"
 
-msgid "mention_next"
-msgstr "Next"
-
-msgid "mention_prev"
-msgstr "Prev"
-
 msgid "mention_return_btn"
-msgstr "← Back"
+msgstr "Back to Reading"
 
 msgid "mention_return_label"
 msgstr "← Back to p.%d"
+
+msgid "mentions_at_location"
+msgstr "Mention: %s"
 
 msgid "mentions_disabled"
 msgstr "Disabled"
@@ -275,9 +268,6 @@ msgstr "Mentions Settings"
 
 msgid "mentions_title"
 msgstr "Mentions: %s"
-
-msgid "mentions_wait_scan"
-msgstr "Wait for scan to finish before navigating..."
 
 msgid "menu_about"
 msgstr "About"
@@ -572,16 +562,4 @@ msgstr "Adds an 'X-Ray' button to dictionary and selection menus for instant loo
 
 msgid "yes"
 msgstr "Yes"
-
-msgid "mention_return_btn"
-msgstr "Back to Reading"
-
-msgid "mention_dismiss_btn"
-msgstr "✕"
-
-msgid "mention_prev"
-msgstr "Prev"
-
-msgid "mention_next"
-msgstr "Next"
 
