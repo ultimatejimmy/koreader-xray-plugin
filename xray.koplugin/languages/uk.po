@@ -389,6 +389,9 @@ msgstr "платно"
 msgid "msg_added_characters"
 msgstr "Додано %d нових персонажів!"
 
+msgid "msg_fetch_failed"
+msgstr "AI Fetch Failed"
+
 msgid "msg_no_bio"
 msgstr "Біографія відсутня."
 

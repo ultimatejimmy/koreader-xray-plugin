@@ -304,6 +304,7 @@ function Localization:t(key, ...)
             mention_return_label = "← Back to p.%d",
             mention_return_btn = "← Back",
             mention_dismiss_btn = "✕",
+            msg_fetch_failed = "AI request failed. Please check your connection or API settings.",
         }
         translation = fallbacks[key] or key
     end

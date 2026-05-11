@@ -389,6 +389,9 @@ msgstr "pago"
 msgid "msg_added_characters"
 msgstr "%d novos personagens adicionados!"
 
+msgid "msg_fetch_failed"
+msgstr "AI Fetch Failed"
+
 msgid "msg_no_bio"
 msgstr "Nenhuma biografia disponível."
 

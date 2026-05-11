@@ -389,6 +389,9 @@ msgstr "付费"
 msgid "msg_added_characters"
 msgstr "已添加 %d 个新角色！"
 
+msgid "msg_fetch_failed"
+msgstr "AI Fetch Failed"
+
 msgid "msg_no_bio"
 msgstr "暂无传记。"
 

@@ -144,10 +144,8 @@ end
 function LookupManager:showResult(item, item_type)
     if item_type == "character" then
         self.plugin:showCharacterDetails(item)
-    elseif item_type == "historical" then
-        local name = item.name or "???"
-        local bio  = item.biography or "No biography available."
-        UIManager:show(InfoMessage:new{ text = name .. "\n\n" .. bio, timeout = 15 })
+    elseif item_type == "historical" or item_type == "historical_figure" then
+        self.plugin:showHistoricalFigureDetails(item)
     elseif item_type == "location" then
         self.plugin:showLocationDetails(item)
     end

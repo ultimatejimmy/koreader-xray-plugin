@@ -107,10 +107,21 @@ function M:fetchSingleWord(text, pos0, pos1)
                 return
             end
 
+            if not result then
+                local err = error_msg or self.loc:t("msg_fetch_failed") or "AI Fetch Failed"
+                UIManager:show(InfoMessage:new{ text = err, timeout = 5 })
+                return
+            end
+
             if result.is_valid then
                 local item = result.item
                 local item_type = result.type
                 
+                -- Ensure tables exist before trying to merge
+                self.characters = self.characters or {}
+                self.locations = self.locations or {}
+                self.historical_figures = self.historical_figures or {}
+
                 -- Merge into our tables
                 local target_list
                 if item_type == "character" then
@@ -148,10 +159,10 @@ function M:fetchSingleWord(text, pos0, pos1)
                         last_fetch_page = self.book_data and self.book_data.last_fetch_page
                     }
                     self.cache_manager:saveCache(self.ui.document.file, book_data)
-                    
-                    -- Show result
-                    self.lookup_manager:showResult(item, item_type)
                 end
+                
+                -- Always show result if it's valid, even if it didn't merge into a target_list
+                self.lookup_manager:showResult(item, item_type)
             else
                 local err = result.error_message or self.loc:t("entity_not_found", text:sub(1, 20))
                 UIManager:show(InfoMessage:new{ text = err, timeout = 5 })

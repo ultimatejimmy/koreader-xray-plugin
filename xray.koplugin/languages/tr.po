@@ -389,6 +389,9 @@ msgstr "ücretli"
 msgid "msg_added_characters"
 msgstr "%d yeni karakter eklendi!"
 
+msgid "msg_fetch_failed"
+msgstr "AI Fetch Failed"
+
 msgid "msg_no_bio"
 msgstr "Biyografi bulunamadı."
 

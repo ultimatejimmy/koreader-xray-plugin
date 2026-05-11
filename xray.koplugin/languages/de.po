@@ -389,6 +389,9 @@ msgstr "kostenpflichtig"
 msgid "msg_added_characters"
 msgstr "%d neue Charaktere hinzugefügt!"
 
+msgid "msg_fetch_failed"
+msgstr "AI Fetch Failed"
+
 msgid "msg_no_bio"
 msgstr "Keine Biografie verfügbar."
 

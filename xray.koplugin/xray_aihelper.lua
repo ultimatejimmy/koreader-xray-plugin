@@ -292,6 +292,12 @@ function AIHelper:buildComprehensiveRequest(title, author, context, prompt_overr
                 local is_openai_reasoning = (model:find("^gpt%-5") or model:find("^o[13]"))
                 if is_openai_reasoning then
                     system_instruction_text = system_instruction_text .. " You MUST output strictly valid JSON, starting with '{'."
+                else
+                    -- OpenAI requires the word 'json' to appear somewhere in messages when using json_object mode.
+                    -- Append a guaranteed-ASCII sentinel so localized prompts never trigger a 400 error.
+                    if not system_instruction_text:lower():find("json") then
+                        system_instruction_text = system_instruction_text .. " Respond in JSON format."
+                    end
                 end
 
                 local instruction_role = "system"
@@ -1308,6 +1314,12 @@ function AIHelper:callChatGPT(prompt, config, current_model)
     local is_openai_reasoning = (model:find("^gpt%-5") or model:find("^o[13]"))
     if is_openai_reasoning then
         system_instruction_text = system_instruction_text .. " You MUST output strictly valid JSON, starting with '{'."
+    else
+        -- OpenAI requires the word 'json' to appear somewhere in messages when using json_object mode.
+        -- Append a guaranteed-ASCII sentinel so localized prompts never trigger a 400 error.
+        if not system_instruction_text:lower():find("json") then
+            system_instruction_text = system_instruction_text .. " Respond in JSON format."
+        end
     end
     
     -- Modern models (gpt-5, o1, o3) use 'developer' role instead of 'system'
