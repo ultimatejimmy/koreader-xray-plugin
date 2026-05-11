@@ -38,6 +38,18 @@ msgstr "Seyrek: en fazla 30 dk'da bir kontrol eder"
 msgid "back_to_reading"
 msgstr "Back to Reading"
 
+msgid "beta_channel_desc"
+msgstr "The beta channel allows you to receive pre-release versions of the X-Ray plugin. These versions include the latest features and bug fixes but may be less stable than the regular release."
+
+msgid "beta_disabled"
+msgstr "Stable Channel (Recommended)"
+
+msgid "beta_enabled"
+msgstr "Beta Channel Enabled"
+
+msgid "beta_preference_desc"
+msgstr "Select your update channel preference:"
+
 msgid "cache_cleared"
 msgstr "Önbellek temizlendi!\n\nŞimdi yeni verileri çekebilirsiniz:\nMenü → X-Ray → AI Verilerini Çek"
 
@@ -283,6 +295,9 @@ msgstr "Yazar Bilgisi"
 
 msgid "menu_auto_update_frequency"
 msgstr "Otomatik X-Ray Ayarları"
+
+msgid "menu_beta_channel"
+msgstr "Beta Channel Settings"
 
 msgid "menu_characters"
 msgstr "Karakterler"

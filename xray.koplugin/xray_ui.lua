@@ -1865,6 +1865,64 @@ function M:showReasoningEffortSettings()
     showSettings()
 end
 
+function M:showBetaChannelSettings()
+    local ButtonDialog = require("ui/widget/buttondialog")
+    local info_dialog
+    
+    local function showSettings()
+        if info_dialog then UIManager:close(info_dialog) end
+        
+        local current_setting = self.ai_helper.settings.beta_channel_enabled == true
+        local enabled_text = self.loc:t("beta_enabled") or "Beta Channel Enabled"
+        local disabled_text = self.loc:t("beta_disabled") or "Stable Channel (Recommended)"
+        
+        local buttons = {
+            {
+                {
+                    text = (current_setting and "[✓] " or "[  ] ") .. enabled_text,
+                    callback = function()
+                        self.ai_helper:saveSettings({ beta_channel_enabled = true })
+                        UIManager:nextTick(function() showSettings() end)
+                    end
+                },
+                {
+                    text = ((not current_setting) and "[✓] " or "[  ] ") .. disabled_text,
+                    callback = function()
+                        self.ai_helper:saveSettings({ beta_channel_enabled = false })
+                        UIManager:nextTick(function() showSettings() end)
+                    end
+                }
+            },
+            {
+                {
+                    text = self.loc:t("menu_about") or "About",
+                    callback = function()
+                        UIManager:show(InfoMessage:new{
+                            text = self.loc:t("beta_channel_desc") or "The beta channel allows you to receive pre-release versions of the X-Ray plugin. These versions include the latest features and bug fixes but may be less stable than the regular release.",
+                            timeout = 30
+                        })
+                    end
+                },
+                {
+                    text = self.loc:t("close") or "Close",
+                    callback = function()
+                        UIManager:close(info_dialog)
+                    end
+                }
+            }
+        }
+        
+        info_dialog = ButtonDialog:new{
+            title = self.loc:t("menu_beta_channel") or "Beta Channel Settings",
+            text = self.loc:t("beta_preference_desc") or "Select your update channel preference:",
+            buttons = buttons,
+        }
+        UIManager:show(info_dialog)
+    end
+    
+    showSettings()
+end
+
 function M:checkWeeklyUpdate()
     if not self.ai_helper or not self.ai_helper.settings then return end
     
@@ -1878,7 +1936,7 @@ function M:checkWeeklyUpdate()
             self:log("XRayPlugin: Triggering weekly silent update check")
             self.ai_helper:saveSettings({ last_update_check = now })
             local updater = require(plugin_path .. "xray_updater")
-            updater.checkSilentForUpdates(self.loc)
+            updater.checkSilentForUpdates(self.loc, self.ai_helper.settings.beta_channel_enabled)
         else
             self:log("XRayPlugin: Skipping weekly update check (offline)")
         end

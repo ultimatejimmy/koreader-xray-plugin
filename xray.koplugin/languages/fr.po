@@ -38,6 +38,18 @@ msgstr "Clairsemé : vérifie max toutes les 30 min"
 msgid "back_to_reading"
 msgstr "Back to Reading"
 
+msgid "beta_channel_desc"
+msgstr "The beta channel allows you to receive pre-release versions of the X-Ray plugin. These versions include the latest features and bug fixes but may be less stable than the regular release."
+
+msgid "beta_disabled"
+msgstr "Stable Channel (Recommended)"
+
+msgid "beta_enabled"
+msgstr "Beta Channel Enabled"
+
+msgid "beta_preference_desc"
+msgstr "Select your update channel preference:"
+
 msgid "cache_cleared"
 msgstr "Cache vidé !\n\nVous pouvez maintenant récupérer de nouvelles données :\nMenu → X-Ray → Récupérer les données IA"
 
@@ -283,6 +295,9 @@ msgstr "Infos Auteur"
 
 msgid "menu_auto_update_frequency"
 msgstr "Paramètres Auto X-Ray"
+
+msgid "menu_beta_channel"
+msgstr "Beta Channel Settings"
 
 msgid "menu_characters"
 msgstr "Personnages"

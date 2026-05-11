@@ -38,6 +38,18 @@ msgstr "Рідкісний: не частіше ніж раз на 30 хв"
 msgid "back_to_reading"
 msgstr "Back to Reading"
 
+msgid "beta_channel_desc"
+msgstr "The beta channel allows you to receive pre-release versions of the X-Ray plugin. These versions include the latest features and bug fixes but may be less stable than the regular release."
+
+msgid "beta_disabled"
+msgstr "Stable Channel (Recommended)"
+
+msgid "beta_enabled"
+msgstr "Beta Channel Enabled"
+
+msgid "beta_preference_desc"
+msgstr "Select your update channel preference:"
+
 msgid "cache_cleared"
 msgstr "Кеш очищено!\n\nТепер ви можете отримати нові дані:\nМеню → X-Ray → Отримати дані ШІ"
 
@@ -283,6 +295,9 @@ msgstr "Інформація про автора"
 
 msgid "menu_auto_update_frequency"
 msgstr "Налаштування авто X-Ray"
+
+msgid "menu_beta_channel"
+msgstr "Beta Channel Settings"
 
 msgid "menu_characters"
 msgstr "Персонажі"

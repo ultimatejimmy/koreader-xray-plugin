@@ -38,6 +38,18 @@ msgstr "稀疏：最多每 30 分钟"
 msgid "back_to_reading"
 msgstr "Back to Reading"
 
+msgid "beta_channel_desc"
+msgstr "The beta channel allows you to receive pre-release versions of the X-Ray plugin. These versions include the latest features and bug fixes but may be less stable than the regular release."
+
+msgid "beta_disabled"
+msgstr "Stable Channel (Recommended)"
+
+msgid "beta_enabled"
+msgstr "Beta Channel Enabled"
+
+msgid "beta_preference_desc"
+msgstr "Select your update channel preference:"
+
 msgid "cache_cleared"
 msgstr "缓存已清除！\n\n现在可以获取新数据：\n菜单 → X-Ray → 获取 AI 数据"
 
@@ -283,6 +295,9 @@ msgstr "作者信息"
 
 msgid "menu_auto_update_frequency"
 msgstr "自动 X-Ray 设置"
+
+msgid "menu_beta_channel"
+msgstr "Beta Channel Settings"
 
 msgid "menu_characters"
 msgstr "角色"

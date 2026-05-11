@@ -731,11 +731,16 @@ function XRayPlugin:getSubMenuItems()
                     callback = function() self:clearLogs() end,
                 },
                 {
+                    text = self.loc:t("menu_beta_channel") or "Beta Channel Settings",
+                    keep_menu_open = true,
+                    callback = function() self:showBetaChannelSettings() end,
+                },
+                {
                     text = self.loc:t("updater_check") or "Check for Updates",
                     keep_menu_open = true,
                     callback = function()
                         local updater = require(plugin_path .. "xray_updater")
-                        updater.checkForUpdates(self.loc)
+                        updater.checkForUpdates(self.loc, self.ai_helper.settings.beta_channel_enabled)
                     end,
                 },
             }

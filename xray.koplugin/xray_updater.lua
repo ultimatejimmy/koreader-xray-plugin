@@ -31,10 +31,18 @@ M.loc = nil
 local _plugin_dir = (debug.getinfo(1, "S").source or ""):match("^@(.+)/[^/]+$")
     or "/mnt/us/extensions/xray.koplugin"
 
-local _API_URL = string.format(
-    "https://api.github.com/repos/%s/%s/releases/latest",
-    GITHUB_OWNER, GITHUB_REPO
-)
+local function _apiUrl(use_beta)
+    if use_beta then
+        return string.format(
+            "https://api.github.com/repos/%s/%s/releases",
+            GITHUB_OWNER, GITHUB_REPO
+        )
+    end
+    return string.format(
+        "https://api.github.com/repos/%s/%s/releases/latest",
+        GITHUB_OWNER, GITHUB_REPO
+    )
+end
 
 -- Helper to safely call localizer
 local function t(key, ...)
@@ -258,18 +266,24 @@ local function _parseRelease(body)
         return nil, "JSON parse error: " .. tostring(data)
     end
 
-    local tag = data.tag_name
+    -- If we query /releases instead of /releases/latest, we get an array
+    local release_data = data
+    if use_beta and type(data) == "table" and data[1] then
+        release_data = data[1]
+    end
+
+    local tag = release_data.tag_name
     if not tag then return nil, "tag_name missing from API response" end
 
     local download_url = nil
-    for _, asset in ipairs(data.assets or {}) do
+    for _, asset in ipairs(release_data.assets or {}) do
         if type(asset.name) == "string" and asset.name == ASSET_NAME then
             download_url = asset.browser_download_url
             break
         end
     end
 
-    local notes = data.body
+    local notes = release_data.body
     if notes and notes ~= "" then
         notes = notes:gsub("#+%s*", "")
         notes = notes:gsub("%*%*(.-)%*%*", "%1")
@@ -283,7 +297,7 @@ local function _parseRelease(body)
         version      = tag:match("v?(.*)"),
         download_url = download_url,
         notes        = (notes and notes ~= "") and notes or nil,
-        html_url     = data.html_url,
+        html_url     = release_data.html_url,
     }
 end
 
@@ -503,21 +517,21 @@ local function _showUpdateDialog(release, current)
     })
 end
 
-local function _doFetch()
+local function _doFetch(use_beta)
     local cached = _loadCache()
     if cached then
         logger.info("xray updater: using cache")
         return cached
     end
-    local body, err = _httpGet(_API_URL)
+    local body, err = _httpGet(_apiUrl(use_beta))
     if not body then return { error = err } end
-    local release, parse_err = _parseRelease(body)
+    local release, parse_err = _parseRelease(body, use_beta)
     if not release then return { error = "parse error: " .. tostring(parse_err) } end
     _saveCache(release)
     return release
 end
 
-function M._doCheckForUpdates(current)
+function M._doCheckForUpdates(current, use_beta)
     local checking_msg = _toast(t("updater_checking"), 15)
     local ok_tr, Trapper = pcall(require, "ui/trapper")
 
@@ -549,29 +563,29 @@ function M._doCheckForUpdates(current)
         end
     else
         UIManager:scheduleIn(0.3, function()
-            handleCheckResult(_doFetch())
+            handleCheckResult(_doFetch(use_beta))
         end)
     end
 end
 
 -- localization param allows the caller to pass the X-Ray loc module
-function M.checkForUpdates(loc)
+function M.checkForUpdates(loc, use_beta)
     M.loc = loc
     local current = _currentVersion()
     local ok_nm, NetworkMgr = pcall(require, "ui/network/manager")
     if ok_nm and NetworkMgr and NetworkMgr.runWhenOnline then
         NetworkMgr:runWhenOnline(function()
-            M._doCheckForUpdates(current)
+            M._doCheckForUpdates(current, use_beta)
         end)
         return
     end
-    M._doCheckForUpdates(current)
+    M._doCheckForUpdates(current, use_beta)
 end
 
-function M.checkSilentForUpdates(loc)
+function M.checkSilentForUpdates(loc, use_beta)
     M.loc = loc
     local current = _currentVersion()
-    local release = _doFetch()
+    local release = _doFetch(use_beta)
     
     if release and not release.error then
         if _versionLessThan(current, release.version) then

@@ -305,6 +305,11 @@ function Localization:t(key, ...)
             mention_return_btn = "← Back",
             mention_dismiss_btn = "✕",
             msg_fetch_failed = "AI request failed. Please check your connection or API settings.",
+            menu_beta_channel = "Beta Channel Settings",
+            beta_enabled = "Beta Channel Enabled",
+            beta_disabled = "Stable Channel (Recommended)",
+            beta_channel_desc = "The beta channel allows you to receive pre-release versions of the X-Ray plugin. These versions include the latest features and bug fixes but may be less stable than the regular release.",
+            beta_preference_desc = "Select your update channel preference:",
         }
         translation = fallbacks[key] or key
     end
