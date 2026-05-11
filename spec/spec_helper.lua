@@ -12,7 +12,8 @@ package.loaded["device"] = {
     isKoboV2 = function() return false end,
     screen = {
         getWidth = function() return 600 end,
-        getHeight = function() return 800 end
+        getHeight = function() return 800 end,
+        scaleBySize = function(a, b) return b or a end,
     }
 }
 
@@ -60,10 +61,14 @@ _G.ui_tracker = {
 }
 
 package.loaded["ui/uimanager"] = {
-    show = function(a, b)
-        local w = b or a
+    show = function(self, widget, refreshtype, region, x, y)
+        local w = type(self) == "table" and widget or self
+        local posX = type(self) == "table" and x or refreshtype
+        local posY = type(self) == "table" and y or region
         table.insert(_G.ui_tracker.shown, w)
         _G.ui_tracker.last_shown = w
+        _G.ui_tracker.last_show_x = posX
+        _G.ui_tracker.last_show_y = posY
     end,
     close = function(a, b)
         local w = b or a
@@ -73,20 +78,81 @@ package.loaded["ui/uimanager"] = {
         if type(a) == "function" then a()
         elseif type(b) == "function" then b() end
     end,
-    nextTick = function(f) f() end,
+    nextTick = function(a, b)
+        local f = b or a
+        if type(f) == "function" then f() end
+    end,
     setDirty = function() end
 }
 package.loaded["ui/widget/infomessage"] = {
     new = function(a, b) return { type = "InfoMessage", args = b or a } end
 }
 package.loaded["ui/widget/buttondialog"] = {
-    new = function(a, b) return { type = "ButtonDialog", args = b or a } end
+    new = function(a, b) 
+        local dialog = { type = "ButtonDialog", args = b or a }
+        dialog.getSize = function() return { w = 800, h = 100 } end
+        return dialog
+    end
 }
 package.loaded["ui/widget/confirmbox"] = {
     new = function(a, b) return { type = "ConfirmBox", args = b or a } end
 }
 package.loaded["ui/widget/menu"] = {
     new = function(a, b) return { type = "Menu", args = b or a } end
+}
+package.loaded["ui/widget/verticalgroup"] = {
+    new = function(a, b) return { type = "VerticalGroup", args = b or a } end
+}
+package.loaded["ui/widget/widget"] = {
+    new = function(a, b) return { type = "Widget", args = b or a } end
+}
+package.loaded["ui/widget/widgetcontainer"] = {
+    new = function(a, b) return { type = "WidgetContainer", args = b or a } end
+}
+package.loaded["ui/widget/container/framecontainer"] = {
+    new = function(a, b) return { type = "FrameContainer", args = b or a } end
+}
+package.loaded["ui/widget/container/inputcontainer"] = {
+    new = function(a, b) return { type = "InputContainer", args = b or a } end
+}
+package.loaded["ui/geometry"] = {
+    new = function(a, b) return b or a end
+}
+package.loaded["ui/widget/horizontalgroup"] = {
+    new = function(a, b) return { type = "HorizontalGroup", args = b or a } end
+}
+package.loaded["ui/widget/table"] = {
+    new = function(a, b) return { type = "Table", args = b or a } end
+}
+package.loaded["ui/widget/textwidget"] = {
+    new = function(a, b) 
+        local tw = { type = "TextWidget", args = b or a }
+        tw.getSize = function() return nil end
+        return tw
+    end
+}
+package.loaded["ui/widget/button"] = {
+    new = function(a, b) 
+        local btn = { type = "Button", args = b or a }
+        btn.getSize = function() return nil end
+        return btn
+    end
+}
+package.loaded["ffi/blitbuffer"] = {
+    COLOR_BLACK = 0,
+    COLOR_WHITE = 1
+}
+package.loaded["ui/font"] = {
+    getFace = function() return {} end
+}
+package.loaded["ui/event"] = {
+    new = function(a, b, c) 
+        if type(a) == "string" then return { name = a, args = b } end
+        return { name = b, args = c }
+    end
+}
+package.loaded["ui/gesturerange"] = {
+    new = function(a, b) return { type = "GestureRange", args = b or a } end
 }
 package.loaded["gettext"] = {
     _ = function(s) return s end,
@@ -121,10 +187,31 @@ function _G.createMockPlugin()
                 getToc = function() return {} end,
                 getProps = function() return { title = "Test Title", authors = "Test Author" } end
             },
-            getCurrentPage = function() return 10 end
+            paging = {
+                getCurrentPage = function() return 10 end
+            },
+            handleEvent = function() end
         },
         loc = {
-            t = function(s, s2) return s2 or s end,
+            t = function(s, ...)
+                local fmt = s
+                local args = {...}
+                if type(s) == "table" then
+                    fmt = args[1]
+                    table.remove(args, 1)
+                end
+                if type(fmt) == "string" and #args > 0 then
+                    if fmt:find("%%") then
+                        local status, res = pcall(string.format, fmt, unpack(args))
+                        if status then return res end
+                    end
+                    -- Fallback for testing: just append args
+                    for i = 1, #args do
+                        fmt = fmt .. " " .. tostring(args[i])
+                    end
+                end
+                return fmt
+            end,
             getLanguage = function() return "en" end,
             setLanguage = function() end
         },

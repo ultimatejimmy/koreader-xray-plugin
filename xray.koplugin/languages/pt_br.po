@@ -227,6 +227,21 @@ msgstr "Logs limpos!"
 msgid "looking_up_msg"
 msgstr "Buscando por '%s'..."
 
+msgid "mention_dismiss_btn"
+msgstr "✕"
+
+msgid "mention_next"
+msgstr "Next"
+
+msgid "mention_prev"
+msgstr "Prev"
+
+msgid "mention_return_btn"
+msgstr "← Back"
+
+msgid "mention_return_label"
+msgstr "← Back to p.%d"
+
 msgid "mentions_disabled"
 msgstr "Desativado"
 

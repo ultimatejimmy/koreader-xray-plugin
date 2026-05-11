@@ -39,7 +39,8 @@ function Run-Workflow {
     wsl sh -c "if [ -f $WSLDest/$ConfigSubPath ]; then cp $WSLDest/$ConfigSubPath $BackupPath; fi"
 
     # 2. Sync (this will overwrite xray_config.lua with the one from Windows)
-    wsl rsync -rv --delete "./$PluginDir/" "$WSLDest/"
+    # We exclude xray.log and .sdr folders to avoid deleting runtime data
+    wsl rsync -rv --delete --exclude="xray.log" --exclude="*.sdr/" "./$PluginDir/" "$WSLDest/"
     
     # 3. Restore keys from backup
     $MergeScript = "tools/merge_config.py"
@@ -58,19 +59,14 @@ function Run-Workflow {
     wsl pkill -9 -f AppRun 2>$null
     Start-Sleep -Seconds 1
 
-    $StartCmd = if ($env:KOREADER_START_CMD) { $env:KOREADER_START_CMD } else { 'wsl /mnt/c/Users/jpautz/squashfs-root/AppRun' }
+    # Define start command
+    $DefaultCmd = 'C:\Windows\System32\wsl.exe --exec dbus-launch --exit-with-session bash -c "cd /mnt/c/Users/jpautz/squashfs-root && ./AppRun"'
+    $StartCmd = if ($env:KOREADER_START_CMD) { $env:KOREADER_START_CMD } else { $DefaultCmd }
+    
     Write-Host "Starting KOReader: $StartCmd"
-    try {
-        $psi = New-Object System.Diagnostics.ProcessStartInfo
-        $psi.FileName = "powershell.exe"
-        $psi.Arguments = "-NoProfile -Command `"$StartCmd`""
-        $psi.UseShellExecute = $true
-        $psi.WindowStyle = "Normal"
-        [System.Diagnostics.Process]::Start($psi) | Out-Null
-        Write-Host "Restart command sent successfully." -ForegroundColor Green
-    } catch {
-        Write-Host "Failed to start KOReader: $($_.Exception.Message)" -ForegroundColor Red
-    }
+    # Use cmd /c start to ensure it's fully detached and quotes are preserved
+    $cmdLine = "/c start `"`" $StartCmd"
+    Start-Process cmd.exe -ArgumentList $cmdLine -WindowStyle Hidden
 
     Write-Host "`nReady!" -ForegroundColor Green
     return $true

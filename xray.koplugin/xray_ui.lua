@@ -208,14 +208,14 @@ function M:closeAllMenus()
     local menus = {
         self.mentions_menu, self.char_menu, self.loc_menu,
         self.timeline_menu, self.hf_menu, self.xray_menu,
-        self.active_details_dialog
+        self.active_details_dialog, self.return_banner
     }
-    for i = 1, 7 do
+    for i = 1, 8 do
         if menus[i] then pcall(function() UIManager:close(menus[i]) end) end
     end
     self.mentions_menu = nil; self.char_menu = nil; self.loc_menu = nil
     self.timeline_menu = nil; self.hf_menu = nil; self.xray_menu = nil
-    self.active_details_dialog = nil
+    self.active_details_dialog = nil; self.return_banner = nil
     
     local function executeClear()
         -- 2. Dismiss native KOReader top menu stack

@@ -227,6 +227,21 @@ msgstr "Günlükler temizlendi!"
 msgid "looking_up_msg"
 msgstr "'%s' aranıyor..."
 
+msgid "mention_dismiss_btn"
+msgstr "✕"
+
+msgid "mention_next"
+msgstr "Next"
+
+msgid "mention_prev"
+msgstr "Prev"
+
+msgid "mention_return_btn"
+msgstr "← Back"
+
+msgid "mention_return_label"
+msgstr "← Back to p.%d"
+
 msgid "mentions_disabled"
 msgstr "Devre Dışı"
 

@@ -95,8 +95,15 @@ msgstr "e.g., google/gemini-2.5-flash or openai/gpt-4o"
 msgid "custom_api_model_title"
 msgstr "Custom API %d — Default Model"
 
+msgid "back_to_reading"
+msgstr "Back to Reading"
+
+msgid "mentions_at_location"
+msgstr "Mention: %s"
+
 msgid "custom_api_name"
 msgstr "Custom API %d (OpenAI-compatible)"
+
 
 msgid "custom_api_not_configured"
 msgstr "(not configured — tap to set up)"
@@ -226,6 +233,21 @@ msgstr "Logs cleared!"
 
 msgid "looking_up_msg"
 msgstr "Looking up '%s'..."
+
+msgid "mention_dismiss_btn"
+msgstr "✕"
+
+msgid "mention_next"
+msgstr "Next"
+
+msgid "mention_prev"
+msgstr "Prev"
+
+msgid "mention_return_btn"
+msgstr "← Back"
+
+msgid "mention_return_label"
+msgstr "← Back to p.%d"
 
 msgid "mentions_disabled"
 msgstr "Disabled"
@@ -550,4 +572,16 @@ msgstr "Adds an 'X-Ray' button to dictionary and selection menus for instant loo
 
 msgid "yes"
 msgstr "Yes"
+
+msgid "mention_return_btn"
+msgstr "Back to Reading"
+
+msgid "mention_dismiss_btn"
+msgstr "✕"
+
+msgid "mention_prev"
+msgstr "Prev"
+
+msgid "mention_next"
+msgstr "Next"
 
