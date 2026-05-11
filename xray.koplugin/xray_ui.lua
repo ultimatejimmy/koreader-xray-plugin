@@ -1221,7 +1221,7 @@ function M:showAbout()
         cancel_text = self.loc:t("close") or "Close",
         ok_callback = function()
             local updater = require(plugin_path .. "xray_updater")
-            updater.checkForUpdates(self.loc)
+            updater.checkForUpdates(self.loc, self.ai_helper.settings.beta_channel_enabled)
         end,
     })
 end
