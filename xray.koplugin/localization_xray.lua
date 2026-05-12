@@ -310,6 +310,22 @@ function Localization:t(key, ...)
             beta_disabled = "Stable Channel (Recommended)",
             beta_channel_desc = "The beta channel allows you to receive pre-release versions of the X-Ray plugin. These versions include the latest features and bug fixes but may be less stable than the regular release.",
             beta_preference_desc = "Select your update channel preference:",
+            error_quota_title = "Quota Exceeded",
+            error_quota_desc = "Your API credits are exhausted or you have reached the rate limit. Please check your billing status or wait a while before trying again.",
+            error_api_key_title = "Invalid API Key",
+            error_api_key_desc = "The API key provided was rejected. Please check your settings and ensure the key is correct.",
+            error_model_access_title = "Permission Denied",
+            error_model_access_desc = "Your API key does not have access to the selected model. You might need to use a different model or provider.",
+            error_service_down_title = "Service Unavailable",
+            error_service_down_desc = "The AI service is temporarily unavailable or overloaded. Please try again in a few minutes.",
+            error_timeout_title = "Connection Timed Out",
+            error_timeout_desc = "The request took too long. This can happen with complex books or slow network connections.",
+            error_parse_title = "Data Error",
+            error_parse_desc = "The AI returned a response that could not be processed. This might be a temporary glitch.",
+            error_unknown_title = "Fetch Failed",
+            error_unknown_desc = "An unexpected error occurred: %s",
+            error_model_not_found_title = "Model Not Found",
+            error_model_not_found_desc = "The selected AI model is unavailable or the endpoint URL is incorrect.",
         }
         translation = fallbacks[key] or key
     end

@@ -22,4 +22,67 @@ describe("xray_utils", function()
         device.isKoboV2 = function() return false end
         assert.is_true(utils:isLowPowerDevice())
     end)
+
+    describe("getFriendlyError", function()
+        local loc = {
+            t = function(self, key, arg)
+                if arg then return key .. ":" .. tostring(arg) end
+                return key
+            end
+        }
+
+        it("maps error_quota to quota exceeded", function()
+            local title, desc = utils:getFriendlyError("error_quota", nil, loc)
+            assert.are.equal("error_quota_title", title)
+            assert.are.equal("error_quota_desc", desc)
+        end)
+
+        it("maps error_timeout to timeout", function()
+            local title, desc = utils:getFriendlyError("error_timeout", nil, loc)
+            assert.are.equal("error_timeout_title", title)
+            assert.are.equal("error_timeout_desc", desc)
+        end)
+
+        it("maps 401 API error to invalid api key", function()
+            local title, desc = utils:getFriendlyError("error_api", "401 Unauthorized", loc)
+            assert.are.equal("error_api_key_title", title)
+            assert.are.equal("error_api_key_desc", desc)
+        end)
+
+        it("maps 403 API error to permission denied", function()
+            local title, desc = utils:getFriendlyError("error_api", "403 Forbidden", loc)
+            assert.are.equal("error_model_access_title", title)
+            assert.are.equal("error_model_access_desc", desc)
+        end)
+
+        it("maps 429 API error to quota exceeded", function()
+            local title, desc = utils:getFriendlyError("error_api", "Error 429: Rate Limit", loc)
+            assert.are.equal("error_quota_title", title)
+            assert.are.equal("error_quota_desc", desc)
+        end)
+
+        it("maps 503 API error to service unavailable", function()
+            local title, desc = utils:getFriendlyError("error_api", "503 Service Unavailable", loc)
+            assert.are.equal("error_service_down_title", title)
+            assert.are.equal("error_service_down_desc", desc)
+        end)
+
+        it("maps 404 API error to model not found", function()
+            local title, desc = utils:getFriendlyError("error_api", "404 Not Found", loc)
+            assert.are.equal("error_model_not_found_title", title)
+            assert.are.equal("error_model_not_found_desc", desc)
+        end)
+
+        it("maps 400 API error to invalid api key", function()
+            local title, desc = utils:getFriendlyError("error_api", "HTTP 400: Bad Request", loc)
+            assert.are.equal("error_api_key_title", title)
+            assert.are.equal("error_api_key_desc", desc)
+        end)
+
+        it("handles unknown errors by returning the raw message", function()
+            local title, desc = utils:getFriendlyError("error_something_weird", "Crazy error", loc)
+            assert.are.equal("error_unknown_title", title)
+            assert.are.equal("error_unknown_desc:Crazy error", desc)
+        end)
+    end)
 end)

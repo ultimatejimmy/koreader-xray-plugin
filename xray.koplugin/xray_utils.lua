@@ -21,4 +21,49 @@ function M:isLowPowerDevice()
     return false
 end
 
+function M:getFriendlyError(error_code, error_msg, loc)
+    local title_key = "error_unknown_title"
+    local desc_key = "error_unknown_desc"
+    local desc_arg = error_msg or "Unknown"
+
+    if error_code == "error_quota" then
+        title_key = "error_quota_title"
+        desc_key = "error_quota_desc"
+        desc_arg = nil
+    elseif error_code == "error_timeout" then
+        title_key = "error_timeout_title"
+        desc_key = "error_timeout_desc"
+        desc_arg = nil
+    elseif error_code == "error_parse" then
+        title_key = "error_parse_title"
+        desc_key = "error_parse_desc"
+        desc_arg = nil
+    elseif error_code == "error_api" then
+        local msg = tostring(error_msg or ""):lower()
+        if msg:find("401") or msg:find("unauthorized") or msg:find("invalid api key") or msg:find("400") or msg:find("bad request") then
+            title_key = "error_api_key_title"
+            desc_key = "error_api_key_desc"
+            desc_arg = nil
+        elseif msg:find("403") or msg:find("forbidden") then
+            title_key = "error_model_access_title"
+            desc_key = "error_model_access_desc"
+            desc_arg = nil
+        elseif msg:find("404") or msg:find("not found") then
+            title_key = "error_model_not_found_title"
+            desc_key = "error_model_not_found_desc"
+            desc_arg = nil
+        elseif msg:find("429") or msg:find("quota") or msg:find("rate limit") then
+            title_key = "error_quota_title"
+            desc_key = "error_quota_desc"
+            desc_arg = nil
+        elseif msg:find("500") or msg:find("503") or msg:find("504") or msg:find("unavailable") or msg:find("overloaded") then
+            title_key = "error_service_down_title"
+            desc_key = "error_service_down_desc"
+            desc_arg = nil
+        end
+    end
+
+    return loc:t(title_key), loc:t(desc_key, desc_arg)
+end
+
 return M
