@@ -112,6 +112,10 @@ local function _currentVersion()
 end
 
 local function _versionLessThan(a, b)
+    local function isBeta(v)
+        return v:lower():find("beta") ~= nil
+    end
+
     local function parts(v)
         local t_parts = {}
         if not v then return t_parts end
@@ -120,6 +124,7 @@ local function _versionLessThan(a, b)
         end
         return t_parts
     end
+
     local pa, pb = parts(a), parts(b)
     for i = 1, math.max(#pa, #pb) do
         local va = pa[i] or 0
@@ -127,6 +132,14 @@ local function _versionLessThan(a, b)
         if va < vb then return true end
         if va > vb then return false end
     end
+
+    -- If numeric parts are identical, a stable release is newer than a beta release
+    local betaA = isBeta(a)
+    local betaB = isBeta(b)
+    if betaA and not betaB then
+        return true -- a is beta, b is stable -> a < b
+    end
+
     return false
 end
 
