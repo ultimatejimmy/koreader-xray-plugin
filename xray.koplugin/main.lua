@@ -264,7 +264,6 @@ function XRayPlugin:onReaderReady()
     self.last_auto_chapter = nil
     self.chapters_fetched = {}
     self.bg_fetch_pending = false
-    self.last_mentions_chapter = nil
 
     -- Initialize language based on logic (auto, book, or manual)
     self:applyLanguageLogic()
@@ -343,35 +342,6 @@ function XRayPlugin:onPageUpdate(pageno)
             self.chapters_fetched[unique_id] = true
         end
         return 
-    end
-
-    -- Incremental mentions update: fires on every new narrative chapter
-    if self.mentions_enabled then
-        local mentions_chapter_id = chapter_title .. "_" .. tostring(chapter_page or 0)
-        if self.last_mentions_chapter ~= mentions_chapter_id then
-            self.last_mentions_chapter = mentions_chapter_id
-            if not self.mentions_scan_active and
-               ((self.characters and #self.characters > 0) or
-                (self.locations  and #self.locations  > 0)) then
-                local toc_entry_for_mentions = nil
-                local next_toc_entry = nil
-                for i, entry in ipairs(toc) do
-                    if entry.title == chapter_title and entry.page == chapter_page then
-                        toc_entry_for_mentions = entry
-                        next_toc_entry = toc[i+1]
-                        break
-                    end
-                end
-                if toc_entry_for_mentions then
-                    local scan_delay = 4
-                    UIManager:scheduleIn(scan_delay, function()
-                        if self.mentions_enabled then
-                            self:updateMentionsForChapter(toc_entry_for_mentions, next_toc_entry)
-                        end
-                    end)
-                end
-            end
-        end
     end
 
     -- Check if it's already populated in the timeline data

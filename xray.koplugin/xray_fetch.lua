@@ -354,41 +354,6 @@ function M:continueWithFetch(reading_percent, is_update, last_fetch_page, is_sil
     end)
 end
 
-function M:pollBackgroundFetch(result_file, title, author, book_text, is_update, current_page)
-    local poll_count = 0
-    local function check()
-        -- Ensure we are still in a valid state
-        if not self.ui or not self.ui.document then
-            self:log("XRayPlugin: Polling aborted (document closed)")
-            os.remove(result_file)
-            self.bg_fetch_active = false
-            return
-        end
-
-        poll_count = poll_count + 1
-        local data, err_code, err_msg = self.ai_helper:checkAsyncResult(result_file)
-        
-        if data == nil then
-            -- Still pending
-            if poll_count < 120 then -- 4 minutes max for background
-                UIManager:scheduleIn(2, check)
-            else
-                self:log("XRayPlugin: Background fetch timed out")
-                os.remove(result_file)
-                self.bg_fetch_active = false
-            end
-        elseif data == false then
-            -- Failed
-            self.bg_fetch_active = false
-            self:log("XRayPlugin: Background fetch failed: " .. tostring(err_msg))
-        else
-            -- Success
-            self.bg_fetch_active = false
-            self:finalizeXRayData(data, title, author, book_text, is_update, true, current_page)
-        end
-    end
-    UIManager:scheduleIn(2, check)
-end
 
 function M:finalizeXRayData(final_book_data, title, author, book_text, is_update, is_silent, current_page)
     final_book_data.book_title = title
@@ -565,10 +530,6 @@ function M:finalizeXRayData(final_book_data, title, author, book_text, is_update
         UIManager:show(success_dialog)
     end
 
-    -- Kick off background mentions scan for newly-fetched/merged data
-    UIManager:scheduleIn(0, function()
-        self:buildMentionsInBackground(true)
-    end)
 end
 
 function M:fetchMoreCharacters()

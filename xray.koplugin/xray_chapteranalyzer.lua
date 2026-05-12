@@ -1010,7 +1010,7 @@ function ChapterAnalyzer:findMentionsInChapter(ui, entity, toc_entry, next_toc_e
     return chapter_mentions
 end
 
-function ChapterAnalyzer:scanMentionsAsync(ui, entity, toc, max_page, on_progress, on_complete)
+function ChapterAnalyzer:scanMentionsAsync(ui, entity, toc, min_page, max_page, on_progress, on_complete)
     if not ui or not ui.document or not entity or not entity.name or not toc or #toc == 0 then 
         if on_complete then
             -- Schedule the callback so it executes asynchronously, preventing 
@@ -1039,25 +1039,29 @@ function ChapterAnalyzer:scanMentionsAsync(ui, entity, toc, max_page, on_progres
             local next_entry = toc[i + 1]
             
             local start_p = tonumber(entry.page)
+            local end_p = next_entry and tonumber(next_entry.page) or math.huge
+
             if start_p and max_page and start_p > max_page then
                 -- Reached spoiler limit
                 break
             end
-
-            -- We pass a yield function that will pause the coroutine
-            local chapter_mentions = self:findMentionsInChapter(ui, entity, entry, next_entry, function()
-                coroutine.yield()
-            end)
             
-            -- Filter out mentions that pass max_page
-            for _, m in ipairs(chapter_mentions) do
-                if not (max_page and m.page and m.page > max_page) then
-                    table.insert(mentions, m)
+            if not (min_page and end_p <= min_page) then
+                -- We pass a yield function that will pause the coroutine
+                local chapter_mentions = self:findMentionsInChapter(ui, entity, entry, next_entry, function()
+                    coroutine.yield()
+                end)
+                
+                -- Filter out mentions that pass max_page or are before min_page
+                for _, m in ipairs(chapter_mentions) do
+                    if not (max_page and m.page and m.page > max_page) and not (min_page and m.page and m.page <= min_page) then
+                        table.insert(mentions, m)
+                    end
                 end
-            end
 
-            if on_progress then
-                on_progress(mentions, i, total_chapters)
+                if on_progress then
+                    on_progress(mentions, i, total_chapters)
+                end
             end
 
             -- Force GC every chapter to keep memory pressure low

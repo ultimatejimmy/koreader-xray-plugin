@@ -26,112 +26,7 @@ local function _getCurrentPage(plugin)
     return 1
 end
 
-function M:buildMentionsInBackground(is_from_fetch)
-    if not self.ui or not self.ui.document then return end
-    if self.mentions_scan_active then return end
-
-    local toc = self.ui.document:getToc()
-    if not toc or #toc == 0 then return end
-
-    local spoiler_free = (self.ai_helper and self.ai_helper.settings
-        and self.ai_helper.settings.spoiler_setting or "spoiler_free") == "spoiler_free"
-    local max_page = spoiler_free and _getCurrentPage(self) or nil
-
-    local queue = {}
-    for _, c in ipairs(self.characters or {}) do
-        if c.name and c.mentions and #c.mentions > 0 then
-            table.insert(queue, { entity = c, name = c.name })
-            c.mentions = nil
-        end
-    end
-    for _, l in ipairs(self.locations or {}) do
-        if l.name and l.mentions and #l.mentions > 0 then
-            table.insert(queue, { entity = l, name = l.name })
-            l.mentions = nil
-        end
-    end
-    for _, h in ipairs(self.historical_figures or {}) do
-        if h.name and h.mentions and #h.mentions > 0 then
-            table.insert(queue, { entity = h, name = h.name })
-            h.mentions = nil
-        end
-    end
-    if #queue == 0 then return end
-
-    self.mentions_scan_active = true
-    if not self.chapter_analyzer then
-        self.chapter_analyzer = require(plugin_path .. "xray_chapteranalyzer"):new()
-    end
-
-    local idx = 1
-    local function scanNext()
-        if not self.ui or not self.ui.document then self.mentions_scan_active = false; return end
-        if idx > #queue then
-            self.mentions_scan_active = false
-            self:saveMentionsToCache()
-            return
-        end
-        
-        local item = queue[idx]; idx = idx + 1
-        self.bg_scan_handle = self.chapter_analyzer:scanMentionsAsync(
-            self.ui, item.entity, toc, max_page,
-            nil,
-            function(result)
-                if result then item.entity.mentions = result end
-                UIManager:scheduleIn(0.5, scanNext)
-            end
-        )
-    end
-    UIManager:scheduleIn(is_from_fetch and 3 or 1, scanNext)
-end
-
-function M:updateMentionsForChapter(toc_entry, next_toc_entry)
-    if not self.ui or not self.ui.document then return end
-    if self.mentions_scan_active then return end
-    if not toc_entry then return end
-    if not self.chapter_analyzer then
-        self.chapter_analyzer = require(plugin_path .. "xray_chapteranalyzer"):new()
-    end
-    
-    local all_entities = {}
-    for _, c in ipairs(self.characters or {}) do if c.name then table.insert(all_entities, c) end end
-    for _, l in ipairs(self.locations or {}) do if l.name then table.insert(all_entities, l) end end
-    for _, h in ipairs(self.historical_figures or {}) do if h.name then table.insert(all_entities, h) end end
-    if #all_entities == 0 then return end
-
-    local idx = 1
-    local changed = false
-    local function scanNext()
-        if not self.ui or not self.ui.document then return end
-        if idx > #all_entities then
-            if changed then self:saveMentionsToCache() end
-            return
-        end
-        local entity = all_entities[idx]; idx = idx + 1
-        if not entity.mentions or #entity.mentions == 0 then
-            UIManager:scheduleIn(0, scanNext); return
-        end
-        
-        local ok, result = pcall(function()
-            return self.chapter_analyzer:findMentionsInChapter(self.ui, entity, toc_entry, next_toc_entry)
-        end)
-        if ok and result and #result > 0 then
-            entity.mentions = entity.mentions or {}
-            for _, new_m in ipairs(result) do
-                local already = false
-                for _, m in ipairs(entity.mentions) do
-                    if m.page == new_m.page and m.snippet == new_m.snippet then already = true; break end
-                end
-                if not already then table.insert(entity.mentions, new_m); changed = true end
-            end
-            if changed then
-                table.sort(entity.mentions, function(a, b) return (a.page or 0) < (b.page or 0) end)
-            end
-        end
-        UIManager:scheduleIn(0.1, scanNext)
-    end
-    UIManager:scheduleIn(0, scanNext)
-end
+-- Removed background scanning functions
 
 function M:saveMentionsToCache()
     if not self.cache_manager then
@@ -153,7 +48,7 @@ end
 function M:showMentionsForEntity(entity)
     if not entity then return end
     local name = entity.name or "???"
-    if (self.active_mention_scan and self.active_mention_scan.entity_name == name) or (entity.mentions and #entity.mentions > 0) then
+    if (self.active_mention_scan and self.active_mention_scan.entity_name == name) then
         self:showMentionsMenu(entity); return
     end
     if not self.ui or not self.ui.document then return end
@@ -163,19 +58,43 @@ function M:showMentionsForEntity(entity)
     local spoiler_free = (self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.spoiler_setting or "spoiler_free") == "spoiler_free"
     local max_page = spoiler_free and _getCurrentPage(self) or nil
     
+    local min_page = entity.last_mention_page
+    
+    local needs_scan = false
+    if max_page == nil then
+        if entity.last_mention_page ~= math.huge then
+            needs_scan = true
+        end
+    else
+        if not min_page or min_page < max_page then
+            needs_scan = true
+        end
+    end
+    
+    if not needs_scan then
+        self:showMentionsMenu(entity)
+        return
+    end
+
     self.active_mention_scan = { entity_name = name, chapter_idx = 0, total_chapters = #toc, cancel_handle = nil }
     self.active_mention_scan.cancel_handle = self.chapter_analyzer:scanMentionsAsync(
-        self.ui, entity, toc, max_page,
+        self.ui, entity, toc, min_page, max_page,
         function(mentions_so_far, chapter_idx, total_chapters)
             if self.active_mention_scan and self.active_mention_scan.entity_name == name then
                 self.active_mention_scan.chapter_idx = chapter_idx
                 self.active_mention_scan.total_chapters = total_chapters
-                if self.mentions_menu then entity.mentions = mentions_so_far; self:updateMentionsMenuInPlace(entity) end
+                -- Just update the scanning text, don't append incomplete mentions yet
+                if self.mentions_menu then self:updateMentionsMenuInPlace(entity) end
             end
         end,
-        function(all_mentions)
+        function(new_mentions)
             if self.active_mention_scan and self.active_mention_scan.entity_name == name then self.active_mention_scan = nil end
-            entity.mentions = all_mentions
+            entity.mentions = entity.mentions or {}
+            for _, m in ipairs(new_mentions) do table.insert(entity.mentions, m) end
+            table.sort(entity.mentions, function(a, b) return (a.page or 0) < (b.page or 0) end)
+            
+            entity.last_mention_page = max_page or math.huge
+            
             self:saveMentionsToCache()
             if self.mentions_menu then self:updateMentionsMenuInPlace(entity) end
         end
@@ -195,7 +114,13 @@ function M:buildMentionsMenuItems(entity)
         table.insert(items, { text = "\xE2\x9C\x96 " .. (self.loc:t("close") or "Close"), keep_menu_open = true, callback = function() if self.mentions_menu then UIManager:close(self.mentions_menu); self.mentions_menu = nil end end, separator = true })
     else
         table.insert(items, { text = "\xe2\x86\xba " .. (self.loc:t("mentions_refresh") or "Refresh Mentions"), keep_menu_open = true, callback = function()
-            entity.mentions = {}; if self.active_mention_scan and self.active_mention_scan.cancel_handle then self.active_mention_scan.cancel_handle:cancel() end
+            -- Stop any active scan
+            if self.active_mention_scan and self.active_mention_scan.cancel_handle then 
+                self.active_mention_scan.cancel_handle:cancel() 
+            end
+            -- Clear data
+            entity.mentions = {}; entity.last_mention_page = nil; 
+            -- Re-trigger logic (it will see needs_scan = true and min_page = nil)
             self:showMentionsForEntity(entity)
         end, separator = true })
     end
@@ -215,7 +140,6 @@ function M:buildMentionsMenuItems(entity)
             text = "p." .. tostring(pg) .. " \xE2\x80\x94 " .. (m.chapter or "") .. ((snippet ~= "") and ("\n" .. snippet) or ""),
             keep_menu_open = true,
             callback = function()
-                if is_scanning then return end
                 local return_pg = self.return_page_origin or _getCurrentPage(self)
                 self.return_page_origin = return_pg
                 
@@ -245,6 +169,10 @@ end
 
 function M:showMentionsMenu(entity)
     if not entity then return end
+    if self.mentions_menu then
+        self:updateMentionsMenuInPlace(entity)
+        return
+    end
     self.mentions_menu = Menu:new{
         title = (self.loc:t("mentions_title") or "mentions_title"):format(entity.name or "???"),
         item_table = self:buildMentionsMenuItems(entity),
