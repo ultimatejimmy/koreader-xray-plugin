@@ -7,6 +7,11 @@
 
 This plugin brings Kindle-style X-Ray features to KOReader. It uses AI to track characters, build plot timelines, and provide insights while you read.
 
+<p align="center">
+  <img src="img/menu_main.png" width="45%" />
+  <img src="img/character_detail.png" width="45%" />
+</p>
+
 ## What it does
 
 - **AI-Powered Insights**: Supports Google Gemini, OpenAI, **DeepSeek**, **Claude**, and **Custom API** providers (like OpenRouter).
