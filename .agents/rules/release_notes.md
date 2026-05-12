@@ -34,5 +34,5 @@ I will also respond on Reddit or via Reddit chats.
 
 ### Support me
 
-I don't drink coffee, but you can support me via [Buy me a coffee](https://www.buymeacoffee.com/ultimatejimmy)
+I do this work for free, but if you want, you can support me via [liberapay](https://liberapay.com/ultimatejimmy) or [Buy me a coffee](https://www.buymeacoffee.com/ultimatejimmy)
 ```
