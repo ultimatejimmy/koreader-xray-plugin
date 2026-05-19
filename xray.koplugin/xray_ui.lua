@@ -12,8 +12,7 @@ local plugin_path = ((...) or ""):match("(.-)[^%.]+$") or ""
 local M = {}
 
 function M:showLanguageSelection()
-    local ButtonDialog = require("ui/widget/buttondialog")
-    
+    local Menu = require("ui/widget/menu")
     local settings_lang = (self.ai_helper and self.ai_helper.settings) and self.ai_helper.settings.language or "auto"
     
     local function changeLang(lang_code)
@@ -38,10 +37,15 @@ function M:showLanguageSelection()
         })
     end
     
-    local buttons = {
+    local items = {
         {
-            { text = (self.loc:t("lang_follow_system") or "Automatic (Follow System)") .. (settings_lang == "auto" and " [OK]" or ""), callback = function() changeLang("auto") end },
-            { text = (self.loc:t("lang_follow_book") or "Automatic (Follow Book)") .. (settings_lang == "book" and " [OK]" or ""), callback = function() changeLang("book") end },
+            text = (settings_lang == "auto" and "[✓] " or "[  ] ") .. (self.loc:t("lang_follow_system") or "Automatic (Follow System)"),
+            callback = function() changeLang("auto") end
+        },
+        {
+            text = (settings_lang == "book" and "[✓] " or "[  ] ") .. (self.loc:t("lang_follow_book") or "Automatic (Follow Book)"),
+            callback = function() changeLang("book") end,
+            separator = true
         }
     }
     
@@ -61,14 +65,23 @@ function M:showLanguageSelection()
     local langs = self.loc and self.loc.available_languages or { "en", "de", "fr", "ru", "zh_CN", "tr", "pt_br", "es", "uk", "hu" }
     for _, code in ipairs(langs) do
         local name = LANGUAGE_NAMES[code] or code:upper()
-        table.insert(buttons, {{
-            text = name .. (settings_lang == code and " [OK]" or ""),
+        table.insert(items, {
+            text = (settings_lang == code and "[✓] " or "[  ] ") .. name,
             callback = function() changeLang(code) end
-        }})
+        })
     end
     
     local dialog_title = (self.loc and self.loc:t("menu_language")) or "Language Selection"
-    self.ldlg = ButtonDialog:new{title = dialog_title, buttons = buttons}
+    self.ldlg = Menu:new{
+        title = dialog_title,
+        item_table = items,
+        is_borderless = true,
+        width = Screen:getWidth(),
+        height = Screen:getHeight(),
+        on_close_callback = function()
+            self.ldlg = nil
+        end
+    }
     UIManager:show(self.ldlg)
 end
 

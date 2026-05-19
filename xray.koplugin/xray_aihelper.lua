@@ -931,7 +931,7 @@ function AIHelper:loadSettings()
             end
             
             -- Only auto-set if it's one of our supported languages
-            local supported = { en=1, de=1, fr=1, ru=1, zh_CN=1, tr=1, pt_br=1, es=1, uk=1 }
+            local supported = { en=1, de=1, fr=1, ru=1, zh_CN=1, tr=1, pt_br=1, es=1, uk=1, hu=1 }
             if supported[lang] then
                 settings.language = lang
                 migrated = true

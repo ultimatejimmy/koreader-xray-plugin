@@ -18,14 +18,23 @@ describe("xray_ui", function()
     end)
 
     describe("showLanguageSelection", function()
-        it("should show a ButtonDialog with language options", function()
+        it("should show a Menu with language options and correctly marked default checkbox", function()
             plugin:showLanguageSelection()
             local last = _G.ui_tracker.last_shown
             assert.is_not_nil(last)
-            assert.are.equal("ButtonDialog", last.type)
+            assert.are.equal("Menu", last.type)
             assert.are.equal("menu_language", last.args.title)
-            -- Check that we have multiple buttons
-            assert.is_true(#last.args.buttons > 5)
+            
+            -- Verify that the default option (Follow System) is checked [✓] and others are unchecked [  ]
+            local follow_system_option = last.args.item_table[1]
+            assert.truthy(follow_system_option.text:find("^%[✓%]"))
+            
+            local english_option
+            for _, item in ipairs(last.args.item_table) do
+                if item.text:find("English") then english_option = item; break end
+            end
+            assert.is_not_nil(english_option)
+            assert.truthy(english_option.text:find("^%[%s*%]"))
         end)
     end)
 
