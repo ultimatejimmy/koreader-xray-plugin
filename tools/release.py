@@ -31,16 +31,31 @@ def main():
         print("Error: Could not find version string in _meta.lua")
         sys.exit(1)
         
-    meta_path.write_text(new_content, encoding="utf-8")
-    print("Version updated successfully.")
+    version_changed = (content != new_content)
+    
+    if version_changed:
+        meta_path.write_text(new_content, encoding="utf-8")
+        print("Version updated successfully.")
+    else:
+        print("Version is already set to the target version in _meta.lua.")
     
     # Git operations
     print("Executing git commands...")
     try:
-        run_cmd(["git", "add", str(meta_path.resolve())])
-        run_cmd(["git", "commit", "-m", f"Release {new_version}"])
-        run_cmd(["git", "push"])
-        run_cmd(["git", "tag", new_version])
+        if version_changed:
+            run_cmd(["git", "add", str(meta_path.resolve())])
+            run_cmd(["git", "commit", "-m", f"Release {new_version}"])
+            run_cmd(["git", "push"])
+        else:
+            print("No version changes to commit/push.")
+            
+        # Check if tag already exists locally
+        tag_check = subprocess.run(["git", "tag", "-l", new_version], capture_output=True, text=True)
+        if new_version in tag_check.stdout.splitlines():
+            print(f"Tag {new_version} already exists locally. Skipping local tag creation.")
+        else:
+            run_cmd(["git", "tag", new_version])
+            
         run_cmd(["git", "push", "origin", new_version])
         print(f"\n✅ Release {new_version} completed and pushed successfully!")
     except subprocess.CalledProcessError as e:
