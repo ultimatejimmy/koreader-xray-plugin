@@ -13,43 +13,16 @@ local XRayConfig = require(plugin_path .. "xray_config")
 local M = {}
 
 function M:showHighlightOverlay(boxes)
-    self:clearHighlightOverlay()
-    if not boxes or #boxes == 0 then return end
     self.scroll_highlight_boxes = boxes
-    self:_applyScrollHighlights()
+    if UIManager and type(UIManager.forceRePaint) == "function" then
+        UIManager:forceRePaint()
+    end
 end
 
 function M:clearHighlightOverlay()
     self.scroll_highlight_boxes = nil
 end
 
-function M:_applyScrollHighlights()
-    if not self.scroll_highlight_boxes or #self.scroll_highlight_boxes == 0 then return end
-    local Screen = require("device").screen
-    if Screen and Screen.bb then
-        local screen_w = Screen:getWidth()
-        local screen_h = Screen:getHeight()
-        
-        -- The banner is always at the bottom via recenter override. Compute clip boundary.
-        local clip_bottom = screen_h
-        local banner_h = self._banner_natural_h or (self.return_banner and self.return_banner.dimen and self.return_banner.dimen.h) or 0
-        if banner_h > 0 then
-            clip_bottom = screen_h - banner_h
-        end
-        
-        for _, box in ipairs(self.scroll_highlight_boxes) do
-            if box.x and box.y and box.w and box.h then
-                if box.y < clip_bottom then
-                    local draw_h = math.min(box.h, clip_bottom - box.y)
-                    if draw_h > 0 then
-                        Screen.bb:darkenRect(box.x, box.y, box.w, draw_h, 0.3)
-                    end
-                end
-            end
-        end
-        Screen:refreshFast(0, 0, screen_w, screen_h)
-    end
-end
 
 
 -- Safe helper to merge overlapping bounding boxes (prevents double darkening of matching aliases)
@@ -574,6 +547,20 @@ function M:showReturnBanner(return_page, entity, mentions, current_page)
     -- Force the CenterContainer wrapper to position content at the bottom with bottom_offset
     if self.return_banner[1] then
         self.return_banner[1].paintTo = function(this, bb, x, y)
+            -- Draw all highlights directly to the absolute framebuffer
+            if plugin.scroll_highlight_boxes then
+                local screen_h = Screen:getHeight()
+                local clip_bottom = screen_h - (plugin._banner_natural_h or 100)
+                for _, box in ipairs(plugin.scroll_highlight_boxes) do
+                    if box.x and box.y and box.w and box.h and box.y < clip_bottom then
+                        local draw_h = math.min(box.h, clip_bottom - box.y)
+                        if draw_h > 0 then
+                            bb:darkenRect(box.x, box.y, box.w, draw_h, 0.3)
+                        end
+                    end
+                end
+            end
+
             local content_size = this[1]:getSize()
             local x_pos = x + math.floor((this.dimen.w - content_size.w) / 2)
             local y_pos = y + this.dimen.h - content_size.h - bottom_offset
