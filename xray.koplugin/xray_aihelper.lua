@@ -16,6 +16,11 @@ if not json_ok then
     rapidjson_ok, json = pcall(require, "rapidjson")
 end
 
+-- Single source of truth for default AI models
+local DEFAULT_AI = {
+    primary   = { provider = "gemini", model = "gemini-3.5-flash" },
+    secondary = { provider = "gemini", model = "gemini-3.1-flash-lite" },
+}
 
 local AIHelper = {
     path = ".",
@@ -185,8 +190,8 @@ end
 -- Returns: { {url, headers, body, provider, model}, ... } or nil, error_code, error_msg
 function AIHelper:buildComprehensiveRequest(title, author, context, prompt_override)
     local prompt = prompt_override or self:createPrompt(title, author, context, "comprehensive_xray")
-    local primary = self.settings.primary_ai or { provider = "gemini", model = "gemini-2.5-flash" }
-    local secondary = self.settings.secondary_ai or { provider = "gemini", model = "gemini-2.5-flash-lite" }
+    local primary = self.settings.primary_ai or DEFAULT_AI.primary
+    local secondary = self.settings.secondary_ai or DEFAULT_AI.secondary
 
     local requests = {}
     for _, ai in ipairs({ primary, secondary }) do
@@ -194,7 +199,7 @@ function AIHelper:buildComprehensiveRequest(title, author, context, prompt_overr
         if config and config.api_key and config.api_key ~= "" then
             local url, headers, body
             if ai.provider == "gemini" then
-                local model = ai.model or "gemini-2.5-flash"
+                local model = ai.model or DEFAULT_AI.primary.model
                 local system_instruction_text = self.prompts and self.prompts.system_instruction or "Return valid JSON ONLY."
                 url = "https://generativelanguage.googleapis.com/v1beta/models/" .. model .. ":generateContent"
                 headers = { ["Content-Type"] = "application/json", ["x-goog-api-key"] = config.api_key }
@@ -892,15 +897,18 @@ function AIHelper:loadSettings()
     if not settings.terms_visibility   then settings.terms_visibility   = "always" end
     
     -- Migration to unified Primary and Secondary AI logic
-    if type(settings.primary_ai) ~= "table" or type(settings.secondary_ai) ~= "table" then
+    if type(settings.primary_ai) ~= "table" then
         local def_prov = settings.default_provider or "gemini"
         if def_prov == "gemini" then
-            settings.primary_ai = { provider = "gemini", model = settings.gemini_primary_model or "gemini-2.5-flash" }
-            settings.secondary_ai = { provider = "gemini", model = settings.gemini_secondary_model or "gemini-2.5-flash-lite" }
+            settings.primary_ai = { provider = "gemini", model = settings.gemini_primary_model or DEFAULT_AI.primary.model }
         else
             settings.primary_ai = { provider = "chatgpt", model = settings.chatgpt_model or "gpt-5.4-mini" }
-            settings.secondary_ai = { provider = "gemini", model = "gemini-2.5-flash-lite" }
         end
+        migrated = true
+    end
+    
+    if type(settings.secondary_ai) ~= "table" then
+        settings.secondary_ai = { provider = "gemini", model = settings.gemini_secondary_model or DEFAULT_AI.secondary.model }
         migrated = true
     end
     
@@ -1187,8 +1195,8 @@ function AIHelper:createPrompt(title, author, context, section_name, targeted_wo
 end
 
 function AIHelper:executeUnifiedRequest(prompt)
-    local primary = self.settings.primary_ai or { provider = "gemini", model = "gemini-2.5-flash" }
-    local secondary = self.settings.secondary_ai or { provider = "gemini", model = "gemini-2.5-flash-lite" }
+    local primary = self.settings.primary_ai or DEFAULT_AI.primary
+    local secondary = self.settings.secondary_ai or DEFAULT_AI.secondary
     
     local models_to_try = { primary, secondary }
     local last_err = "No models configured."
@@ -1269,7 +1277,7 @@ function AIHelper:mergeDescriptionsWithAI(primary_desc, secondary_desc)
 end
 
 function AIHelper:callGemini(prompt, config, current_model)
-    current_model = current_model or "gemini-2.0-flash"
+    current_model = current_model or DEFAULT_AI.primary.model
     local system_instruction_text = self.prompts and self.prompts.system_instruction or "Return valid JSON ONLY."
     self:log("AIHelper: Gemini Prompt prepared")
     

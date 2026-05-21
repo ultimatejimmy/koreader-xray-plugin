@@ -346,8 +346,10 @@ function Localization:t(key, ...)
             book_mode_fiction = "Fiction",
             book_mode_nonfiction = "Non-Fiction",
             book_mode_saved = "Book mode saved!",
-            current_mode = "Current: ",
+                        current_mode = "Current: ",
             menu_fetch_more_terms = "Fetch More Terms",
+            model_free = "free",
+            model_paid = "paid",
         }
         translation = fallbacks[key] or key
     end

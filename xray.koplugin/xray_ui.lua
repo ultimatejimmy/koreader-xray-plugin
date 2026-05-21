@@ -1924,52 +1924,114 @@ function M:getProviderKeySubMenu(provider, provider_name)
 end
 
 function M:getAIModelSelectionMenu(setting_type)
-    local models = {
-        { name = "Gemini Flash (gemini-2.5-flash) - " .. (self.loc:t("model_free") or "free"), provider = "gemini", id = "gemini-2.5-flash" },
-        { name = "Gemini Flash-Lite (gemini-2.5-flash-lite) - " .. (self.loc:t("model_free") or "free"), provider = "gemini", id = "gemini-2.5-flash-lite" },
-        { name = "Gemini Pro (gemini-2.5-pro) - " .. (self.loc:t("model_paid") or "paid"), provider = "gemini", id = "gemini-2.5-pro" },
-        { name = "GPT-5.5 (gpt-5.5) - " .. (self.loc:t("model_paid") or "paid"), provider = "chatgpt", id = "gpt-5.5" },
-        { name = "GPT-5.4 Mini (gpt-5.4-mini) - " .. (self.loc:t("model_paid") or "paid"), provider = "chatgpt", id = "gpt-5.4-mini" },
-        { name = "GPT-5.4 Nano (gpt-5.4-nano) - " .. (self.loc:t("model_paid") or "paid"), provider = "chatgpt", id = "gpt-5.4-nano" },
-        { name = "DeepSeek Chat (deepseek-chat) - " .. (self.loc:t("model_paid") or "paid"), provider = "deepseek", id = "deepseek-chat" },
-        { name = "DeepSeek Reasoner (deepseek-reasoner) - " .. (self.loc:t("model_paid") or "paid"), provider = "deepseek", id = "deepseek-reasoner" },
-        { name = "Claude 4.6 Sonnet (claude-sonnet-4-6) - " .. (self.loc:t("model_paid") or "paid"), provider = "claude", id = "claude-sonnet-4-6" },
-        { name = "Claude 4.5 Haiku (claude-haiku-4-5) - " .. (self.loc:t("model_paid") or "paid"), provider = "claude", id = "claude-haiku-4-5" },
+    local providers = {
+        {
+            id = "gemini",
+            display_name = "Gemini",
+            models = {
+                { id = "gemini-3.5-flash", cost = "free" },
+                { id = "gemini-3.1-flash-lite", cost = "free" },
+                { id = "gemini-2.5-flash", cost = "free" },
+                { id = "gemini-2.5-flash-lite", cost = "free" },
+                { id = "gemini-2.5-pro", cost = "paid" },
+            }
+        },
+        {
+            id = "chatgpt",
+            display_name = "ChatGPT",
+            models = {
+                { id = "gpt-5.5", cost = "paid" },
+                { id = "gpt-5.4-mini", cost = "paid" },
+                { id = "gpt-5.4-nano", cost = "paid" },
+            }
+        },
+        {
+            id = "deepseek",
+            display_name = "DeepSeek",
+            models = {
+                { id = "deepseek-chat", cost = "paid" },
+                { id = "deepseek-reasoner", cost = "paid" },
+            }
+        },
+        {
+            id = "claude",
+            display_name = "Claude",
+            models = {
+                { id = "claude-sonnet-4-6", cost = "paid" },
+                { id = "claude-haiku-4-5", cost = "paid" },
+            }
+        }
     }
     
     local custom1_model = (self.ai_helper and self.ai_helper.settings) and self.ai_helper.settings.custom1_model or nil
     local custom2_model = (self.ai_helper and self.ai_helper.settings) and self.ai_helper.settings.custom2_model or nil
     
-    table.insert(models, {
-        name = "Custom API 1: " .. (custom1_model or "(configure in API Keys)"),
-        provider = "custom1",
-        id = (custom1_model or "custom1")
-    })
-    table.insert(models, {
-        name = "Custom API 2: " .. (custom2_model or "(configure in API Keys)"),
-        provider = "custom2",
-        id = (custom2_model or "custom2")
-    })
-    
     local menu_items = {}
-    for i, m in ipairs(models) do
+    
+    for _, p in ipairs(providers) do
+        local provider_id = p.id
+        local provider_name = p.display_name
+        local provider_models = p.models
         table.insert(menu_items, {
-            text = m.name,
+            text = provider_name,
+            keep_menu_open = true,
             checked_func = function()
                 if not self.ai_helper or not self.ai_helper.settings then return false end
                 local current = setting_type == "primary" and self.ai_helper.settings.primary_ai or self.ai_helper.settings.secondary_ai
                 if type(current) ~= "table" then return false end
-                return current.provider == m.provider and current.model == m.id
+                return current.provider == provider_id
             end,
-            callback = function()
-                self.ai_helper:setUnifiedModel(setting_type, m.provider, m.id)
-                UIManager:setDirty(nil, "ui")
+            sub_item_table_func = function()
+                local sub_items = {}
+                for _, m in ipairs(provider_models) do
+                    local model_id = m.id
+                    local model_cost = m.cost
+                    table.insert(sub_items, {
+                        text = model_id .. " [" .. (model_cost == "free" and self.loc:t("model_free") or self.loc:t("model_paid")) .. "]",
+                        checked_func = function()
+                            if not self.ai_helper or not self.ai_helper.settings then return false end
+                            local current = setting_type == "primary" and self.ai_helper.settings.primary_ai or self.ai_helper.settings.secondary_ai
+                            if type(current) ~= "table" then return false end
+                            return current.provider == provider_id and current.model == model_id
+                        end,
+                        callback = function()
+                            self.ai_helper:setUnifiedModel(setting_type, provider_id, model_id)
+                            UIManager:setDirty(nil, "ui")
+                        end
+                    })
+                end
+                return sub_items
             end
         })
-        if i == #models then
-            menu_items[#menu_items].separator = true
-        end
     end
+    
+    table.insert(menu_items, {
+        text = "Custom API 1: " .. (custom1_model or "(configure in API Keys)"),
+        checked_func = function()
+            if not self.ai_helper or not self.ai_helper.settings then return false end
+            local current = setting_type == "primary" and self.ai_helper.settings.primary_ai or self.ai_helper.settings.secondary_ai
+            if type(current) ~= "table" then return false end
+            return current.provider == "custom1" and current.model == (custom1_model or "custom1")
+        end,
+        callback = function()
+            self.ai_helper:setUnifiedModel(setting_type, "custom1", custom1_model or "custom1")
+            UIManager:setDirty(nil, "ui")
+        end
+    })
+    table.insert(menu_items, {
+        text = "Custom API 2: " .. (custom2_model or "(configure in API Keys)"),
+        checked_func = function()
+            if not self.ai_helper or not self.ai_helper.settings then return false end
+            local current = setting_type == "primary" and self.ai_helper.settings.primary_ai or self.ai_helper.settings.secondary_ai
+            if type(current) ~= "table" then return false end
+            return current.provider == "custom2" and current.model == (custom2_model or "custom2")
+        end,
+        callback = function()
+            self.ai_helper:setUnifiedModel(setting_type, "custom2", custom2_model or "custom2")
+            UIManager:setDirty(nil, "ui")
+        end,
+        separator = true
+    })
     table.insert(menu_items, {
         text = self.loc:t("menu_enter_custom_model") or "Enter custom model...",
         keep_menu_open = true,
