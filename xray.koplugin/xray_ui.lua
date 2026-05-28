@@ -861,8 +861,7 @@ function M:showBookTypeSettings()
         end
 
         info_dialog = ButtonDialog:new{
-            title = self.loc:t("menu_book_mode") or "Book Type",
-            text = self.loc:t("book_mode_desc") or "Select the type for this book:",
+            title = (self.loc:t("menu_book_mode") or "Book Type") .. "\n\n" .. (self.loc:t("book_mode_desc") or "Select the type for this book:"),
             buttons = {
                 {
                     { 
@@ -1197,8 +1196,7 @@ function M:showAutoUpdateSettings()
         local current_cooldown = self.ai_helper.settings and self.ai_helper.settings.auto_fetch_cooldown or 300
         
         info_dialog = ButtonDialog:new{
-            title = self.loc:t("menu_auto_update_frequency") or "Auto X-Ray Settings",
-            text = self.loc:t("auto_update_freq_label") or "Background fetching frequency:",
+            title = (self.loc:t("menu_auto_update_frequency") or "Auto X-Ray Settings") .. "\n\n" .. (self.loc:t("auto_update_freq_label") or "Background fetching frequency:"),
             buttons = {
                 {
                     {
@@ -1456,7 +1454,7 @@ function M:showAuthorInfo()
     if not self.author_info or not self.author_info.description or self.author_info.description == "" or self.author_info.description == (self.loc:t("msg_no_bio") or "No biography available.") then
         local ButtonDialog = require("ui/widget/buttondialog")
         local ask_dialog
-        ask_dialog = ButtonDialog:new{ title = self.loc:t("menu_fetch_author") or "Fetch Author Info", text = self.loc:t("no_author_data_fetch"), buttons = {{{ text = self.loc:t("cancel"), callback = function() UIManager:close(ask_dialog) end }, { text = self.loc:t("fetch_button") or "Fetch", is_enter_default = true, callback = function() UIManager:close(ask_dialog); UIManager:nextTick(function() self:fetchAuthorInfo() end) end }}} }
+        ask_dialog = ButtonDialog:new{ title = (self.loc:t("menu_fetch_author") or "Fetch Author Info") .. "\n\n" .. (self.loc:t("no_author_data_fetch") or "No author biography available. Fetch now?"), buttons = {{{ text = self.loc:t("cancel"), callback = function() UIManager:close(ask_dialog) end }, { text = self.loc:t("fetch_button") or "Fetch", is_enter_default = true, callback = function() UIManager:close(ask_dialog); UIManager:nextTick(function() self:fetchAuthorInfo() end) end }}} }
         UIManager:show(ask_dialog); return
     end
     local lines = { "NAME: " .. (self.author_info.name or "Unknown"), "BORN: " .. (self.author_info.birthDate or "---"), "DIED: " .. (self.author_info.deathDate or "---"), "", "BIOGRAPHY:", (self.author_info.description or "No biography available.") }
@@ -1630,10 +1628,16 @@ function M:showTimeline()
         if ev.source == "series_prior" then
             if not self.series_prior_timeline_collapsed then
                 table.insert(items, {
-                    text = (ev.chapter or "") .. ": " .. (ev.event or ""),
+                    text = ev.chapter or "",
                     keep_menu_open = true,
                     callback = function()
-                        UIManager:show(InfoMessage:new{ text = (ev.event or ""), timeout = 10 })
+                        local TextViewer = require("ui/widget/textviewer")
+                        local text_viewer = TextViewer:new{
+                            title = ev.chapter or "Prior Book Summary",
+                            text = ev.event or "",
+                            text_type = "book_info",
+                        }
+                        UIManager:show(text_viewer)
                     end
                 })
             end
@@ -1642,7 +1646,13 @@ function M:showTimeline()
                 text = (ev.chapter or "") .. ": " .. (ev.event or ""),
                 keep_menu_open = true,
                 callback = function()
-                    UIManager:show(InfoMessage:new{ text = (ev.event or ""), timeout = 10 })
+                    local TextViewer = require("ui/widget/textviewer")
+                    local text_viewer = TextViewer:new{
+                        title = ev.chapter or "Event Summary",
+                        text = ev.event or "",
+                        text_type = "book_info",
+                    }
+                    UIManager:show(text_viewer)
                 end
             })
         end
@@ -2360,7 +2370,28 @@ function M:toggleSeriesContextEnabled()
 end
 
 function M:manualFetchSeriesContext()
-    self:fetchSeriesContext(false)
+    local ButtonDialog = require("ui/widget/buttondialog")
+    local cancel_ref = { cancelled = false }
+    local wait_dialog
+    wait_dialog = ButtonDialog:new{
+        title = self.loc:t("fetching_series_info") or "Identifying series books…",
+        buttons = {{{
+            text = self.loc:t("cancel") or "Cancel",
+            callback = function()
+                cancel_ref.cancelled = true
+                self:log("XRayPlugin: Series: User cancelled series fetch before launch.")
+                UIManager:close(wait_dialog)
+            end
+        }}}
+    }
+    UIManager:show(wait_dialog)
+    UIManager:nextTick(function()
+        if cancel_ref.cancelled then
+            self:log("XRayPlugin: Series: nextTick fired after user already cancelled fetch.")
+            return
+        end
+        self:fetchSeriesContext(false, wait_dialog, cancel_ref)
+    end)
 end
 
 function M:checkSeriesContext()
@@ -2420,8 +2451,7 @@ function M:checkSeriesContext()
 
     local confirm
     confirm = ButtonDialog:new{
-        title = self.loc:t("series_context_prompt_title") or "Series Detected",
-        text = body_text,
+        title = (self.loc:t("series_context_prompt_title") or "Series Detected") .. "\n\n" .. body_text,
         buttons = {
             {
                 {
@@ -2430,7 +2460,29 @@ function M:checkSeriesContext()
                     callback = function()
                         self:log("XRayPlugin: Series: User chose YES on series context prompt.")
                         UIManager:close(confirm)
-                        self:fetchSeriesContext(false)
+                        
+                        local cancel_ref = { cancelled = false }
+                        local wait_dialog
+                        wait_dialog = ButtonDialog:new{
+                            title = self.loc:t("fetching_series_info") or "Identifying series books…",
+                            buttons = {{{
+                                text = self.loc:t("cancel") or "Cancel",
+                                callback = function()
+                                    cancel_ref.cancelled = true
+                                    self:log("XRayPlugin: Series: User cancelled series fetch before launch.")
+                                    UIManager:close(wait_dialog)
+                                end
+                            }}}
+                        }
+                        UIManager:show(wait_dialog)
+                        
+                        UIManager:nextTick(function()
+                            if cancel_ref.cancelled then
+                                self:log("XRayPlugin: Series: nextTick fired after user already cancelled fetch.")
+                                return
+                            end
+                            self:fetchSeriesContext(false, wait_dialog, cancel_ref)
+                        end)
                     end,
                 },
                 {

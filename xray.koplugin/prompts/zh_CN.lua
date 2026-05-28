@@ -261,7 +261,7 @@ If `is_valid` is false:
     { "name": "...", "aliases": ["别名 1", "别名 2"], "expanded": "...", "category": "...", "definition": "..." }
   ],
   "timeline": [
-    { "chapter": "图书总结", "event": "一段单一、高度详细、全面且包含多个段落的完整图书剧情、主要事件和结局回顾 (最多 2000 字)" }
+    { "chapter": "图书总结", "event": "一段单一、高度详细、全面且包含多个段落的完整图书剧情、主要事件和结局回顾 (最多 2000 字) You MUST format this recap using multiple distinct paragraphs separated by double newlines (\\n\\n) for readability instead of a single wall of text." }
   ]
 }]],
 

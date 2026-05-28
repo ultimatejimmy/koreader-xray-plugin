@@ -260,6 +260,9 @@ msgstr "正在从 %s 获取作者信息..."
 msgid "fetching_series_context"
 msgstr "Fetching series context: Book %d of %d…"
 
+msgid "fetching_series_info"
+msgstr "识别系列图书..."
+
 msgid "fetching_wait"
 msgstr "⏳ 请稍候...\n此过程可能需要 10-50 秒。"
 

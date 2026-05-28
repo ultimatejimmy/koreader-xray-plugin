@@ -259,7 +259,7 @@ If `is_valid` is false:
     { "name": "...", "aliases": ["Alias 1", "Alias 2"], "expanded": "...", "category": "...", "definition": "..." }
   ],
   "timeline": [
-    { "chapter": "Краткое содержание книги", "event": "Единый, очень подробный, всеобъемлющий пересказ сюжета всей книги в нескольких абзацах, включая основные события и финал (макс. 2000 символов)" }
+    { "chapter": "Краткое содержание книги", "event": "Единый, очень подробный, всеобъемлющий пересказ сюжета всей книги в нескольких абзацах, включая основные события и финал (макс. 2000 символов) You MUST format this recap using multiple distinct paragraphs separated by double newlines (\\n\\n) for readability instead of a single wall of text." }
   ]
 }]],
 

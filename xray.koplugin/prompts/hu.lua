@@ -225,7 +225,7 @@ ELVÁRT JSON FORMÁTUM:
     { "name": "...", "aliases": ["Alias 1", "Alias 2"], "expanded": "...", "category": "...", "definition": "..." }
   ],
   "timeline": [
-    { "chapter": "Könyv összefoglaló", "event": "Egyetlen, rendkívül részletes, átfogó, több bekezdésből álló összefoglaló a teljes könyv cselekményéről, főbb eseményeiről és végkifejletéről (max 2000 karakter)" }
+    { "chapter": "Könyv összefoglaló", "event": "Egyetlen, rendkívül részletes, átfogó, több bekezdésből álló összefoglaló a teljes könyv cselekményéről, főbb eseményeiről és végkifejletéről (max 2000 karakter) You MUST format this recap using multiple distinct paragraphs separated by double newlines (\\n\\n) for readability instead of a single wall of text." }
   ]
 }]],
 

@@ -98,6 +98,9 @@ package.loaded["ui/widget/buttondialog"] = {
 package.loaded["ui/widget/confirmbox"] = {
     new = function(a, b) return { type = "ConfirmBox", args = b or a } end
 }
+package.loaded["ui/widget/textviewer"] = {
+    new = function(a, b) return { type = "TextViewer", args = b or a } end
+}
 package.loaded["ui/widget/menu"] = {
     new = function(a, b) return { type = "Menu", args = b or a } end
 }

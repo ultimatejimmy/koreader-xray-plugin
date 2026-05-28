@@ -152,7 +152,7 @@ describe("xray_ui", function()
             local last = _G.ui_tracker.last_shown
             assert.is_not_nil(last)
             assert.are.equal("ButtonDialog", last.type)
-            assert.are.equal("series_context_prompt_title", last.args.title)
+            assert.is_true(last.args.title:find("series_context_prompt_title") ~= nil)
             
             -- Verify buttons structure (three options: Yes, Later, Don't ask again)
             local buttons = last.args.buttons[1]

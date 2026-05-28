@@ -213,7 +213,7 @@ CRITICAL FOR HISTORICAL FIGURES: You MAY use your internal knowledge to verify t
     { "name": "...", "aliases": ["Alias 1", "Alias 2"], "expanded": "...", "category": "...", "definition": "..." }
   ],
   "timeline": [
-    { "chapter": "Стислий зміст книги", "event": "Єдиний, дуже детальний, всеосяжний переказ сюжету всієї книги у кількох абзацах, включаючи основні події та фінал (макс. 2000 символів)" }
+    { "chapter": "Стислий зміст книги", "event": "Єдиний, дуже детальний, всеосяжний переказ сюжету всієї книги у кількох абзацах, включаючи основні події та фінал (макс. 2000 символів) You MUST format this recap using multiple distinct paragraphs separated by double newlines (\\n\\n) for readability instead of a single wall of text." }
   ]
 }]],
 

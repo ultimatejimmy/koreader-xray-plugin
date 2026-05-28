@@ -585,7 +585,7 @@ function M:finalizeXRayData(final_book_data, title, author, book_text, is_update
 
         local success_dialog
         local ButtonDialog = require("ui/widget/buttondialog")
-        success_dialog = ButtonDialog:new{ title = self.loc:t("fetch_successful") or "Fetch successful", text = summary, buttons = {{{ text = self.loc:t("ok"), callback = function() 
+        success_dialog = ButtonDialog:new{ title = (self.loc:t("fetch_successful") or "Fetch successful") .. "\n\n" .. summary, buttons = {{{ text = self.loc:t("ok"), callback = function() 
             UIManager:close(success_dialog) 
         end }}} }
         UIManager:show(success_dialog)
@@ -618,8 +618,7 @@ function M:fetchMoreCharacters()
         local is_cancelled = false
         local ButtonDialog = require("ui/widget/buttondialog")
         wait_msg = ButtonDialog:new{
-            title = self.loc:t("fetching_ai") or "Fetching AI...",
-            text = (self.loc:t("extracting_more_characters") or "Extracting additional characters...") .. "\n\n" .. title,
+            title = (self.loc:t("fetching_ai") or "Fetching AI...") .. "\n\n" .. (self.loc:t("extracting_more_characters") or "Extracting additional characters...") .. "\n\n" .. title,
             buttons = {{{
                 text = self.loc:t("cancel") or "Cancel",
                 callback = function()
@@ -774,8 +773,7 @@ function M:fetchMoreTerms()
         local ButtonDialog = require("ui/widget/buttondialog")
 
         local wait_msg = ButtonDialog:new{
-            title = self.loc:t("fetching_ai") or "Fetching AI...",
-            text = (self.loc:t("extracting_more_terms") or "Extracting additional terms...") .. "\n\n" .. title,
+            title = (self.loc:t("fetching_ai") or "Fetching AI...") .. "\n\n" .. (self.loc:t("extracting_more_terms") or "Extracting additional terms...") .. "\n\n" .. title,
             buttons = {{{
                 text = self.loc:t("cancel") or "Cancel",
                 callback = function()
@@ -902,8 +900,7 @@ function M:fetchAuthorInfo()
     local is_cancelled = false
     local ButtonDialog = require("ui/widget/buttondialog")
     wait_msg = ButtonDialog:new{
-        title = self.loc:t("fetching_author", "AI") or "Fetching Author...",
-        text = title .. " - " .. author,
+        title = (self.loc:t("fetching_author", "AI") or "Fetching Author...") .. "\n\n" .. title .. " - " .. author,
         buttons = {{{
             text = self.loc:t("cancel") or "Cancel",
             callback = function()
@@ -1137,14 +1134,29 @@ function M:mergeSeriesContext(cache_data, series_info)
     self.book_data = cache
 end
 
-function M:fetchSeriesContext(is_silent)
+function M:fetchSeriesContext(is_silent, init_wait_dialog, cancel_ref)
+    local function closeInitWait()
+        if init_wait_dialog then
+            UIManager:close(init_wait_dialog)
+            init_wait_dialog = nil
+        end
+    end
+
+    if cancel_ref and cancel_ref.cancelled then
+        self:log("XRayPlugin: Series: fetchSeriesContext early exit: cancel_ref is cancelled")
+        closeInitWait()
+        return
+    end
+
     if not self.ui or not self.ui.document then
         self:log("XRayPlugin: Series: fetchSeriesContext called with no document/ui, aborting")
+        closeInitWait()
         return
     end
 
     if not self.ai_helper or not self.ai_helper.settings or not self.ai_helper.settings.series_context_enabled then
         self:log("XRayPlugin: Series: fetchSeriesContext early exit: setting series_context_enabled is false or nil")
+        closeInitWait()
         return
     end
 
@@ -1155,8 +1167,15 @@ function M:fetchSeriesContext(is_silent)
     self:log("XRayPlugin: Series: fetchSeriesContext starting for: title=" .. tostring(title) .. ", author=" .. tostring(author))
 
     local series_info = self.series_manager:detectSeries(props, title, author, self.ai_helper)
+    if cancel_ref and cancel_ref.cancelled then
+        self:log("XRayPlugin: Series: fetchSeriesContext cancelled after detectSeries")
+        closeInitWait()
+        return
+    end
+
     if not series_info or not series_info.name or not series_info.index or series_info.index <= 1 then
         self:log("XRayPlugin: Series: No series detected or current book is the first one in the series. series_info=" .. (series_info and ("name=" .. tostring(series_info.name) .. ", index=" .. tostring(series_info.index)) or "nil"))
+        closeInitWait()
         if not is_silent then
             UIManager:show(InfoMessage:new{
                 text = self.loc:t("series_no_prior_detected") or "No prior books detected for this series.",
@@ -1173,6 +1192,12 @@ function M:fetchSeriesContext(is_silent)
     cache_data.books = cache_data.books or {}
 
     local prior_books = self.series_manager:getPriorBookList(series_info, author, self.ai_helper)
+    if cancel_ref and cancel_ref.cancelled then
+        self:log("XRayPlugin: Series: fetchSeriesContext cancelled after getPriorBookList")
+        closeInitWait()
+        return
+    end
+
     if #prior_books == 0 then
         self:log("XRayPlugin: Series: getPriorBookList returned empty list, using generated placeholders")
         for i = 1, series_info.index - 1 do
@@ -1199,6 +1224,7 @@ function M:fetchSeriesContext(is_silent)
 
     if #missing_books == 0 then
         self:log("XRayPlugin: Series: All prior books are already cached. Merging context immediately.")
+        closeInitWait()
         self:mergeSeriesContext(cache_data, series_info)
         if not is_silent then
             local count = series_info.index - 1
@@ -1214,17 +1240,22 @@ function M:fetchSeriesContext(is_silent)
     self:log("XRayPlugin: Series: Needs to fetch " .. tostring(#missing_books) .. " missing books from AI. Running when online.")
 
     require("ui/network/manager"):runWhenOnline(function()
-        local is_cancelled = false
+        closeInitWait()
+        if cancel_ref and cancel_ref.cancelled then
+            self:log("XRayPlugin: Series: runWhenOnline fired after user cancelled")
+            return
+        end
+        local is_cancelled = cancel_ref and cancel_ref.cancelled or false
         local wait_msg
 
         local function showProgress(current_idx, total_count, book_title)
             if is_silent then return end
+            closeInitWait()
             if wait_msg then UIManager:close(wait_msg) end
 
             local progress_text = string.format(self.loc:t("fetching_series_context") or "Fetching series context: Book %d of %d…", current_idx, total_count)
             wait_msg = ButtonDialog:new{
-                title = progress_text,
-                text = book_title .. "\n\n" .. (self.loc:t("fetching_wait") or "This may take a moment.\nTap Cancel to stop."),
+                title = progress_text .. "\n\n" .. book_title .. "\n\n" .. (self.loc:t("fetching_wait") or "This may take a moment.\nTap Cancel to stop."),
                 buttons = {{{
                     text = self.loc:t("cancel") or "Cancel",
                     callback = function()

@@ -301,66 +301,68 @@ function M:assignTimelinePages(timeline, toc, allow_findtext)
     end
 
     for _, ev in ipairs(timeline) do
-        local norm = self:normalizeChapterName(ev.chapter or "")
-        local page = nil
+        if ev.source ~= "series_prior" then
+            local norm = self:normalizeChapterName(ev.chapter or "")
+            local page = nil
 
-        -- Strategy 1: Exact normalized title (queue-based)
-        if q_norm[norm] then
-            page = pop(q_norm, norm)
-        end
-
-        -- Strategy 2: Leading number (queue-based)
-        if not page then
-            local num = norm:match("^(%d+)")
-            if num and q_number[num] then
-                page = pop(q_number, num)
+            -- Strategy 1: Exact normalized title (queue-based)
+            if q_norm[norm] then
+                page = pop(q_norm, norm)
             end
-        end
 
-        -- Strategy 3: AI suffix vs TOC suffix or norm (queue-based)
-        if not page then
-            local ai_suffix = norm:match("^%d+[%s%.%:%-]+(.+)$")
-            if ai_suffix then
-                if q_suffix[ai_suffix] then
-                    page = pop(q_suffix, ai_suffix)
-                elseif q_norm[ai_suffix] then
-                    page = pop(q_norm, ai_suffix)
+            -- Strategy 2: Leading number (queue-based)
+            if not page then
+                local num = norm:match("^(%d+)")
+                if num and q_number[num] then
+                    page = pop(q_number, num)
                 end
             end
-        end
 
-        -- Strategy 4: AI title as suffix (queue-based)
-        if not page and q_suffix[norm] then
-            page = pop(q_suffix, norm)
-        end
-
-        -- Strategy 5: Substring match (linear scan, consume each TOC entry once)
-        if not page and #norm > 2 then
-            for _, t in ipairs(all_toc) do
-                if not t.used then
-                    if t.norm:find(norm, 1, true) or norm:find(t.norm, 1, true) then
-                        page = t.page
-                        t.used = true
-                        break
+            -- Strategy 3: AI suffix vs TOC suffix or norm (queue-based)
+            if not page then
+                local ai_suffix = norm:match("^%d+[%s%.%:%-]+(.+)$")
+                if ai_suffix then
+                    if q_suffix[ai_suffix] then
+                        page = pop(q_suffix, ai_suffix)
+                    elseif q_norm[ai_suffix] then
+                        page = pop(q_norm, ai_suffix)
                     end
                 end
             end
-        end
 
-        -- Strategy 6: NO-TOC FALLBACK - search document text for the chapter heading.
-        if allow_findtext and not page and self.ui and self.ui.document and self.ui.document.findText then
-            if #norm > 3 and not norm:match("^section") then
-                local success, results = pcall(function()
-                    return self.ui.document:findText(ev.chapter or "", 20)
-                end)
-                if success and results and #results > 0 then
-                    page = results[1].page
+            -- Strategy 4: AI title as suffix (queue-based)
+            if not page and q_suffix[norm] then
+                page = pop(q_suffix, norm)
+            end
+
+            -- Strategy 5: Substring match (linear scan, consume each TOC entry once)
+            if not page and #norm > 2 then
+                for _, t in ipairs(all_toc) do
+                    if not t.used then
+                        if t.norm:find(norm, 1, true) or norm:find(t.norm, 1, true) then
+                            page = t.page
+                            t.used = true
+                            break
+                        end
+                    end
                 end
             end
-        end
 
-        if page then
-            ev.page = tonumber(page)
+            -- Strategy 6: NO-TOC FALLBACK - search document text for the chapter heading.
+            if allow_findtext and not page and self.ui and self.ui.document and self.ui.document.findText then
+                if #norm > 3 and not norm:match("^section") then
+                    local success, results = pcall(function()
+                        return self.ui.document:findText(ev.chapter or "", 20)
+                    end)
+                    if success and results and #results > 0 then
+                        page = results[1].page
+                    end
+                end
+            end
+
+            if page then
+                ev.page = tonumber(page)
+            end
         end
     end
 end
@@ -372,6 +374,15 @@ function M:sortTimelineByTOC(timeline)
     for i, ev in ipairs(timeline) do ev._sort_idx = i end
     
     table.sort(timeline, function(a, b)
+        -- Explicitly sort series prior events to the very top chronologically by book index
+        if a.source == "series_prior" and b.source ~= "series_prior" then
+            return true
+        elseif a.source ~= "series_prior" and b.source == "series_prior" then
+            return false
+        elseif a.source == "series_prior" and b.source == "series_prior" then
+            return (a.source_book or 0) < (b.source_book or 0)
+        end
+
         -- Primary key: Page number (must be numeric)
         local ap = tonumber(a.page) or 999999
         local bp = tonumber(b.page) or 999999

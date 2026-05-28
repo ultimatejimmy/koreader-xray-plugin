@@ -266,7 +266,7 @@ GEREKLİ JSON FORMATI:
     { "name": "...", "aliases": ["Alias 1", "Alias 2"], "expanded": "...", "category": "...", "definition": "..." }
   ],
   "timeline": [
-    { "chapter": "Kitap Özeti", "event": "Tüm kitabın olay örgüsünü, ana olaylarını ve sonucunu içeren, birkaç paragraftan oluşan tek, son derece ayrıntılı ve kapsamlı bir özet (en fazla 2000 karakter)" }
+    { "chapter": "Kitap Özeti", "event": "Tüm kitabın olay örgüsünü, ana olaylarını ve sonucunu içeren, birkaç paragraftan oluşan tek, son derece ayrıntılı ve kapsamlı bir özet (en fazla 2000 karakter) You MUST format this recap using multiple distinct paragraphs separated by double newlines (\\n\\n) for readability instead of a single wall of text." }
   ]
 }]],
 

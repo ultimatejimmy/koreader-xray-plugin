@@ -265,7 +265,7 @@ FORMATO JSON EXIGIDO:
     { "name": "...", "aliases": ["Alias 1", "Alias 2"], "expanded": "...", "category": "...", "definition": "..." }
   ],
   "timeline": [
-    { "chapter": "Resumo do Livro", "event": "Um resumo único, altamente detalhado e completo em vários parágrafos do enredo do livro inteiro, principais eventos e desfecho (máx. 2000 caracteres)" }
+    { "chapter": "Resumo do Livro", "event": "Um resumo único, altamente detalhado e completo em vários parágrafos do enredo do livro inteiro, principais eventos e desfecho (máx. 2000 caracteres) You MUST format this recap using multiple distinct paragraphs separated by double newlines (\\n\\n) for readability instead of a single wall of text." }
   ]
 }]],
 

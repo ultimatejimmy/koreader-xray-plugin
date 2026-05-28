@@ -260,6 +260,9 @@ msgstr "Obteniendo información del autor desde %s..."
 msgid "fetching_series_context"
 msgstr "Fetching series context: Book %d of %d…"
 
+msgid "fetching_series_info"
+msgstr "Identificando libros de la serie..."
+
 msgid "fetching_wait"
 msgstr "⏳ Por favor, espera...\nEste proceso puede tardar entre 10 y 50 segundos."
 

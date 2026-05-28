@@ -264,7 +264,7 @@ ERFORDERLICHES JSON-FORMAT:
     { "name": "...", "aliases": ["Alias 1", "Alias 2"], "expanded": "...", "category": "...", "definition": "..." }
   ],
   "timeline": [
-    { "chapter": "Buchzusammenfassung", "event": "Eine einzelne, hochdetaillierte, umfassende Zusammenfassung der Handlung, der Hauptereignisse und des Endes des gesamten Buches über mehrere Absätze (max. 2000 Zeichen)" }
+    { "chapter": "Buchzusammenfassung", "event": "Eine einzelne, hochdetaillierte, umfassende Zusammenfassung der Handlung, der Hauptereignisse und des Endes des gesamten Buches (max. 2000 Zeichen). Sie MÜSSEN diese Zusammenfassung in mehrere Absätze unterteilen, die durch doppelte Zeilenumbrüche (\\n\\n) getrennt sind, um die Lesbarkeit zu verbessern, anstatt eines einzigen Textblocks. You MUST format this recap using multiple distinct paragraphs separated by double newlines (\\n\\n) for readability instead of a single wall of text." }
   ]
 }]],
 

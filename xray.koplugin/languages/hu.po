@@ -260,6 +260,9 @@ msgstr "Szerzői információk lekérdezése innen: %s..."
 msgid "fetching_series_context"
 msgstr "Fetching series context: Book %d of %d…"
 
+msgid "fetching_series_info"
+msgstr "Sorozatkönyvek azonosítása..."
+
 msgid "fetching_wait"
 msgstr "⏳ Kérjük, várjon...\nEz a folyamat 10-50 másodpercet is igénybe vehet."
 

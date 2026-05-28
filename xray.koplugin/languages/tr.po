@@ -260,6 +260,9 @@ msgstr "Yazar bilgisi %s üzerinden çekiliyor..."
 msgid "fetching_series_context"
 msgstr "Fetching series context: Book %d of %d…"
 
+msgid "fetching_series_info"
+msgstr "Seri kitapları tanımlanıyor..."
+
 msgid "fetching_wait"
 msgstr "⏳ Lütfen bekleyin...\nBu işlem 10-50 saniye sürebilir."
 
