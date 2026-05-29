@@ -1,0 +1,730 @@
+msgid ""
+msgstr ""
+"Language-Team: Dutch\n"
+"Language: nl\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "about"
+msgstr "Over"
+
+msgid "ai_fetch_complete"
+msgstr "Succesvol opgehaald van %s!\n\nBoek: %s\nAuteur: %s\n\nPersonages: %d\nLocaties: %d\nThema's: %d\nChronologische Gebeurtenissen: %d\nHistorische Figuren: %d\n\n%s\n\nSAMENVATTING:\n%s"
+
+msgid "ai_fetch_complete_msg"
+msgstr "AI Ophalen Voltooid!"
+
+msgid "auto_update_aggressive"
+msgstr "Agressief: controleert elk nieuw hoofdstuk"
+
+msgid "auto_update_balanced"
+msgstr "Gebalanceerd: controleert maximaal elke 5 min"
+
+msgid "auto_update_disabled"
+msgstr "Uitgeschakeld"
+
+msgid "auto_update_economical"
+msgstr "Zuinig: controleert maximaal elke 15 min"
+
+msgid "auto_update_freq_about"
+msgstr "Automatisch bijwerken controleert op de achtergrond naar nieuwe hoofdstukinformatie terwijl u leest.\n\nLIMIETEN & PRESTATIES\nFrequente achtergrondaanzeken kunnen de BATTERIJSDUUR verkorten en kunnen AI-PROVIDER RATE-LIMIETEN overschrijden (vooral bij Pro-modellen).\n\nMODI\n• Uitgeschakeld: Geen achtergrondaanzeken\n• Agressief: Controleert elke keer als u een nieuw hoofdstuk binnengaat\n• Gebalanceerd: Controleert maximaal elke 5 minuten (aanbevolen)\n• Zuinig: Controleert maximaal elke 15 minuten\n• Sparing: Controleert maximaal elke 30 minuten\n\nOpmerking: Als een hoofdstuk wordt overgeslagen vanwege frequentielimieten, zal X-Ray dit automatisch opnemen in de volgende achtergrondaanzek."
+
+msgid "auto_update_freq_label"
+msgstr "Frequentie ophalen achtergrond:"
+
+msgid "auto_update_sparse"
+msgstr "Sparing: controleert maximaal elke 30 min"
+
+msgid "back_to_reading"
+msgstr "Terug naar lezen"
+
+msgid "beta_channel_desc"
+msgstr "Het bètakanaal stelt u in staat om pre-releaseversies van de X-Ray-plugin te ontvangen. Deze versies bevatten de nieuwste functies en bugfixes, maar zijn mogelijk minder stabiel dan de reguliere release."
+
+msgid "beta_disabled"
+msgstr "Stabiel kanaal (aanbevolen)"
+
+msgid "beta_enabled"
+msgstr "Bètakanaal ingeschakeld"
+
+msgid "beta_preference_desc"
+msgstr "Selecteer uw updatekanaalvoorkeur:"
+
+msgid "book_mode_auto"
+msgstr "Automatisch"
+
+msgid "book_mode_desc"
+msgstr "Selecteer de modus voor dit boek."
+
+msgid "book_mode_fiction"
+msgstr "Fictie"
+
+msgid "book_mode_nonfiction"
+msgstr "Non-fictie"
+
+msgid "book_mode_saved"
+msgstr "Boekmodus opgeslagen!"
+
+msgid "book_type_about"
+msgstr "Het Boektype bepaalt welke AI-extractiestrategie wordt gebruikt en welke functies beschikbaar zijn.\n\n- Fictie: Richt zich op verhaal, personages en de tijdlijn van het plot.\n- Non-fictie: Richt zich op termen, concepten en historische figuren.\n\n'Automatisch detecteren' laat de AI beslissen na de eerste ophaling."
+
+msgid "book_type_auto"
+msgstr "Automatisch detecteren"
+
+msgid "book_type_fiction"
+msgstr "Fictie"
+
+msgid "book_type_nonfiction"
+msgstr "Non-fictie"
+
+msgid "book_type_saved"
+msgstr "Boektype opgeslagen!"
+
+msgid "cache_cleared"
+msgstr "Cache gewist!\n\nU kunt nu nieuwe gegevens ophalen:\nMenu → X-Ray → AI-gegevens ophalen"
+
+msgid "cache_save_failed"
+msgstr "Opslaan van cache mislukt"
+
+msgid "cache_save_success"
+msgstr "✓ Cache bijgewerkt."
+
+msgid "cache_saved"
+msgstr "Opgeslagen in cache!"
+
+msgid "cancel"
+msgstr "Annuleren"
+
+msgid "character_not_found"
+msgstr "Geen personage gevonden die overeenkomt met '%s'"
+
+msgid "close"
+msgstr "Sluiten"
+
+msgid "config_api_key_label"
+msgstr "%s API-sleutel: "
+
+msgid "config_default_gemini"
+msgstr "  Standaard (Gemini)"
+
+msgid "config_model"
+msgstr "  Model: "
+
+msgid "config_provider"
+msgstr "  Provider: "
+
+msgid "config_status_not_set"
+msgstr "NIET INGESTELD"
+
+msgid "config_status_set"
+msgstr "INGESTELD"
+
+msgid "current_language"
+msgstr "nl"
+
+msgid "current_mode"
+msgstr "Huidige: "
+
+msgid "custom_api_endpoint_hint"
+msgstr "bijv., https://openrouter.ai/api/v1/chat/completions"
+
+msgid "custom_api_endpoint_title"
+msgstr "Aangepaste API %d — Eindpunt URL"
+
+msgid "custom_api_is_reasoning"
+msgstr "Is een redenerend model (bijv. DeepSeek-R1)"
+
+msgid "custom_api_key_title"
+msgstr "Aangepaste API %d — API-sleutel"
+
+msgid "custom_api_model_hint"
+msgstr "bijv., google/gemini-2.5-flash of openai/gpt-4o"
+
+msgid "custom_api_model_title"
+msgstr "Aangepaste API %d — Standaardmodel"
+
+msgid "custom_api_name"
+msgstr "Aangepaste API %d (OpenAI-compatibel)"
+
+msgid "custom_api_not_configured"
+msgstr "(niet geconfigureerd — tik om in te stellen)"
+
+msgid "custom_api_saved"
+msgstr "Aangepaste API %d configuratie opgeslagen."
+
+msgid "desc_len_about_chars"
+msgstr "PERSONAGEBESCHRIJVINGEN\n\n• Kort (~80 tekens): Naam, rol en een korte notitie.\n• Standaard (~200 tekens): Standaard analyse.\n• Gedetailleerd (~350 tekens): Rijke personagestudie met eigenschappen en motivaties.\n• Zeer gedetailleerd (~500 tekens): Diepe analyse.\n\nAFWEGING\nLangere beschrijvingen → minder personages geretourneerd tijdens initiële/volledige ophalingen. Volgende 'Meer ophalen'-runs worden niet beïnvloed."
+
+msgid "desc_len_about_hist"
+msgstr "BIOGRAFIEËN VAN HISTORISCHE FIGUREN\n\n• Kort (~50 tekens): Naam en primaire rol.\n• Standaard (~100 tekens): Standaard biografie.\n• Gedetailleerd (~200 tekens): Leven, betekenis en boekcontext.\n• Zeer gedetailleerd (~300 tekens): Uitgebreide biografie.\n\nAFWEGING\nLangere biografieën → minder historische figuren geretourneerd tijdens initiële/volledige ophalingen."
+
+msgid "desc_len_about_locs"
+msgstr "LOCATIEBESCHRIJVINGEN\n\n• Kort (~50 tekens): Plaatsnaam en context in één regel.\n• Standaard (~100 tekens): Standaard beschrijving.\n• Gedetailleerd (~200 tekens): Sfeer, betekenis en gebeurtenissen.\n• Zeer gedetailleerd (~300 tekens): Volledige beschrijving.\n\nAFWEGING\nLangere beschrijvingen → minder locaties geretourneerd tijdens initiële/volledige ophalingen."
+
+msgid "desc_len_about_timeline"
+msgstr "TIJDLIJN — ALTIJD ÉÉN GEBEURTENIS PER HOOFDSTUK\n\nDe tijdlijn heeft altijd precies één vermelding per hoofdstuk. Deze instelling heeft alleen invloed op hoeveel detail in elke samenvatting is opgenomen.\n\n• Kort (~50 tekens): Korte samenvatting in één zin.\n• Standaard (~80 tekens): Standaard samenvatting.\n• Gedetailleerd (~150 tekens): Inclusief context en gevolgen.\n• Zeer gedetailleerd (~200 tekens): Volledige verhalende beschrijving.\n\nEr is geen afweging in aantal voor de tijdlijn."
+
+msgid "desc_len_default"
+msgstr "Standaard"
+
+msgid "desc_len_detailed"
+msgstr "Gedetailleerd"
+
+msgid "desc_len_short"
+msgstr "Kort"
+
+msgid "desc_len_v_detailed"
+msgstr "Zeer gedetailleerd"
+
+msgid "dont_ask_again"
+msgstr "Niet opnieuw vragen"
+
+msgid "entity_not_found"
+msgstr "'%s' is niet gevonden als personage of locatie."
+
+msgid "error_api_key_desc"
+msgstr "De opgegeven API-sleutel is geweigerd. Controleer uw instellingen en zorg ervoor dat de sleutel correct is."
+
+msgid "error_api_key_title"
+msgstr "Ongeldige API-sleutel"
+
+msgid "error_extract_text"
+msgstr "Fout: Kan boektekst niet extraheren."
+
+msgid "error_model_access_desc"
+msgstr "Uw API-sleutel heeft geen toegang tot het geselecteerde model. U moet mogelijk een ander model of andere provider gebruiken."
+
+msgid "error_model_access_title"
+msgstr "Toegang geweigerd"
+
+msgid "error_model_not_found_desc"
+msgstr "Het geselecteerde AI-model is niet beschikbaar of de eindpunt-URL is onjuist."
+
+msgid "error_model_not_found_title"
+msgstr "Model niet gevonden"
+
+msgid "error_no_api_key"
+msgstr "error_no_api_key"
+
+msgid "error_parse_desc"
+msgstr "De AI retourneerde een antwoord dat niet kon worden verwerkt. Dit is mogelijk een tijdelijke storing."
+
+msgid "error_parse_title"
+msgstr "Gegevensfout"
+
+msgid "error_quota_desc"
+msgstr "Uw API-tegoed is uitgeput of u heeft de limiet bereikt. Controleer uw factureringsstatus of wacht even voordat u het opnieuw probeert."
+
+msgid "error_quota_title"
+msgstr "Quota overschreden"
+
+msgid "error_service_down_desc"
+msgstr "De AI-dienst is tijdelijk niet beschikbaar of overbelast. Probeer het over een paar minuten opnieuw."
+
+msgid "error_service_down_title"
+msgstr "Dienst niet beschikbaar"
+
+msgid "error_timeout_desc"
+msgstr "Het verzoek duurde te lang. Dit kan gebeuren bij complexe boeken of langzame netwerkverbindingen."
+
+msgid "error_timeout_title"
+msgstr "Verbinding verlopen"
+
+msgid "error_unknown_desc"
+msgstr "Er is een onverwachte fout opgetreden: %s"
+
+msgid "error_unknown_title"
+msgstr "Ophalen mislukt"
+
+msgid "extracting_more_characters"
+msgstr "Extra personages extraheren..."
+
+msgid "extracting_more_terms"
+msgstr "Extra termen extraheren..."
+
+msgid "fetch_button"
+msgstr "Ophalen"
+
+msgid "fetch_single_word_prompt"
+msgstr "Geen X-Ray-gegevens gevonden voor '%s'. Wilt u dit opzoeken?"
+
+msgid "fetch_successful"
+msgstr "Ophalen geslaagd"
+
+msgid "fetching_ai"
+msgstr "Boek analyseren om X-Ray-gegevens te genereren..."
+
+msgid "fetching_author"
+msgstr "Auteursinformatie ophalen van %s..."
+
+msgid "fetching_series_context"
+msgstr "Seriecontext ophalen: Boek %d van %d…"
+
+msgid "fetching_series_info"
+msgstr "Serieboeken identificeren…"
+
+msgid "fetching_wait"
+msgstr "⏳ Even geduld...\nDit proces kan 10-50 seconden duren."
+
+msgid "find_mentions"
+msgstr "Vermeldingen zoeken"
+
+msgid "full_book_option"
+msgstr "Volledig boek modus"
+
+msgid "label_aliases"
+msgstr "ALIASSEN"
+
+msgid "label_category"
+msgstr "CATEGORIE"
+
+msgid "label_definition"
+msgstr "DEFINITIE"
+
+msgid "label_description"
+msgstr "BESCHRIJVING"
+
+msgid "label_expanded"
+msgstr "STAAT VOOR"
+
+msgid "label_gender"
+msgstr "GESLACHT"
+
+msgid "label_name"
+msgstr "NAAM"
+
+msgid "label_occupation"
+msgstr "BEROEP"
+
+msgid "label_reasoning"
+msgstr "AI REDENERING"
+
+msgid "label_role"
+msgstr "ROL"
+
+msgid "lang_follow_book"
+msgstr "Automatisch (Volg boek)"
+
+msgid "lang_follow_system"
+msgstr "Automatisch (Volg systeem)"
+
+msgid "lang_mismatch_title"
+msgstr "Taal komt niet overeen"
+
+msgid "language_changed_reopen"
+msgstr "Taal gewijzigd. Open het menu opnieuw om de wijzigingen te zien."
+
+msgid "later"
+msgstr "Later"
+
+msgid "linked_entries"
+msgstr "Gekoppelde vermeldingen"
+
+msgid "linked_entries_disabled"
+msgstr "Uitgeschakeld"
+
+msgid "linked_entries_enabled"
+msgstr "Ingeschakeld"
+
+msgid "linked_entries_setting_desc"
+msgstr "Gekoppelde vermeldingen verbindt automatisch personages, locaties en historische figuren wanneer ze in elkaars beschrijvingen worden genoemd.\n\nAls u dit uitschakelt, wordt de knop 'Gekoppelde vermeldingen' verborgen in de detailvensters."
+
+msgid "logs_cleared"
+msgstr "Logs gewist!"
+
+msgid "looking_up_msg"
+msgstr "Opzoeken van '%s'..."
+
+msgid "mention_dismiss_btn"
+msgstr "✕"
+
+msgid "mention_return_btn"
+msgstr "Terug naar lezen"
+
+msgid "mention_return_label"
+msgstr "← Terug naar p.%d"
+
+msgid "mentions_at_location"
+msgstr "Vermelding: %s"
+
+msgid "mentions_disabled"
+msgstr "Uitgeschakeld"
+
+msgid "mentions_enabled"
+msgstr "Ingeschakeld"
+
+msgid "mentions_none"
+msgstr "Nog geen vermeldingen gevonden voor '%s'."
+
+msgid "mentions_preference_desc"
+msgstr "Selecteer uw voorkeur voor vermeldingen van personages en locaties:"
+
+msgid "mentions_refresh"
+msgstr "Vermeldingen vernieuwen"
+
+msgid "mentions_scanning"
+msgstr "Scannen... %1 van %2 hoofdstukken"
+
+msgid "mentions_setting_desc"
+msgstr "Het scannen van vermeldingen stelt u in staat om elk voorkomen van een personage of locatie in het boek te vinden. Dit gebeurt automatisch op de achtergrond zodat de lezer responsief blijft.\n\nAls u dit uitschakelt, wordt de knop 'Vermeldingen zoeken' verborgen."
+
+msgid "mentions_setting_title"
+msgstr "Instellingen vermeldingen"
+
+msgid "mentions_title"
+msgstr "Vermeldingen: %s"
+
+msgid "menu_about"
+msgstr "Over"
+
+msgid "menu_ai_settings"
+msgstr "AI-instellingen"
+
+msgid "menu_api_keys"
+msgstr "API-sleutels & Providers"
+
+msgid "menu_author_info"
+msgstr "Auteursinformatie"
+
+msgid "menu_auto_update_frequency"
+msgstr "Auto X-Ray instellingen"
+
+msgid "menu_beta_channel"
+msgstr "Instellingen bètakanaal"
+
+msgid "menu_book_mode"
+msgstr "Boektype"
+
+msgid "menu_characters"
+msgstr "Personages"
+
+msgid "menu_clear_cache"
+msgstr "Cache wissen"
+
+msgid "menu_clear_logs"
+msgstr "Logs wissen"
+
+msgid "menu_config_header"
+msgstr "--- Huidige configuratie ---"
+
+msgid "menu_custom_model_title"
+msgstr "Aangepast %s model"
+
+msgid "menu_desc_length_settings"
+msgstr "Beschrijvingslengte"
+
+msgid "menu_enter_custom_model"
+msgstr "Voer aangepast model in..."
+
+msgid "menu_fetch_author"
+msgstr "Auteursinformatie ophalen (AI)"
+
+msgid "menu_fetch_more_chars"
+msgstr "Meer personages ophalen"
+
+msgid "menu_fetch_more_terms"
+msgstr "Meer termen ophalen"
+
+msgid "menu_fetch_series_context"
+msgstr "Seriecontext ophalen / vernieuwen"
+
+msgid "menu_historical_figures"
+msgstr "Historische figuren"
+
+msgid "menu_language"
+msgstr "Taal"
+
+msgid "menu_linked_entries_settings"
+msgstr "Instellingen gekoppelde vermeldingen"
+
+msgid "menu_locations"
+msgstr "Locaties"
+
+msgid "menu_maintenance"
+msgstr "Onderhoud"
+
+msgid "menu_mentions_settings"
+msgstr "Instellingen vermeldingen"
+
+msgid "menu_primary_ai_model"
+msgstr "Primair AI-model"
+
+msgid "menu_reasoning_effort"
+msgstr "AI Redeneerinspanning"
+
+msgid "menu_secondary_ai_model"
+msgstr "Secundair AI-model"
+
+msgid "menu_series_context"
+msgstr "Seriecontext"
+
+msgid "menu_settings"
+msgstr "Instellingen"
+
+msgid "menu_terms"
+msgstr "Woordenlijst"
+
+msgid "menu_timeline"
+msgstr "Tijdlijn"
+
+msgid "menu_update_xray"
+msgstr "X-Ray-gegevens bijwerken"
+
+msgid "menu_view_config"
+msgstr "Bekijk alle configuratiewaarden"
+
+msgid "menu_xray"
+msgstr "X-Ray"
+
+msgid "menu_xray_mode"
+msgstr "Instellingen X-Ray modus"
+
+msgid "merge_back"
+msgstr "← Terug"
+
+msgid "merge_confirm"
+msgstr "Merge %s in %s? De secundaire invoer wordt verwijderd en de aliassen worden samengevoegd."
+
+msgid "merge_duplicates"
+msgstr "Duplicaten samenvoegen..."
+
+msgid "merge_failed"
+msgstr "Samenvoegen mislukt."
+
+msgid "merge_pick_primary"
+msgstr "Kies de invoer om te BEHOUDEN"
+
+msgid "merge_pick_secondary"
+msgstr "Kies de invoer om te VERWIJDEREN"
+
+msgid "merge_success"
+msgstr "Vermeldingen succesvol samengevoegd."
+
+msgid "merging_smartly"
+msgstr "Samenvoegen..."
+
+msgid "model_free"
+msgstr "gratis"
+
+msgid "model_paid"
+msgstr "betaald"
+
+msgid "msg_added_characters"
+msgstr "%d nieuwe personages toegevoegd!"
+
+msgid "msg_added_terms"
+msgstr "%d nieuwe termen toegevoegd!"
+
+msgid "msg_fetch_failed"
+msgstr "AI-ophaling mislukt"
+
+msgid "msg_no_bio"
+msgstr "Geen biografie beschikbaar."
+
+msgid "msg_suggest_lang"
+msgstr "Dit boek is in het %s. X-Ray taal wijzigen om overeen te komen?"
+
+msgid "multiple_matches"
+msgstr "Meerdere overeenkomsten voor '%s'. Welke bedoelde u?"
+
+msgid "next"
+msgstr "Volgende"
+
+msgid "no"
+msgstr "Nee"
+
+msgid "no_api_key"
+msgstr "AI API-sleutel niet ingesteld!\n\nVoer API-sleutel in via:\nMenu → X-Ray → AI-instellingen"
+
+msgid "no_author_data_fetch"
+msgstr "Geen auteursinformatie beschikbaar.\n\nWilt u deze ophalen via AI?"
+
+msgid "no_character_data"
+msgstr "Nog geen personagegegevens.\n\nGebruik eerst 'X-Ray-gegevens ophalen'."
+
+msgid "no_data_prompt"
+msgstr "Geen X-Ray-gegevens gevonden voor dit boek. Wilt u deze nu ophalen via AI?"
+
+msgid "no_historical_data"
+msgstr "Nog geen gegevens over historische figuren.\n\nGebruik eerst 'X-Ray-gegevens ophalen'.\n\nAI zal echte historische\nfiguren detecteren die in het boek worden genoemd."
+
+msgid "no_location_data"
+msgstr "Nog geen locatiegegevens. Gebruik eerst 'X-Ray-gegevens ophalen'."
+
+msgid "no_terms_data"
+msgstr "Nog geen termengegevens. Gebruik eerst 'X-Ray-gegevens ophalen'."
+
+msgid "no_timeline_data"
+msgstr "Nog geen tijdlijngegevens.\n\nGebruik eerst 'X-Ray-gegevens ophalen'.\n\nAI zal belangrijke gebeurtenissen in\nchronologische volgorde tonen."
+
+msgid "ok"
+msgstr "OK"
+
+msgid "path"
+msgstr "plugins/xray.koplugin"
+
+msgid "plugin_description"
+msgstr "Transformeer uw leeservaring met AI-gestuurde boekanalyse, net als Amazon Kindle X-Ray!"
+
+msgid "quick_menu_title"
+msgstr "X-Ray Snelmenu"
+
+msgid "reasoning_about"
+msgstr "Regelt de 'denkdiepte' voor redeneermodellen:\n\n• Niet ingesteld: Geen specifieke instructie verzonden; model gebruikt zijn interne standaardwaarden.\n• Laag: Snelle, zuinige extractie voor eenvoudige boeken.\n• Medium: Gebalanceerde diepte voor de meeste verhalen.\n• Hoog: Gedetailleerde analyse voor complexe relatienetwerken.\n\nVan toepassing op: GPT-5.x, DeepSeek Reasoner, Claude 4.5+ (extended thinking), en Gemini 2.5+."
+
+msgid "reasoning_high"
+msgstr "Hoog"
+
+msgid "reasoning_low"
+msgstr "Laag"
+
+msgid "reasoning_medium"
+msgstr "Medium"
+
+msgid "reasoning_unset"
+msgstr "Niet ingesteld (Standaard)"
+
+msgid "save"
+msgstr "Opslaan"
+
+msgid "search_button"
+msgstr "Zoeken"
+
+msgid "search_character"
+msgstr "Personages zoeken..."
+
+msgid "search_character_title"
+msgstr "Personages zoeken"
+
+msgid "search_hint"
+msgstr "Voer personagenaam in"
+
+msgid "search_term"
+msgstr "Termen zoeken"
+
+msgid "series_ask_later_msg"
+msgstr "Samenvatting van de serie uitgesteld. We zullen het opnieuw vragen wanneer u dit boek opent/hervat."
+
+msgid "series_context_enabled_toggle"
+msgstr "Seriecontext inschakelen"
+
+msgid "series_context_loaded"
+msgstr "Seriecontext geladen (%d eerdere boeken)."
+
+msgid "series_context_prompt_text"
+msgstr "Dit lijkt Boek %d van '%s' te zijn. Een samenvatting laden van de eerdere %d boek(en)?\n\n(U kunt dit uitschakelen in Instellingen → Seriecontext)"
+
+msgid "series_context_prompt_title"
+msgstr "Serie gedetecteerd"
+
+msgid "series_disabled_msg"
+msgstr "Automatische prompt uitgeschakeld voor dit boek. U kunt de samenvatting handmatig ophalen uit het X-Ray-menu."
+
+msgid "series_no_prior_detected"
+msgstr "Geen eerdere boeken gedetecteerd voor deze serie."
+
+msgid "series_prior_books_header"
+msgstr "── Eerdere boeken ──"
+
+msgid "series_prior_label"
+msgstr "[Eerder]"
+
+msgid "spoiler_free_about"
+msgstr "Spoiler-vrije modus beperkt de AI-extractie tot de pagina's die u al heeft gelezen (tot uw huidige pagina), waardoor spoilers uit toekomstige hoofdstukken worden voorkomen.\n\nVolledig boek modus analyseert het hele boek, wat spoilers kan bevatten."
+
+msgid "spoiler_free_menu_option"
+msgstr "Spoiler-vrij"
+
+msgid "spoiler_free_option"
+msgstr "Spoiler-vrije modus (Tot %d%% van het boek)"
+
+msgid "spoiler_preference_desc"
+msgstr "Selecteer uw spoilervoorkeur voor X-Ray-gegevens:"
+
+msgid "spoiler_preference_title"
+msgstr "Spoilervoorkeur"
+
+msgid "term_not_found"
+msgstr "Geen term gevonden die overeenkomt met '%s'"
+
+msgid "this_chapter"
+msgstr "Dit hoofdstuk"
+
+msgid "this_page"
+msgstr "Deze pagina"
+
+msgid "updater_available_header"
+msgstr "X-Ray %s is beschikbaar!\nU heeft %s."
+
+msgid "updater_btn_cancel"
+msgstr "Annuleren"
+
+msgid "updater_btn_download"
+msgstr "Downloaden en installeren"
+
+msgid "updater_btn_later"
+msgstr "Later"
+
+msgid "updater_btn_open_browser"
+msgstr "Openen in browser"
+
+msgid "updater_btn_restart"
+msgstr "Herstarten"
+
+msgid "updater_cancelled_check"
+msgstr "Controle op updates geannuleerd."
+
+msgid "updater_cancelled_update"
+msgstr "Update geannuleerd."
+
+msgid "updater_check"
+msgstr "Controleren op updates"
+
+msgid "updater_checking"
+msgstr "Controleren op updates..."
+
+msgid "updater_download_prompt"
+msgstr "\n\nNu downloaden en installeren?"
+
+msgid "updater_downloading"
+msgstr "Downloaden van X-Ray %s..."
+
+msgid "updater_err_download"
+msgstr "Downloadfout: %s"
+
+msgid "updater_err_extract"
+msgstr "Extractiefout: %s"
+
+msgid "updater_error_checking"
+msgstr "Fout bij het controleren op updates."
+
+msgid "updater_error_checking_detail"
+msgstr "Fout bij het controleren op updates: %s"
+
+msgid "updater_no_asset"
+msgstr "Er is geen automatisch updatebestand gevonden.\n\nDe releasespagina op GitHub openen?"
+
+msgid "updater_success_restart"
+msgstr "X-Ray %s succesvol geïnstalleerd.\n\nKOReader herstarten om de update toe te passen?"
+
+msgid "updater_up_to_date"
+msgstr "X-Ray is up-to-date (%s)."
+
+msgid "updater_whats_new"
+msgstr "Wat is er nieuw:"
+
+msgid "updating_ai"
+msgstr "X-Ray-gegevens bijwerken..."
+
+msgid "xray_disabled_label"
+msgstr "Uitgeschakeld"
+
+msgid "xray_enabled_label"
+msgstr "Ingeschakeld"
+
+msgid "xray_mode_desc"
+msgstr "Voegt een 'X-Ray'-knop toe aan woordenboek- en selectiemenu's voor direct opzoeken."
+
+msgid "yes"
+msgstr "Ja"
+

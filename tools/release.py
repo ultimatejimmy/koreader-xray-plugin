@@ -45,18 +45,23 @@ def main():
         if version_changed:
             run_cmd(["git", "add", str(meta_path.resolve())])
             run_cmd(["git", "commit", "-m", f"Release {new_version}"])
-            run_cmd(["git", "push"])
-        else:
-            print("No version changes to commit/push.")
             
         # Check if tag already exists locally
         tag_check = subprocess.run(["git", "tag", "-l", new_version], capture_output=True, text=True)
-        if new_version in tag_check.stdout.splitlines():
-            print(f"Tag {new_version} already exists locally. Skipping local tag creation.")
-        else:
+        tag_exists = new_version in tag_check.stdout.splitlines()
+        if not tag_exists:
             run_cmd(["git", "tag", new_version])
+        else:
+            print(f"Tag {new_version} already exists locally. Skipping local tag creation.")
             
-        run_cmd(["git", "push", "origin", new_version])
+        # Push commit and/or tag in a single git push command to avoid entering passphrase twice
+        push_cmd = ["git", "push", "origin"]
+        if version_changed:
+            push_cmd.extend(["HEAD", new_version])
+        else:
+            push_cmd.append(new_version)
+            
+        run_cmd(push_cmd)
         print(f"\n✅ Release {new_version} completed and pushed successfully!")
     except subprocess.CalledProcessError as e:
         print(f"Error during git operations: {e}")
