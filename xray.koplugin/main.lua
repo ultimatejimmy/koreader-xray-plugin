@@ -325,9 +325,10 @@ function XRayPlugin:onReaderReady()
     end)
 end
 
-function XRayPlugin:onResume()
-    self:log("XRayPlugin: onResume called. Scheduling series context check in 5 seconds.")
-    UIManager:scheduleIn(5, function()
+
+function XRayPlugin:onNetworkConnected()
+    self:log("XRayPlugin: onNetworkConnected fired. Scheduling series context check in 2 seconds.")
+    UIManager:scheduleIn(2, function()
         self:checkSeriesContext()
     end)
 end
@@ -443,7 +444,7 @@ function XRayPlugin:triggerBackgroundMergeFetch(chapter_title)
 
     -- SILENT NETWORK CHECK: use isOnline() instead of runWhenOnline to avoid "white box" connecting dialogs
     local NetworkMgr = require("ui/network/manager")
-    if NetworkMgr:isOnline() then
+    if NetworkMgr:isConnected() and NetworkMgr:isOnline() then
         -- Safety Check: Ensure API keys are configured before background activity
         if not self.ai_helper:hasApiKey() then
             return

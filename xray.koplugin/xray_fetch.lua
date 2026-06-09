@@ -974,11 +974,11 @@ function M:checkWeeklyUpdate()
     
     if (now - last_check) > week_seconds then
         local NetworkMgr = require("ui/network/manager")
-        if NetworkMgr:isOnline() then
+        if NetworkMgr:isConnected() and NetworkMgr:isOnline() then
             self:log("XRayPlugin: Triggering weekly silent update check")
             self.ai_helper:saveSettings({ last_update_check = now })
             local updater = require(plugin_path .. "xray_updater")
-            updater.checkSilentForUpdates(self.loc)
+            updater.checkSilentForUpdates(self.loc, self.ai_helper.settings.beta_channel_enabled)
         else
             self:log("XRayPlugin: Skipping weekly update check (offline)")
         end
