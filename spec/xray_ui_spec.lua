@@ -132,6 +132,7 @@ describe("xray_ui", function()
         it("should show ButtonDialog with three options if online and series detected", function()
             -- Mock NetworkMgr
             package.loaded["ui/network/manager"] = {
+                isConnected = function() return true end,
                 isOnline = function() return true end
             }
             -- Mock series manager detectSeries

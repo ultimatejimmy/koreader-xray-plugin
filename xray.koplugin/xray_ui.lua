@@ -2345,25 +2345,7 @@ function M:showBetaChannelSettings()
     showSettings()
 end
 
-function M:checkWeeklyUpdate()
-    if not self.ai_helper or not self.ai_helper.settings then return end
-    
-    local last_check = self.ai_helper.settings.last_update_check or 0
-    local now = os.time()
-    local week_seconds = 7 * 24 * 60 * 60
-    
-    if (now - last_check) > week_seconds then
-        local NetworkMgr = require("ui/network/manager")
-        if NetworkMgr:isOnline() then
-            self:log("XRayPlugin: Triggering weekly silent update check")
-            self.ai_helper:saveSettings({ last_update_check = now })
-            local updater = require(plugin_path .. "xray_updater")
-            updater.checkSilentForUpdates(self.loc, self.ai_helper.settings.beta_channel_enabled)
-        else
-            self:log("XRayPlugin: Skipping weekly update check (offline)")
-        end
-    end
-end
+
 
 function M:toggleSeriesContextEnabled()
     if not self.ai_helper or not self.ai_helper.settings then return end
@@ -2416,14 +2398,8 @@ function M:checkSeriesContext()
     end
 
     local NetworkMgr = require("ui/network/manager")
-    if not NetworkMgr:isOnline() then
-        self:log("XRayPlugin: Series: checkSeriesContext: device is offline. Scheduling check when online.")
-        NetworkMgr:runWhenOnline(function()
-            self:log("XRayPlugin: Series: checkSeriesContext: Network is online now. Triggering check in 5 seconds.")
-            UIManager:scheduleIn(5, function()
-                self:checkSeriesContext()
-            end)
-        end)
+    if not NetworkMgr:isConnected() or not NetworkMgr:isOnline() then
+        self:log("XRayPlugin: Series: checkSeriesContext: device is offline, skipping silently.")
         return
     end
 
