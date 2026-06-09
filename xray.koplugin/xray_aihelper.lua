@@ -142,9 +142,9 @@ function AIHelper:getChatGPTTokenConfig(model)
         return "max_completion_tokens", 32000
     end
     
-    -- DeepSeek (including R1/reasoner) and older GPT-4 models do NOT support max_completion_tokens 
+    -- DeepSeek (all v4 models) and older GPT-4 models do NOT support max_completion_tokens 
     -- in their official APIs and will return a 400 error. They require the standard max_tokens.
-    if model:find("reasoner") or model:find("deepseek") or model:find("%-r1") or model:find("/r1") then
+    if model:find("deepseek") or model:find("%-r1") or model:find("/r1") then
         return "max_tokens", 32000
     end
     
@@ -321,9 +321,9 @@ function AIHelper:buildComprehensiveRequest(title, author, context, prompt_overr
                     [token_param] = token_val
                 }
                 
-                -- DeepSeek-R1 reasons inherently; official API does not support reasoning_effort and will return a 400 error.
-                -- We only apply token ceiling adjustments here.
-                if ai.provider == "deepseek" and model:find("reasoner") then
+                -- DeepSeek V4 models reason inherently; official API does not support reasoning_effort and will return a 400 error.
+                -- We only apply token ceiling adjustments here. Also catches legacy deepseek-reasoner stored values.
+                if ai.provider == "deepseek" and (model:find("reasoner") or model:find("v4") or model:find("deepseek")) then
                     -- No effort mapping for official DeepSeek API to avoid 400 errors.
                     -- The 32k token ceiling is already handled by getChatGPTTokenConfig.
                 end
@@ -913,6 +913,24 @@ function AIHelper:loadSettings()
         migrated = true
     end
     
+    -- Migrate legacy DeepSeek model names to v4 API names (deprecated 2026-07-24)
+    local deepseek_model_map = {
+        ["deepseek-chat"]     = "deepseek-v4-flash",
+        ["deepseek-reasoner"] = "deepseek-v4-pro",
+    }
+    local function migrate_deepseek_model(ai_slot)
+        if type(settings[ai_slot]) == "table" and settings[ai_slot].provider == "deepseek" then
+            local old = settings[ai_slot].model
+            if old and deepseek_model_map[old] then
+                self:log(string.format("AIHelper: Migrating DeepSeek model '%s' -> '%s' in %s", old, deepseek_model_map[old], ai_slot))
+                settings[ai_slot].model = deepseek_model_map[old]
+                migrated = true
+            end
+        end
+    end
+    migrate_deepseek_model("primary_ai")
+    migrate_deepseek_model("secondary_ai")
+
     if migrated then
         self.settings = settings
         self:saveSettings()

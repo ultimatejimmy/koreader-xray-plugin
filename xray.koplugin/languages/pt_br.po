@@ -6,7 +6,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "about"
-msgstr "About"
+msgstr "Sobre"
 
 msgid "ai_fetch_complete"
 msgstr "Dados obtidos de %s com sucesso!\n\nLivro: %s\nAutor: %s\n\nPersonagens: %d\nLocais: %d\nTemas: %d\nEventos: %d\nFiguras Históricas: %d\n\n%s\n\nRESUMO:\n%s"
@@ -36,61 +36,69 @@ msgid "auto_update_sparse"
 msgstr "Esparso: verifica a cada 30 min no máximo"
 
 msgid "back_to_reading"
-msgstr "Back to Reading"
+msgstr "Voltar à Leitura"
 
 msgid "beta_channel_desc"
-msgstr "The beta channel allows you to receive pre-release versions of the X-Ray plugin. These versions include the latest features and bug fixes but may be less stable than the regular release."
+msgstr "O canal Beta permite receber versões pré-lançamento do plugin X-Ray. Essas versões incluem os recursos mais recentes e correções de bugs, mas podem ser menos estáveis que a versão regular."
 
 msgid "beta_disabled"
-msgstr "Stable Channel (Recommended)"
+msgstr "Stable Channel (Recomendado)"
 
 msgid "beta_enabled"
-msgstr "Beta Channel Enabled"
+msgstr "Canal Beta ativado"
 
 msgid "beta_preference_desc"
-msgstr "Select your update channel preference:"
+msgstr "Selecione sua preferência de canal de atualização:"
 
 msgid "book_mode_auto"
 msgstr "Auto"
 
 msgid "book_mode_desc"
-msgstr "Select the mode for this book."
+msgstr "Selecione o modo para este livro."
 
 msgid "book_mode_fiction"
-msgstr "Fiction"
+msgstr "Ficção"
 
 msgid "book_mode_nonfiction"
-msgstr "Non-Fiction"
+msgstr "Não-Ficção"
 
 msgid "book_mode_saved"
-msgstr "Book mode saved!"
+msgstr "Modo do livro salvo!"
 
 msgid "book_type_about"
-msgstr "The Book Type determines which AI extraction strategy is used and which features are available.\n\n- Fiction: Focuses on narrative, characters, and plot timeline.\n- Non-Fiction: Focuses on terms, concepts, and historical figures.\n\n'Auto-Detect' will let the AI decide after the first fetch."
+msgstr "O Tipo de Livro determina qual estratégia de extração de AI é usada e quais recursos estão disponíveis.
+
+- Ficção: Foca na narrativa, personagens e linha do tempo do enredo.
+- Não-Ficção: Foca em termos, conceitos e figuras históricas.
+
+'Auto-Detectar' permitirá que a AI decida após a primeira busca."
 
 msgid "book_type_auto"
-msgstr "Auto-Detect"
+msgstr "Auto-Detectar"
 
 msgid "book_type_fiction"
-msgstr "Fiction"
+msgstr "Ficção"
 
 msgid "book_type_nonfiction"
-msgstr "Non-Fiction"
+msgstr "Não-Ficção"
 
 msgid "book_type_saved"
-msgstr "Book Type saved!"
+msgstr "Tipo de livro salvo!"
 
 msgid "cache_cleared"
-msgstr "Cache cleared!\n\nYou can now fetch new data:\nMenu → X-Ray → Fetch AI Data"
+msgstr "Cache limpo!
+
+Você agora pode buscar novos dados:
+Menu → X-Ray → Fetch AI Data"
 
 msgid "cache_save_failed"
-msgstr "Failed to save cache"
+msgstr "Falha ao salvar cache"
 
 msgid "cache_save_success"
-msgstr "✓ Cache updated."
+msgstr "✓ Cache atualizado."
 
 msgid "cache_saved"
-msgstr "Saved to cache!"
+msgstr "Salvo no cache!"
 
 msgid "cancel"
 msgstr "Cancel"
@@ -123,58 +131,91 @@ msgid "current_language"
 msgstr "en"
 
 msgid "current_mode"
-msgstr "Current: "
+msgstr "Atual: "
 
 msgid "custom_api_endpoint_hint"
-msgstr "e.g., https://openrouter.ai/api/v1/chat/completions"
+msgstr "ex: https://openrouter.ai/api/v1/chat/completions"
 
 msgid "custom_api_endpoint_title"
-msgstr "Custom API %d — Endpoint URL"
+msgstr "Custom API %d — URL do Endpoint"
 
 msgid "custom_api_is_reasoning"
-msgstr "Is Reasoning Model (e.g. DeepSeek-R1)"
+msgstr "É um modelo de raciocínio (ex: DeepSeek-R1)"
 
 msgid "custom_api_key_title"
-msgstr "Custom API %d — API Key"
+msgstr "Custom API %d — Chave de API"
 
 msgid "custom_api_model_hint"
-msgstr "e.g., google/gemini-2.5-flash or openai/gpt-4o"
+msgstr "ex: google/gemini-2.5-flash ou openai/gpt-4o"
 
 msgid "custom_api_model_title"
-msgstr "Custom API %d — Default Model"
+msgstr "Custom API %d — Modelo Padrão"
 
 msgid "custom_api_name"
-msgstr "Custom API %d (OpenAI-compatible)"
+msgstr "Custom API %d (compatível com OpenAI)"
 
 msgid "custom_api_not_configured"
-msgstr "(not configured — tap to set up)"
+msgstr "(não configurado — toque para configurar)"
 
 msgid "custom_api_saved"
-msgstr "Custom API %d configuration saved."
+msgstr "Configuração da Custom API %d salva."
 
 msgid "desc_len_about_chars"
-msgstr "CHARACTER DESCRIPTIONS\n\n• Short (~80 chars): Name, role, and a brief note.\n• Default (~200 chars): Standard analysis.\n• Detailed (~350 chars): Rich character study with traits and motivations.\n• Very Detailed (~500 chars): Deep analysis.\n\nTRADE-OFF\nLonger descriptions → fewer characters returned during initial/full fetches. Subsequent 'Fetch More' runs are unaffected."
+msgstr "DESCRIÇÕES DE PERSONAGENS
+
+• Curto (~80 chars): Nome, papel e uma nota breve.
+• Padrão (~200 chars): Análise padrão.
+• Detalhado (~350 chars): Estudo rico de personagem com traços e motivações.
+• Muito Detalhado (~500 chars): Análise profunda.
+
+COMPENSAÇÃO
+Descrições mais longas → menos personagens retornados durante buscas iniciais/completas. Execuções subsequentes de 'Buscar Mais' não são afetadas."
 
 msgid "desc_len_about_hist"
-msgstr "HISTORICAL FIGURE BIOGRAPHIES\n\n• Short (~50 chars): Name and primary role.\n• Default (~100 chars): Standard biography.\n• Detailed (~200 chars): Life, significance, and book context.\n• Very Detailed (~300 chars): Comprehensive biography.\n\nTRADE-OFF\nLonger biographies → fewer historical figures returned during initial/full fetches."
+msgstr "BIOGRAFIAS DE FIGURAS HISTÓRICAS
+
+• Curto (~50 chars): Nome e papel principal.
+• Padrão (~100 chars): Biografia padrão.
+• Detalhado (~200 chars): Vida, importância e contexto do livro.
+• Muito Detalhado (~300 chars): Biografia abrangente.
+
+COMPENSAÇÃO
+Biografias mais longas → menos figuras históricas retornadas durante buscas iniciais/completas."
 
 msgid "desc_len_about_locs"
-msgstr "LOCATION DESCRIPTIONS\n\n• Short (~50 chars): Place name and one-line context.\n• Default (~100 chars): Standard description.\n• Detailed (~200 chars): Atmosphere, significance, and events.\n• Very Detailed (~300 chars): Full description.\n\nTRADE-OFF\nLonger descriptions → fewer locations returned during initial/full fetches."
+msgstr "DESCRIÇÕES DE LOCAIS
+
+• Curto (~50 chars): Nome do local e contexto de uma linha.
+• Padrão (~100 chars): Descrição padrão.
+• Detalhado (~200 chars): Atmosfera, importância e eventos.
+• Muito Detalhado (~300 chars): Descrição completa.
+
+COMPENSAÇÃO
+Descrições mais longas → menos locais retornados durante buscas iniciais/completas."
 
 msgid "desc_len_about_timeline"
-msgstr "TIMELINE — ONE EVENT PER CHAPTER (always)\n\nTimeline always has exactly one entry per chapter. This setting only affects how much detail is included in each summary.\n\n• Short (~50 chars): Brief one-phrase summary.\n• Default (~80 chars): Standard summary.\n• Detailed (~150 chars): Includes context and consequences.\n• Very Detailed (~200 chars): Full narrative description.\n\nThere is no count trade-off for the timeline."
+msgstr "LINHA DO TEMPO — UM EVENTO POR CAPÍTULO (sempre)
+
+A linha do tempo sempre tem exatamente uma entrada por capítulo. Esta configuração apenas afeta a quantidade de detalhes incluída em cada resumo.
+
+• Curto (~50 chars): Resumo breve de uma frase.
+• Padrão (~80 chars): Resumo padrão.
+• Detalhado (~150 chars): Inclui contexto e consequências.
+• Muito Detalhado (~200 chars): Descrição narrativa completa.
+
+Não há compensação de contagem para a linha do tempo."
 
 msgid "desc_len_default"
-msgstr "Default"
+msgstr "Padrão"
 
 msgid "desc_len_detailed"
-msgstr "Detailed"
+msgstr "Detalhada"
 
 msgid "desc_len_short"
-msgstr "Short"
+msgstr "Curta"
 
 msgid "desc_len_v_detailed"
-msgstr "Very Detailed"
+msgstr "Muito Detalhada"
 
 msgid "dont_ask_again"
 msgstr "Não perguntar novamente"
@@ -183,64 +224,64 @@ msgid "entity_not_found"
 msgstr "'%s' não foi encontrado como personagem ou local."
 
 msgid "error_api_key_desc"
-msgstr "The API key provided was rejected. Please check your settings and ensure the key is correct."
+msgstr "A chave de API fornecida foi rejeitada. Por favor, verifique suas configurações e garanta que a chave esteja correta."
 
 msgid "error_api_key_title"
-msgstr "Invalid API Key"
+msgstr "Chave de API Inválida"
 
 msgid "error_extract_text"
 msgstr "Erro: Não foi possível extrair o texto do livro."
 
 msgid "error_model_access_desc"
-msgstr "Your API key does not have access to the selected model. You might need to use a different model or provider."
+msgstr "Sua chave de API não tem acesso ao modelo selecionado. Você pode precisar usar um modelo ou provedor diferente."
 
 msgid "error_model_access_title"
-msgstr "Permission Denied"
+msgstr "Permissão Negada"
 
 msgid "error_model_not_found_desc"
-msgstr "The selected AI model is unavailable or the endpoint URL is incorrect."
+msgstr "O modelo de IA selecionado está indisponível ou a URL do endpoint está incorreta."
 
 msgid "error_model_not_found_title"
-msgstr "Model Not Found"
+msgstr "Modelo Não Encontrado"
 
 msgid "error_no_api_key"
 msgstr "error_no_api_key"
 
 msgid "error_parse_desc"
-msgstr "The AI returned a response that could not be processed. This might be a temporary glitch."
+msgstr "A IA retornou uma resposta que não pôde ser processada. Isso pode ser uma falha temporária."
 
 msgid "error_parse_title"
-msgstr "Data Error"
+msgstr "Erro de Dados"
 
 msgid "error_quota_desc"
-msgstr "Your API credits are exhausted or you have reached the rate limit. Please check your billing status or wait a while before trying again."
+msgstr "Seus créditos de API estão esgotados ou você atingiu o limite de taxa. Por favor, verifique seu status de faturamento ou aguarde um pouco antes de tentar novamente."
 
 msgid "error_quota_title"
-msgstr "Quota Exceeded"
+msgstr "Cota Excedida"
 
 msgid "error_service_down_desc"
-msgstr "The AI service is temporarily unavailable or overloaded. Please try again in a few minutes."
+msgstr "O serviço de IA está temporariamente indisponível ou sobrecarregado. Por favor, tente novamente em alguns minutos."
 
 msgid "error_service_down_title"
-msgstr "Service Unavailable"
+msgstr "Serviço Indisponível"
 
 msgid "error_timeout_desc"
-msgstr "The request took too long. This can happen with complex books or slow network connections."
+msgstr "A solicitação demorou muito. Isso pode acontecer com livros complexos ou conexões de rede lentas."
 
 msgid "error_timeout_title"
-msgstr "Connection Timed Out"
+msgstr "Tempo Limite de Conexão Esgotado"
 
 msgid "error_unknown_desc"
-msgstr "An unexpected error occurred: %s"
+msgstr "Ocorreu um erro inesperado: %s"
 
 msgid "error_unknown_title"
-msgstr "Fetch Failed"
+msgstr "Falha na Busca"
 
 msgid "extracting_more_characters"
 msgstr "Extraindo personagens adicionais..."
 
 msgid "extracting_more_terms"
-msgstr "Extracting additional terms..."
+msgstr "Extraindo termos adicionais..."
 
 msgid "fetch_button"
 msgstr "Obter"
@@ -258,7 +299,7 @@ msgid "fetching_author"
 msgstr "Buscando informações do autor em %s..."
 
 msgid "fetching_series_context"
-msgstr "Fetching series context: Book %d of %d…"
+msgstr "Buscando contexto da série: Livro %d de %d…"
 
 msgid "fetching_series_info"
 msgstr "Identificando livros da série..."
@@ -276,16 +317,16 @@ msgid "label_aliases"
 msgstr "APELIDOS"
 
 msgid "label_category"
-msgstr "CATEGORY"
+msgstr "CATEGORIA"
 
 msgid "label_definition"
-msgstr "DEFINITION"
+msgstr "DEFINIÇÃO"
 
 msgid "label_description"
 msgstr "DESCRIÇÃO"
 
 msgid "label_expanded"
-msgstr "STANDS FOR"
+msgstr "SIGNIFICA"
 
 msgid "label_gender"
 msgstr "GÊNERO"
@@ -318,16 +359,18 @@ msgid "later"
 msgstr "Later"
 
 msgid "linked_entries"
-msgstr "Linked Entries"
+msgstr "Entradas Vinculadas"
 
 msgid "linked_entries_disabled"
-msgstr "Disabled"
+msgstr "Desativado"
 
 msgid "linked_entries_enabled"
-msgstr "Enabled"
+msgstr "Ativado"
 
 msgid "linked_entries_setting_desc"
-msgstr "Linked Entries automatically connects characters, locations, and historical figures when they are mentioned in each other's descriptions.\n\nDisabling this will hide the 'Linked Entries' button from detail dialogs."
+msgstr "Entradas Vinculadas conecta automaticamente personagens, locais e figuras históricas quando eles são mencionados nas descrições uns dos outros.
+
+Desativar isso ocultará o botão 'Entradas Vinculadas' das caixas de diálogo de detalhes."
 
 msgid "logs_cleared"
 msgstr "Logs limpos!"
@@ -342,10 +385,10 @@ msgid "mention_return_btn"
 msgstr "← Back"
 
 msgid "mention_return_label"
-msgstr "← Back to p.%d"
+msgstr "← Voltar para p.%d"
 
 msgid "mentions_at_location"
-msgstr "Mention: %s"
+msgstr "Menção: %s"
 
 msgid "mentions_disabled"
 msgstr "Desativado"
@@ -390,7 +433,7 @@ msgid "menu_auto_update_frequency"
 msgstr "Configurações de Auto X-Ray"
 
 msgid "menu_beta_channel"
-msgstr "Beta Channel Settings"
+msgstr "Configurações do Beta Channel"
 
 msgid "menu_book_mode"
 msgstr "Book Mode"
@@ -411,7 +454,7 @@ msgid "menu_custom_model_title"
 msgstr "Modelo %s personalizado"
 
 msgid "menu_desc_length_settings"
-msgstr "Description Length"
+msgstr "Tamanho da Descrição"
 
 msgid "menu_enter_custom_model"
 msgstr "Inserir modelo personalizado..."
@@ -423,10 +466,10 @@ msgid "menu_fetch_more_chars"
 msgstr "Buscar mais personagens"
 
 msgid "menu_fetch_more_terms"
-msgstr "Fetch More Terms"
+msgstr "Buscar Mais Termos"
 
 msgid "menu_fetch_series_context"
-msgstr "Fetch / Refresh Series Context"
+msgstr "Buscar / Atualizar Series Context"
 
 msgid "menu_historical_figures"
 msgstr "Figuras Históricas"
@@ -435,7 +478,7 @@ msgid "menu_language"
 msgstr "Idioma"
 
 msgid "menu_linked_entries_settings"
-msgstr "Linked Entries Settings"
+msgstr "Configurações de Entradas Vinculadas"
 
 msgid "menu_locations"
 msgstr "Locais"
@@ -450,7 +493,7 @@ msgid "menu_primary_ai_model"
 msgstr "Modelo de IA principal"
 
 msgid "menu_reasoning_effort"
-msgstr "AI Reasoning Effort"
+msgstr "Esforço de Raciocínio da AI"
 
 msgid "menu_secondary_ai_model"
 msgstr "Modelo de IA secundário"
@@ -462,7 +505,7 @@ msgid "menu_settings"
 msgstr "Configurações"
 
 msgid "menu_terms"
-msgstr "Glossary"
+msgstr "Glossário"
 
 msgid "menu_timeline"
 msgstr "Linha do Tempo"
@@ -483,25 +526,25 @@ msgid "merge_back"
 msgstr "← Back"
 
 msgid "merge_confirm"
-msgstr "Merge %s into %s? The secondary entry will be deleted and its aliases absorbed."
+msgstr "Mesclar %s em %s? A entrada secundária será excluída e seus aliases serão absorvidos."
 
 msgid "merge_duplicates"
-msgstr "Merge Duplicates..."
+msgstr "Mesclar Duplicatas..."
 
 msgid "merge_failed"
-msgstr "Merge failed."
+msgstr "Falha na mesclagem."
 
 msgid "merge_pick_primary"
-msgstr "Choose the entry to KEEP"
+msgstr "Escolha a entrada para MANTER"
 
 msgid "merge_pick_secondary"
-msgstr "Choose the entry to REMOVE"
+msgstr "Escolha a entrada para REMOVER"
 
 msgid "merge_success"
-msgstr "Entries merged successfully."
+msgstr "Entradas mescladas com sucesso."
 
 msgid "merging_smartly"
-msgstr "Merging..."
+msgstr "Mesclando..."
 
 msgid "model_free"
 msgstr "gratuito"
@@ -513,10 +556,10 @@ msgid "msg_added_characters"
 msgstr "%d novos personagens adicionados!"
 
 msgid "msg_added_terms"
-msgstr "Added %d new terms!"
+msgstr "%d novos termos adicionados!"
 
 msgid "msg_fetch_failed"
-msgstr "AI Fetch Failed"
+msgstr "Falha na busca da AI"
 
 msgid "msg_no_bio"
 msgstr "Nenhuma biografia disponível."
@@ -528,7 +571,7 @@ msgid "multiple_matches"
 msgstr "Várias correspondências para '%s'. Qual você quis dizer?"
 
 msgid "next"
-msgstr "Next"
+msgstr "Próximo"
 
 msgid "no"
 msgstr "Não"
@@ -552,7 +595,7 @@ msgid "no_location_data"
 msgstr "Sem dados de locais ainda. Use 'Buscar Dados X-Ray' primeiro."
 
 msgid "no_terms_data"
-msgstr "No terms data yet. Please use 'Fetch X-Ray Data' first."
+msgstr "Nenhum dado de termo ainda. Por favor, use 'Fetch X-Ray Data' primeiro."
 
 msgid "no_timeline_data"
 msgstr "Sem dados de linha do tempo ainda.\n\nUse 'Buscar Dados X-Ray' primeiro.\n\nA IA mostrará os principais eventos em ordem cronológica."
@@ -582,7 +625,7 @@ msgid "reasoning_medium"
 msgstr "Médio"
 
 msgid "reasoning_unset"
-msgstr "Unset (Default)"
+msgstr "Não definido (Padrão)"
 
 msgid "save"
 msgstr "Salvar"
@@ -600,34 +643,36 @@ msgid "search_hint"
 msgstr "Digite o nome do personagem"
 
 msgid "search_term"
-msgstr "Search Terms"
+msgstr "Termos de Busca"
 
 msgid "series_ask_later_msg"
-msgstr "Series recap postponed. We will ask again when you open/resume this book."
+msgstr "Resumo da série adiado. Perguntaremos novamente quando você abrir/retomar este livro."
 
 msgid "series_context_enabled_toggle"
-msgstr "Enable Series Context"
+msgstr "Ativar Series Context"
 
 msgid "series_context_loaded"
-msgstr "Series context loaded (%d prior books)."
+msgstr "Series context carregado (%d livros anteriores)."
 
 msgid "series_context_prompt_text"
-msgstr "This appears to be Book %d of '%s'. Load a recap of the previous %d book(s)?\n\n(You can disable this in Settings → Series Context)"
+msgstr "Este parece ser o Livro %d de '%s'. Carregar um resumo do(s) %d livro(s) anterior(es)?
+
+(Você pode desativar isso em Configurações → Series Context)"
 
 msgid "series_context_prompt_title"
-msgstr "Series Detected"
+msgstr "Série Detectada"
 
 msgid "series_disabled_msg"
-msgstr "Auto-prompt disabled for this book. You can manually fetch recap from X-Ray menu."
+msgstr "Prompt automático desativado para este livro. Você pode buscar o resumo manualmente no menu X-Ray."
 
 msgid "series_no_prior_detected"
-msgstr "No prior books detected for this series."
+msgstr "Nenhum livro anterior detectado para esta série."
 
 msgid "series_prior_books_header"
 msgstr "── Prior Books ──"
 
 msgid "series_prior_label"
-msgstr "[Prior]"
+msgstr "[Anterior]"
 
 msgid "spoiler_free_about"
 msgstr "O modo sem spoilers limita a extração de IA às páginas que você já leu (até sua página atual), evitando spoilers de capítulos futuros.\n\nO modo de livro completo analisa todo o livro, o que pode conter spoilers."
@@ -645,7 +690,7 @@ msgid "spoiler_preference_title"
 msgstr "Preferência de Spoilers"
 
 msgid "term_not_found"
-msgstr "No term found matching '%s'"
+msgstr "Nenhum termo encontrado correspondente a '%s'"
 
 msgid "this_chapter"
 msgstr "Este Capítulo"

@@ -6,7 +6,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "about"
-msgstr "About"
+msgstr "Про програму"
 
 msgid "ai_fetch_complete"
 msgstr "Успішно отримано від %s!\n\nКнига: %s\nАвтор: %s\n\nПерсонажі: %d\nЛокації: %d\nТеми: %d\nПодії хронології: %d\nІсторичні постаті: %d\n\n%s\n\nОГЛЯД:\n%s"
@@ -36,49 +36,54 @@ msgid "auto_update_sparse"
 msgstr "Рідкісний: не частіше ніж раз на 30 хв"
 
 msgid "back_to_reading"
-msgstr "Back to Reading"
+msgstr "Назад до читання"
 
 msgid "beta_channel_desc"
-msgstr "The beta channel allows you to receive pre-release versions of the X-Ray plugin. These versions include the latest features and bug fixes but may be less stable than the regular release."
+msgstr "Beta Channel дозволяє отримувати попередні версії плагіна X-Ray. Ці версії включають найновіші функції та виправлення помилок, але можуть бути менш стабільними, ніж стабільна версія."
 
 msgid "beta_disabled"
-msgstr "Stable Channel (Recommended)"
+msgstr "Stable Channel (рекомендовано)"
 
 msgid "beta_enabled"
-msgstr "Beta Channel Enabled"
+msgstr "Увімкнено Beta Channel"
 
 msgid "beta_preference_desc"
-msgstr "Select your update channel preference:"
+msgstr "Виберіть бажаний канал оновлень:"
 
 msgid "book_mode_auto"
-msgstr "Auto"
+msgstr "Авто"
 
 msgid "book_mode_desc"
-msgstr "Select the mode for this book."
+msgstr "Виберіть режим для цієї книги."
 
 msgid "book_mode_fiction"
-msgstr "Fiction"
+msgstr "Художня література"
 
 msgid "book_mode_nonfiction"
-msgstr "Non-Fiction"
+msgstr "Науково-популярна література"
 
 msgid "book_mode_saved"
-msgstr "Book mode saved!"
+msgstr "Режим книги збережено!"
 
 msgid "book_type_about"
-msgstr "The Book Type determines which AI extraction strategy is used and which features are available.\n\n- Fiction: Focuses on narrative, characters, and plot timeline.\n- Non-Fiction: Focuses on terms, concepts, and historical figures.\n\n'Auto-Detect' will let the AI decide after the first fetch."
+msgstr "Тип книги визначає, яка стратегія AI-екстракції використовується та які функції доступні.
+
+- Художня література: зосереджено на оповіді, персонажах та хронології сюжету.
+- Науково-популярна література: зосереджено на термінах, поняттях та історичних особах.
+
+'Автовизначення' дозволить AI вирішити після першого завантаження."
 
 msgid "book_type_auto"
-msgstr "Auto-Detect"
+msgstr "Автовизначення"
 
 msgid "book_type_fiction"
-msgstr "Fiction"
+msgstr "Художня література"
 
 msgid "book_type_nonfiction"
-msgstr "Non-Fiction"
+msgstr "Науково-популярна література"
 
 msgid "book_type_saved"
-msgstr "Book Type saved!"
+msgstr "Тип книги збережено!"
 
 msgid "cache_cleared"
 msgstr "Кеш очищено!\n\nТепер ви можете отримати нові дані:\nМеню → X-Ray → Отримати дані ШІ"
@@ -123,22 +128,22 @@ msgid "current_language"
 msgstr "uk"
 
 msgid "current_mode"
-msgstr "Current: "
+msgstr "Поточний: "
 
 msgid "custom_api_endpoint_hint"
-msgstr "e.g., https://openrouter.ai/api/v1/chat/completions"
+msgstr "наприклад, https://openrouter.ai/api/v1/chat/completions"
 
 msgid "custom_api_endpoint_title"
 msgstr "Custom API %d — Endpoint URL"
 
 msgid "custom_api_is_reasoning"
-msgstr "Is Reasoning Model (e.g. DeepSeek-R1)"
+msgstr "Це модель міркування (наприклад, DeepSeek-R1)"
 
 msgid "custom_api_key_title"
 msgstr "Custom API %d — API Key"
 
 msgid "custom_api_model_hint"
-msgstr "e.g., google/gemini-2.5-flash or openai/gpt-4o"
+msgstr "наприклад, google/gemini-2.5-flash або openai/gpt-4o"
 
 msgid "custom_api_model_title"
 msgstr "Custom API %d — Default Model"
@@ -147,34 +152,67 @@ msgid "custom_api_name"
 msgstr "Custom API %d (OpenAI-compatible)"
 
 msgid "custom_api_not_configured"
-msgstr "(not configured — tap to set up)"
+msgstr "(не налаштовано — натисніть, щоб налаштувати)"
 
 msgid "custom_api_saved"
-msgstr "Custom API %d configuration saved."
+msgstr "Конфігурацію Custom API %d збережено."
 
 msgid "desc_len_about_chars"
-msgstr "CHARACTER DESCRIPTIONS\n\n• Short (~80 chars): Name, role, and a brief note.\n• Default (~200 chars): Standard analysis.\n• Detailed (~350 chars): Rich character study with traits and motivations.\n• Very Detailed (~500 chars): Deep analysis.\n\nTRADE-OFF\nLonger descriptions → fewer characters returned during initial/full fetches. Subsequent 'Fetch More' runs are unaffected."
+msgstr "ОПИСИ ПЕРСОНАЖІВ
+
+• Коротко (~80 символів): Ім'я, роль та стисла примітка.
+• Стандартно (~200 символів): Стандартний аналіз.
+• Детально (~350 символів): Глибоке дослідження персонажа з рисами та мотивацією.
+• Дуже детально (~500 символів): Детальний аналіз.
+
+КОМПРОМІС
+Довші описи → менше персонажів, отриманих під час початкового/повного завантаження. Наступні запуски 'Завантажити ще' залишаються без змін."
 
 msgid "desc_len_about_hist"
-msgstr "HISTORICAL FIGURE BIOGRAPHIES\n\n• Short (~50 chars): Name and primary role.\n• Default (~100 chars): Standard biography.\n• Detailed (~200 chars): Life, significance, and book context.\n• Very Detailed (~300 chars): Comprehensive biography.\n\nTRADE-OFF\nLonger biographies → fewer historical figures returned during initial/full fetches."
+msgstr "БІОГРАФІЇ ІСТОРИЧНИХ ОСІБ
+
+• Коротко (~50 символів): Ім'я та основна роль.
+• Стандартно (~100 символів): Стандартна біографія.
+• Детально (~200 символів): Життя, значення та контекст книги.
+• Дуже детально (~300 символів): Повна біографія.
+
+КОМПРОМІС
+Довші біографії → менше історичних осіб, отриманих під час початкового/повного завантаження."
 
 msgid "desc_len_about_locs"
-msgstr "LOCATION DESCRIPTIONS\n\n• Short (~50 chars): Place name and one-line context.\n• Default (~100 chars): Standard description.\n• Detailed (~200 chars): Atmosphere, significance, and events.\n• Very Detailed (~300 chars): Full description.\n\nTRADE-OFF\nLonger descriptions → fewer locations returned during initial/full fetches."
+msgstr "ОПИСИ МІСЦЬ
+
+• Коротко (~50 символів): Назва місця та контекст в один рядок.
+• Стандартно (~100 символів): Стандартний опис.
+• Детально (~200 символів): Атмосфера, значення та події.
+• Дуже детально (~300 символів): Повний опис.
+
+КОМПРОМІС
+Довші описи → менше місць, отриманих під час початкового/повного завантаження."
 
 msgid "desc_len_about_timeline"
-msgstr "TIMELINE — ONE EVENT PER CHAPTER (always)\n\nTimeline always has exactly one entry per chapter. This setting only affects how much detail is included in each summary.\n\n• Short (~50 chars): Brief one-phrase summary.\n• Default (~80 chars): Standard summary.\n• Detailed (~150 chars): Includes context and consequences.\n• Very Detailed (~200 chars): Full narrative description.\n\nThere is no count trade-off for the timeline."
+msgstr "ХРОНОЛОГІЯ — ОДНА ПОДІЯ НА РОЗДІЛ (завжди)
+
+Хронологія завжди містить рівно один запис на розділ. Це налаштування впливає лише на обсяг деталей у кожному підсумку.
+
+• Коротко (~50 символів): Стислий підсумок у фразі.
+• Стандартно (~80 символів): Стандартний підсумок.
+• Детально (~150 символів): Включає контекст і наслідки.
+• Дуже детально (~200 символів): Повний опис оповіді.
+
+Для хронології немає компромісу щодо кількості записів."
 
 msgid "desc_len_default"
-msgstr "Default"
+msgstr "Стандартно"
 
 msgid "desc_len_detailed"
-msgstr "Detailed"
+msgstr "Детально"
 
 msgid "desc_len_short"
-msgstr "Short"
+msgstr "Коротко"
 
 msgid "desc_len_v_detailed"
-msgstr "Very Detailed"
+msgstr "Дуже детально"
 
 msgid "dont_ask_again"
 msgstr "Більше не запитувати для цієї книги"
@@ -183,64 +221,64 @@ msgid "entity_not_found"
 msgstr "'%s' не знайдено як персонаж або місце."
 
 msgid "error_api_key_desc"
-msgstr "The API key provided was rejected. Please check your settings and ensure the key is correct."
+msgstr "Наданий API key відхилено. Будь ласка, перевірте налаштування та переконайтеся, що ключ правильний."
 
 msgid "error_api_key_title"
-msgstr "Invalid API Key"
+msgstr "Недійсний API Key"
 
 msgid "error_extract_text"
 msgstr "Помилка: не вдалося видобути текст книги."
 
 msgid "error_model_access_desc"
-msgstr "Your API key does not have access to the selected model. You might need to use a different model or provider."
+msgstr "Ваш API Key не має доступу до вибраної моделі. Можливо, вам потрібно використати іншу модель або провайдера."
 
 msgid "error_model_access_title"
-msgstr "Permission Denied"
+msgstr "Доступ заборонено"
 
 msgid "error_model_not_found_desc"
-msgstr "The selected AI model is unavailable or the endpoint URL is incorrect."
+msgstr "Вибрана модель AI недоступна або URL-адреса кінцевої точки (endpoint) вказана неправильно."
 
 msgid "error_model_not_found_title"
-msgstr "Model Not Found"
+msgstr "Модель не знайдено"
 
 msgid "error_no_api_key"
 msgstr "error_no_api_key"
 
 msgid "error_parse_desc"
-msgstr "The AI returned a response that could not be processed. This might be a temporary glitch."
+msgstr "AI повернув відповідь, яку не вдалося обробити. Це може бути тимчасовий збій."
 
 msgid "error_parse_title"
-msgstr "Data Error"
+msgstr "Помилка даних"
 
 msgid "error_quota_desc"
-msgstr "Your API credits are exhausted or you have reached the rate limit. Please check your billing status or wait a while before trying again."
+msgstr "Ваші кредити API вичерпано або ви досягли ліміту запитів. Будь ласка, перевірте стан свого рахунку або зачекайте деякий час, перш ніж спробувати знову."
 
 msgid "error_quota_title"
-msgstr "Quota Exceeded"
+msgstr "Перевищено квоту"
 
 msgid "error_service_down_desc"
-msgstr "The AI service is temporarily unavailable or overloaded. Please try again in a few minutes."
+msgstr "Сервіс AI тимчасово недоступний або перевантажений. Будь ласка, спробуйте ще раз через кілька хвилин."
 
 msgid "error_service_down_title"
-msgstr "Service Unavailable"
+msgstr "Сервіс недоступний"
 
 msgid "error_timeout_desc"
-msgstr "The request took too long. This can happen with complex books or slow network connections."
+msgstr "Запит тривав занадто довго. Це може статися зі складними книгами або при повільному мережевому з’єднанні."
 
 msgid "error_timeout_title"
-msgstr "Connection Timed Out"
+msgstr "Час очікування з’єднання вичерпано"
 
 msgid "error_unknown_desc"
-msgstr "An unexpected error occurred: %s"
+msgstr "Сталася неочікувана помилка: %s"
 
 msgid "error_unknown_title"
-msgstr "Fetch Failed"
+msgstr "Не вдалося отримати дані"
 
 msgid "extracting_more_characters"
 msgstr "Видобуваємо додаткових персонажів..."
 
 msgid "extracting_more_terms"
-msgstr "Extracting additional terms..."
+msgstr "Витяг додаткових термінів..."
 
 msgid "fetch_button"
 msgstr "Отримати"
@@ -258,7 +296,7 @@ msgid "fetching_author"
 msgstr "Отримуємо інформацію про автора з %s..."
 
 msgid "fetching_series_context"
-msgstr "Fetching series context: Book %d of %d…"
+msgstr "Отримання контексту серії: Книга %d з %d…"
 
 msgid "fetching_series_info"
 msgstr "Визначення книг серії..."
@@ -276,16 +314,16 @@ msgid "label_aliases"
 msgstr "??????????"
 
 msgid "label_category"
-msgstr "CATEGORY"
+msgstr "КАТЕГОРІЯ"
 
 msgid "label_definition"
-msgstr "DEFINITION"
+msgstr "ВИЗНАЧЕННЯ"
 
 msgid "label_description"
 msgstr "ОПИС"
 
 msgid "label_expanded"
-msgstr "STANDS FOR"
+msgstr "РОЗШИФРОВКА"
 
 msgid "label_gender"
 msgstr "СТАТЬ"
@@ -321,13 +359,13 @@ msgid "linked_entries"
 msgstr "Linked Entries"
 
 msgid "linked_entries_disabled"
-msgstr "Disabled"
+msgstr "Вимкнено"
 
 msgid "linked_entries_enabled"
-msgstr "Enabled"
+msgstr "Увімкнено"
 
 msgid "linked_entries_setting_desc"
-msgstr "Linked Entries automatically connects characters, locations, and historical figures when they are mentioned in each other's descriptions.\n\nDisabling this will hide the 'Linked Entries' button from detail dialogs."
+msgstr "Linked Entries автоматично з’єднує персонажів, місця та історичних осіб, коли вони згадуються в описах одне одного.\n\nВимкнення цього приховає кнопку 'Linked Entries' у діалогових вікнах з деталями."
 
 msgid "logs_cleared"
 msgstr "Логи очищено!"
@@ -342,10 +380,10 @@ msgid "mention_return_btn"
 msgstr "← Back"
 
 msgid "mention_return_label"
-msgstr "← Back to p.%d"
+msgstr "← Повернутися до стор.%d"
 
 msgid "mentions_at_location"
-msgstr "Mention: %s"
+msgstr "Згадка: %s"
 
 msgid "mentions_disabled"
 msgstr "Вимкнено"
@@ -381,7 +419,7 @@ msgid "menu_ai_settings"
 msgstr "Налаштування ШІ"
 
 msgid "menu_api_keys"
-msgstr "API Keys & Providers"
+msgstr "API Keys та провайдери"
 
 msgid "menu_author_info"
 msgstr "Інформація про автора"
@@ -390,7 +428,7 @@ msgid "menu_auto_update_frequency"
 msgstr "Налаштування авто X-Ray"
 
 msgid "menu_beta_channel"
-msgstr "Beta Channel Settings"
+msgstr "Налаштування Beta Channel"
 
 msgid "menu_book_mode"
 msgstr "Book Mode"
@@ -411,7 +449,7 @@ msgid "menu_custom_model_title"
 msgstr "Користувацька модель %s"
 
 msgid "menu_desc_length_settings"
-msgstr "Description Length"
+msgstr "Довжина опису"
 
 msgid "menu_enter_custom_model"
 msgstr "Ввести свою модель..."
@@ -423,10 +461,10 @@ msgid "menu_fetch_more_chars"
 msgstr "Завантажити більше персонажів"
 
 msgid "menu_fetch_more_terms"
-msgstr "Fetch More Terms"
+msgstr "Отримати більше термінів"
 
 msgid "menu_fetch_series_context"
-msgstr "Fetch / Refresh Series Context"
+msgstr "Отримати / Оновити контекст серії"
 
 msgid "menu_historical_figures"
 msgstr "Історичні постаті"
@@ -435,7 +473,7 @@ msgid "menu_language"
 msgstr "Мова"
 
 msgid "menu_linked_entries_settings"
-msgstr "Linked Entries Settings"
+msgstr "Налаштування Linked Entries"
 
 msgid "menu_locations"
 msgstr "Локації"
@@ -450,19 +488,19 @@ msgid "menu_primary_ai_model"
 msgstr "Основна модель ШІ"
 
 msgid "menu_reasoning_effort"
-msgstr "AI Reasoning Effort"
+msgstr "Рівень міркування AI"
 
 msgid "menu_secondary_ai_model"
 msgstr "Запасна модель ШІ"
 
 msgid "menu_series_context"
-msgstr "Series Context"
+msgstr "Контекст серії"
 
 msgid "menu_settings"
 msgstr "Налаштування"
 
 msgid "menu_terms"
-msgstr "Glossary"
+msgstr "Глосарій"
 
 msgid "menu_timeline"
 msgstr "Хронологія"
@@ -483,25 +521,25 @@ msgid "merge_back"
 msgstr "← Back"
 
 msgid "merge_confirm"
-msgstr "Merge %s into %s? The secondary entry will be deleted and its aliases absorbed."
+msgstr "Об'єднати %s з %s? Другий запис буде видалено, а його псевдоніми поглинуто."
 
 msgid "merge_duplicates"
-msgstr "Merge Duplicates..."
+msgstr "Об'єднати дублікати..."
 
 msgid "merge_failed"
-msgstr "Merge failed."
+msgstr "Помилка об'єднання."
 
 msgid "merge_pick_primary"
-msgstr "Choose the entry to KEEP"
+msgstr "Виберіть запис, який потрібно ЗБЕРЕГТИ"
 
 msgid "merge_pick_secondary"
-msgstr "Choose the entry to REMOVE"
+msgstr "Виберіть запис, який потрібно ВИДАЛИТИ"
 
 msgid "merge_success"
-msgstr "Entries merged successfully."
+msgstr "Записи успішно об'єднані."
 
 msgid "merging_smartly"
-msgstr "Merging..."
+msgstr "Об'єднання..."
 
 msgid "model_free"
 msgstr "безкоштовно"
@@ -513,10 +551,10 @@ msgid "msg_added_characters"
 msgstr "Додано %d нових персонажів!"
 
 msgid "msg_added_terms"
-msgstr "Added %d new terms!"
+msgstr "Додано %d нових термінів!"
 
 msgid "msg_fetch_failed"
-msgstr "AI Fetch Failed"
+msgstr "Помилка отримання AI"
 
 msgid "msg_no_bio"
 msgstr "Біографія відсутня."
@@ -528,7 +566,7 @@ msgid "multiple_matches"
 msgstr "Знайдено кілька збігів для '%s'. Кого ви мали на увазі?"
 
 msgid "next"
-msgstr "Next"
+msgstr "Далі"
 
 msgid "no"
 msgstr "Ні"
@@ -552,7 +590,7 @@ msgid "no_location_data"
 msgstr "Даних про локації поки немає. Спочатку скористайтеся 'Отримати дані X-Ray'."
 
 msgid "no_terms_data"
-msgstr "No terms data yet. Please use 'Fetch X-Ray Data' first."
+msgstr "Дані термінів ще відсутні. Будь ласка, спочатку скористайтеся 'Fetch X-Ray Data'."
 
 msgid "no_timeline_data"
 msgstr "Даних хронології поки немає.\n\nСпочатку скористайтеся 'Отримати дані X-Ray'.\n\nШІ покаже ключові події у хронологічному порядку."
@@ -582,7 +620,7 @@ msgid "reasoning_medium"
 msgstr "Середній"
 
 msgid "reasoning_unset"
-msgstr "Unset (Default)"
+msgstr "Не встановлено (За замовчуванням)"
 
 msgid "save"
 msgstr "Зберегти"
@@ -600,34 +638,36 @@ msgid "search_hint"
 msgstr "Введіть ім'я персонажа"
 
 msgid "search_term"
-msgstr "Search Terms"
+msgstr "Пошук термінів"
 
 msgid "series_ask_later_msg"
-msgstr "Series recap postponed. We will ask again when you open/resume this book."
+msgstr "Короткий зміст серії відкладено. Ми запитаємо знову, коли ви відкриєте/відновите цю книгу."
 
 msgid "series_context_enabled_toggle"
-msgstr "Enable Series Context"
+msgstr "Увімкнути Series Context"
 
 msgid "series_context_loaded"
-msgstr "Series context loaded (%d prior books)."
+msgstr "Контекст серії завантажено (%d попередніх книг)."
 
 msgid "series_context_prompt_text"
-msgstr "This appears to be Book %d of '%s'. Load a recap of the previous %d book(s)?\n\n(You can disable this in Settings → Series Context)"
+msgstr "Схоже, це книга %d із '%s'. Завантажити короткий зміст попередніх %d книг(и)?
+
+(Ви можете вимкнути це в Налаштуваннях → Series Context)"
 
 msgid "series_context_prompt_title"
-msgstr "Series Detected"
+msgstr "Серію виявлено"
 
 msgid "series_disabled_msg"
-msgstr "Auto-prompt disabled for this book. You can manually fetch recap from X-Ray menu."
+msgstr "Автоматичний запит для цієї книги вимкнено. Ви можете вручну отримати короткий зміст у меню X-Ray."
 
 msgid "series_no_prior_detected"
-msgstr "No prior books detected for this series."
+msgstr "Для цієї серії не знайдено попередніх книг."
 
 msgid "series_prior_books_header"
 msgstr "── Prior Books ──"
 
 msgid "series_prior_label"
-msgstr "[Prior]"
+msgstr "[Попередні]"
 
 msgid "spoiler_free_about"
 msgstr "Режим без спойлерів обмежує аналіз ШІ сторінками, які ви вже прочитали (до вашої поточної сторінки), запобігаючи спойлерам із майбутніх розділів.\n\nРежим усієї книги аналізує всю книгу цілком, що може містити спойлери."
@@ -645,7 +685,7 @@ msgid "spoiler_preference_title"
 msgstr "Налаштування спойлерів"
 
 msgid "term_not_found"
-msgstr "No term found matching '%s'"
+msgstr "Термін, що відповідає '%s', не знайдено"
 
 msgid "this_chapter"
 msgstr "Цей розділ"

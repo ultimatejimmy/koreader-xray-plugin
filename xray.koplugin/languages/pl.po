@@ -132,7 +132,7 @@ msgid "custom_api_endpoint_title"
 msgstr "Niestandardowe API %d — Adres URL punktu końcowego"
 
 msgid "custom_api_is_reasoning"
-msgstr "Jest modelem rozumowania (np. DeepSeek-R1)"
+msgstr "Jest modelem rozumowania (np. DeepSeek-V4-Pro, DeepSeek-R1)"
 
 msgid "custom_api_key_title"
 msgstr "Niestandardowe API %d — Klucz API"
@@ -204,7 +204,7 @@ msgid "error_model_not_found_title"
 msgstr "Nie znaleziono modelu"
 
 msgid "error_no_api_key"
-msgstr "error_no_api_key"
+msgstr "Brak klucza API"
 
 msgid "error_parse_desc"
 msgstr "AI zwróciło odpowiedź, której nie można przetworzyć. Może to być tymczasowy błąd."
@@ -573,7 +573,7 @@ msgid "quick_menu_title"
 msgstr "Szybkie menu X-Ray"
 
 msgid "reasoning_about"
-msgstr "Kontroluje głębokość 'myślenia' dla modeli rozumowania:\n\n• Nieustawione: Nie wysłano żadnej konkretnej instrukcji; model używa swoich wewnętrznych ustawień domyślnych.\n• Niski: Szybka, ekonomiczna ekstrakcja dla prostych książek.\n• Średni: Zrównoważona głębokość dla większości narracji.\n• Wysoki: Szczegółowa analiza dla złożonych sieci postaci.\n\nDotyczy: GPT-5.x, DeepSeek Reasoner, Claude 4.5+ (wydłużone myślenie) oraz Gemini 2.5+."
+msgstr "Kontroluje głębokość 'myślenia' dla modeli rozumowania:\n\n• Nieustawione: Nie wysłano żadnej konkretnej instrukcji; model używa swoich wewnętrznych ustawień domyślnych.\n• Niski: Szybka, ekonomiczna ekstrakcja dla prostych książek.\n• Średni: Zrównoważona głębokość dla większości narracji.\n• Wysoki: Szczegółowa analiza dla złożonych sieci postaci.\n\nDotyczy: GPT-5.x (o1/o3/gpt-5), Claude (sonnet/opus/haiku) oraz Gemini 2.5+.\n\nUwaga: DeepSeek V4 rozumuje sam z siebie — to ustawienie nie ma na niego wpływu."
 
 msgid "reasoning_high"
 msgstr "Wysoki"

@@ -6,7 +6,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "about"
-msgstr "About"
+msgstr "О программе"
 
 msgid "ai_fetch_complete"
 msgstr "Успешно получено от %s!\n\nКнига: %s\nАвтор: %s\n\nПерсонажи: %d\nЛокации: %d\nТемы: %d\nСобытия: %d\nИст. личности: %d\n\n%s\n\nОБЗОР:\n%s"
@@ -36,49 +36,54 @@ msgid "auto_update_sparse"
 msgstr "Редкий: раз в 30 мин"
 
 msgid "back_to_reading"
-msgstr "Back to Reading"
+msgstr "Вернуться к чтению"
 
 msgid "beta_channel_desc"
-msgstr "The beta channel allows you to receive pre-release versions of the X-Ray plugin. These versions include the latest features and bug fixes but may be less stable than the regular release."
+msgstr "Beta channel позволяет получать предварительные версии плагина X-Ray. Эти версии включают новейшие функции и исправления ошибок, но могут быть менее стабильными, чем обычный Stable Channel."
 
 msgid "beta_disabled"
-msgstr "Stable Channel (Recommended)"
+msgstr "Stable Channel (Рекомендуется)"
 
 msgid "beta_enabled"
-msgstr "Beta Channel Enabled"
+msgstr "Beta Channel включен"
 
 msgid "beta_preference_desc"
-msgstr "Select your update channel preference:"
+msgstr "Выберите предпочтительный канал обновлений:"
 
 msgid "book_mode_auto"
-msgstr "Auto"
+msgstr "Авто"
 
 msgid "book_mode_desc"
-msgstr "Select the mode for this book."
+msgstr "Выберите режим для этой книги."
 
 msgid "book_mode_fiction"
-msgstr "Fiction"
+msgstr "Художественная"
 
 msgid "book_mode_nonfiction"
-msgstr "Non-Fiction"
+msgstr "Документальная"
 
 msgid "book_mode_saved"
-msgstr "Book mode saved!"
+msgstr "Режим книги сохранен!"
 
 msgid "book_type_about"
-msgstr "The Book Type determines which AI extraction strategy is used and which features are available.\n\n- Fiction: Focuses on narrative, characters, and plot timeline.\n- Non-Fiction: Focuses on terms, concepts, and historical figures.\n\n'Auto-Detect' will let the AI decide after the first fetch."
+msgstr "Тип книги определяет, какая стратегия извлечения AI используется и какие функции доступны.
+
+- Художественная: фокус на повествовании, персонажах и хронологии сюжета.
+- Документальная: фокус на терминах, понятиях и исторических личностях.
+
+«Автоопределение» позволит AI сделать выбор после первой загрузки."
 
 msgid "book_type_auto"
-msgstr "Auto-Detect"
+msgstr "Автоопределение"
 
 msgid "book_type_fiction"
-msgstr "Fiction"
+msgstr "Художественная"
 
 msgid "book_type_nonfiction"
-msgstr "Non-Fiction"
+msgstr "Документальная"
 
 msgid "book_type_saved"
-msgstr "Book Type saved!"
+msgstr "Тип книги сохранен!"
 
 msgid "cache_cleared"
 msgstr "Кэш очищен!\n\nТеперь вы можете получить новые данные:\nМеню → X-Ray → Получить данные ИИ"
@@ -123,22 +128,22 @@ msgid "current_language"
 msgstr "ru"
 
 msgid "current_mode"
-msgstr "Current: "
+msgstr "Текущий режим: "
 
 msgid "custom_api_endpoint_hint"
-msgstr "e.g., https://openrouter.ai/api/v1/chat/completions"
+msgstr "например, https://openrouter.ai/api/v1/chat/completions"
 
 msgid "custom_api_endpoint_title"
 msgstr "Custom API %d — Endpoint URL"
 
 msgid "custom_api_is_reasoning"
-msgstr "Is Reasoning Model (e.g. DeepSeek-R1)"
+msgstr "Модель с рассуждением (например, DeepSeek-R1)"
 
 msgid "custom_api_key_title"
 msgstr "Custom API %d — API Key"
 
 msgid "custom_api_model_hint"
-msgstr "e.g., google/gemini-2.5-flash or openai/gpt-4o"
+msgstr "например, google/gemini-2.5-flash или openai/gpt-4o"
 
 msgid "custom_api_model_title"
 msgstr "Custom API %d — Default Model"
@@ -147,34 +152,67 @@ msgid "custom_api_name"
 msgstr "Custom API %d (OpenAI-compatible)"
 
 msgid "custom_api_not_configured"
-msgstr "(not configured — tap to set up)"
+msgstr "(не настроено — нажмите для настройки)"
 
 msgid "custom_api_saved"
-msgstr "Custom API %d configuration saved."
+msgstr "Конфигурация Custom API %d сохранена."
 
 msgid "desc_len_about_chars"
-msgstr "CHARACTER DESCRIPTIONS\n\n• Short (~80 chars): Name, role, and a brief note.\n• Default (~200 chars): Standard analysis.\n• Detailed (~350 chars): Rich character study with traits and motivations.\n• Very Detailed (~500 chars): Deep analysis.\n\nTRADE-OFF\nLonger descriptions → fewer characters returned during initial/full fetches. Subsequent 'Fetch More' runs are unaffected."
+msgstr "ОПИСАНИЯ ПЕРСОНАЖЕЙ
+
+• Коротко (~80 символов): Имя, роль и краткое примечание.
+• Стандартно (~200 символов): Стандартный анализ.
+• Подробно (~350 символов): Развернутое исследование персонажа с чертами характера и мотивами.
+• Очень подробно (~500 символов): Глубокий анализ.
+
+КОМПРОМИСС
+Более длинные описания → меньше персонажей, возвращаемых при начальной/полной загрузке. Последующие запуски «Загрузить еще» не затрагиваются."
 
 msgid "desc_len_about_hist"
-msgstr "HISTORICAL FIGURE BIOGRAPHIES\n\n• Short (~50 chars): Name and primary role.\n• Default (~100 chars): Standard biography.\n• Detailed (~200 chars): Life, significance, and book context.\n• Very Detailed (~300 chars): Comprehensive biography.\n\nTRADE-OFF\nLonger biographies → fewer historical figures returned during initial/full fetches."
+msgstr "БИОГРАФИИ ИСТОРИЧЕСКИХ ЛИЧНОСТЕЙ
+
+• Коротко (~50 символов): Имя и основная роль.
+• Стандартно (~100 символов): Стандартная биография.
+• Подробно (~200 символов): Жизнь, значимость и контекст книги.
+• Очень подробно (~300 символов): Полная биография.
+
+КОМПРОМИСС
+Более длинные биографии → меньше исторических личностей, возвращаемых при начальной/полной загрузке."
 
 msgid "desc_len_about_locs"
-msgstr "LOCATION DESCRIPTIONS\n\n• Short (~50 chars): Place name and one-line context.\n• Default (~100 chars): Standard description.\n• Detailed (~200 chars): Atmosphere, significance, and events.\n• Very Detailed (~300 chars): Full description.\n\nTRADE-OFF\nLonger descriptions → fewer locations returned during initial/full fetches."
+msgstr "ОПИСАНИЯ МЕСТ
+
+• Коротко (~50 символов): Название места и краткий контекст.
+• Стандартно (~100 символов): Стандартное описание.
+• Подробно (~200 символов): Атмосфера, значимость и события.
+• Очень подробно (~300 символов): Полное описание.
+
+КОМПРОМИСС
+Более длинные описания → меньше локаций, возвращаемых при начальной/полной загрузке."
 
 msgid "desc_len_about_timeline"
-msgstr "TIMELINE — ONE EVENT PER CHAPTER (always)\n\nTimeline always has exactly one entry per chapter. This setting only affects how much detail is included in each summary.\n\n• Short (~50 chars): Brief one-phrase summary.\n• Default (~80 chars): Standard summary.\n• Detailed (~150 chars): Includes context and consequences.\n• Very Detailed (~200 chars): Full narrative description.\n\nThere is no count trade-off for the timeline."
+msgstr "ХРОНОЛОГИЯ — ОДНО СОБЫТИЕ НА ГЛАВУ (всегда)
+
+Хронология всегда содержит ровно одну запись на главу. Эта настройка влияет только на то, насколько подробно описано каждое событие.
+
+• Коротко (~50 символов): Краткое описание одной фразой.
+• Стандартно (~80 символов): Стандартное описание.
+• Подробно (~150 символов): Включает контекст и последствия.
+• Очень подробно (~200 символов): Полное повествовательное описание.
+
+Количество записей в хронологии не меняется."
 
 msgid "desc_len_default"
-msgstr "Default"
+msgstr "Стандартно"
 
 msgid "desc_len_detailed"
-msgstr "Detailed"
+msgstr "Подробно"
 
 msgid "desc_len_short"
-msgstr "Short"
+msgstr "Коротко"
 
 msgid "desc_len_v_detailed"
-msgstr "Very Detailed"
+msgstr "Очень подробно"
 
 msgid "dont_ask_again"
 msgstr "Больше не спрашивать для этой книги"
@@ -183,64 +221,64 @@ msgid "entity_not_found"
 msgstr "'%s' не найден как персонаж или место."
 
 msgid "error_api_key_desc"
-msgstr "The API key provided was rejected. Please check your settings and ensure the key is correct."
+msgstr "Предоставленный API Key был отклонен. Пожалуйста, проверьте настройки и убедитесь, что ключ верный."
 
 msgid "error_api_key_title"
-msgstr "Invalid API Key"
+msgstr "Неверный API Key"
 
 msgid "error_extract_text"
 msgstr "Ошибка: Не удалось извлечь текст книги."
 
 msgid "error_model_access_desc"
-msgstr "Your API key does not have access to the selected model. You might need to use a different model or provider."
+msgstr "У вашего API Key нет доступа к выбранной модели. Возможно, вам нужно использовать другую модель или провайдера."
 
 msgid "error_model_access_title"
-msgstr "Permission Denied"
+msgstr "Доступ запрещен"
 
 msgid "error_model_not_found_desc"
-msgstr "The selected AI model is unavailable or the endpoint URL is incorrect."
+msgstr "Выбранная модель AI недоступна или указан неверный URL эндпоинта."
 
 msgid "error_model_not_found_title"
-msgstr "Model Not Found"
+msgstr "Модель не найдена"
 
 msgid "error_no_api_key"
 msgstr "error_no_api_key"
 
 msgid "error_parse_desc"
-msgstr "The AI returned a response that could not be processed. This might be a temporary glitch."
+msgstr "AI вернул ответ, который не удалось обработать. Возможно, это временный сбой."
 
 msgid "error_parse_title"
-msgstr "Data Error"
+msgstr "Ошибка данных"
 
 msgid "error_quota_desc"
-msgstr "Your API credits are exhausted or you have reached the rate limit. Please check your billing status or wait a while before trying again."
+msgstr "Ваши кредиты API исчерпаны или вы достигли лимита запросов. Пожалуйста, проверьте статус оплаты или подождите некоторое время перед повторной попыткой."
 
 msgid "error_quota_title"
-msgstr "Quota Exceeded"
+msgstr "Превышена квота"
 
 msgid "error_service_down_desc"
-msgstr "The AI service is temporarily unavailable or overloaded. Please try again in a few minutes."
+msgstr "Сервис AI временно недоступен или перегружен. Пожалуйста, попробуйте снова через несколько минут."
 
 msgid "error_service_down_title"
-msgstr "Service Unavailable"
+msgstr "Сервис недоступен"
 
 msgid "error_timeout_desc"
-msgstr "The request took too long. This can happen with complex books or slow network connections."
+msgstr "Запрос занял слишком много времени. Это может случиться при работе со сложными книгами или медленным интернет-соединением."
 
 msgid "error_timeout_title"
-msgstr "Connection Timed Out"
+msgstr "Истекло время ожидания соединения"
 
 msgid "error_unknown_desc"
-msgstr "An unexpected error occurred: %s"
+msgstr "Произошла непредвиденная ошибка: %s"
 
 msgid "error_unknown_title"
-msgstr "Fetch Failed"
+msgstr "Ошибка получения данных"
 
 msgid "extracting_more_characters"
 msgstr "Извлечение дополнительных персонажей..."
 
 msgid "extracting_more_terms"
-msgstr "Extracting additional terms..."
+msgstr "Извлечение дополнительных терминов..."
 
 msgid "fetch_button"
 msgstr "Получить"
@@ -258,7 +296,7 @@ msgid "fetching_author"
 msgstr "Получение информации об авторе из %s..."
 
 msgid "fetching_series_context"
-msgstr "Fetching series context: Book %d of %d…"
+msgstr "Получение контекста серии: Книга %d из %d…"
 
 msgid "fetching_series_info"
 msgstr "Определение книг серии..."
@@ -276,16 +314,16 @@ msgid "label_aliases"
 msgstr "??????????"
 
 msgid "label_category"
-msgstr "CATEGORY"
+msgstr "КАТЕГОРИЯ"
 
 msgid "label_definition"
-msgstr "DEFINITION"
+msgstr "ОПРЕДЕЛЕНИЕ"
 
 msgid "label_description"
 msgstr "ОПИСАНИЕ"
 
 msgid "label_expanded"
-msgstr "STANDS FOR"
+msgstr "РАСШИФРОВКА"
 
 msgid "label_gender"
 msgstr "ПОЛ"
@@ -321,13 +359,13 @@ msgid "linked_entries"
 msgstr "Linked Entries"
 
 msgid "linked_entries_disabled"
-msgstr "Disabled"
+msgstr "Отключено"
 
 msgid "linked_entries_enabled"
-msgstr "Enabled"
+msgstr "Включено"
 
 msgid "linked_entries_setting_desc"
-msgstr "Linked Entries automatically connects characters, locations, and historical figures when they are mentioned in each other's descriptions.\n\nDisabling this will hide the 'Linked Entries' button from detail dialogs."
+msgstr "Linked Entries автоматически связывает персонажей, места и исторических личностей, когда они упоминаются в описаниях друг друга.\n\nОтключение этого параметра скроет кнопку «Linked Entries» в диалоговых окнах с подробной информацией."
 
 msgid "logs_cleared"
 msgstr "Логи очищены!"
@@ -342,10 +380,10 @@ msgid "mention_return_btn"
 msgstr "← Back"
 
 msgid "mention_return_label"
-msgstr "← Back to p.%d"
+msgstr "← Назад к стр. %d"
 
 msgid "mentions_at_location"
-msgstr "Mention: %s"
+msgstr "Упоминание: %s"
 
 msgid "mentions_disabled"
 msgstr "Выключено"
@@ -381,7 +419,7 @@ msgid "menu_ai_settings"
 msgstr "Настройки ИИ"
 
 msgid "menu_api_keys"
-msgstr "API Keys & Providers"
+msgstr "API Keys и провайдеры"
 
 msgid "menu_author_info"
 msgstr "Информация об авторе"
@@ -390,7 +428,7 @@ msgid "menu_auto_update_frequency"
 msgstr "Автообновление X-Ray"
 
 msgid "menu_beta_channel"
-msgstr "Beta Channel Settings"
+msgstr "Настройки Beta Channel"
 
 msgid "menu_book_mode"
 msgstr "Book Mode"
@@ -411,7 +449,7 @@ msgid "menu_custom_model_title"
 msgstr "Пользовательская модель %s"
 
 msgid "menu_desc_length_settings"
-msgstr "Description Length"
+msgstr "Длина описания"
 
 msgid "menu_enter_custom_model"
 msgstr "Введите свою модель..."
@@ -423,10 +461,10 @@ msgid "menu_fetch_more_chars"
 msgstr "Загрузить больше персонажей"
 
 msgid "menu_fetch_more_terms"
-msgstr "Fetch More Terms"
+msgstr "Получить больше терминов"
 
 msgid "menu_fetch_series_context"
-msgstr "Fetch / Refresh Series Context"
+msgstr "Получить / обновить контекст серии"
 
 msgid "menu_historical_figures"
 msgstr "Исторические личности"
@@ -435,7 +473,7 @@ msgid "menu_language"
 msgstr "Язык"
 
 msgid "menu_linked_entries_settings"
-msgstr "Linked Entries Settings"
+msgstr "Настройки Linked Entries"
 
 msgid "menu_locations"
 msgstr "Места"
@@ -450,19 +488,19 @@ msgid "menu_primary_ai_model"
 msgstr "Основная модель ИИ"
 
 msgid "menu_reasoning_effort"
-msgstr "AI Reasoning Effort"
+msgstr "Уровень рассуждений AI"
 
 msgid "menu_secondary_ai_model"
 msgstr "Вторичная модель ИИ"
 
 msgid "menu_series_context"
-msgstr "Series Context"
+msgstr "Контекст серии"
 
 msgid "menu_settings"
 msgstr "Настройки"
 
 msgid "menu_terms"
-msgstr "Glossary"
+msgstr "Глоссарий"
 
 msgid "menu_timeline"
 msgstr "Хронология"
@@ -483,25 +521,25 @@ msgid "merge_back"
 msgstr "← Back"
 
 msgid "merge_confirm"
-msgstr "Merge %s into %s? The secondary entry will be deleted and its aliases absorbed."
+msgstr "Объединить %s с %s? Вторичная запись будет удалена, а ее псевдонимы поглощены."
 
 msgid "merge_duplicates"
-msgstr "Merge Duplicates..."
+msgstr "Объединить дубликаты..."
 
 msgid "merge_failed"
-msgstr "Merge failed."
+msgstr "Не удалось объединить."
 
 msgid "merge_pick_primary"
-msgstr "Choose the entry to KEEP"
+msgstr "Выберите запись, которую нужно ОСТАВИТЬ"
 
 msgid "merge_pick_secondary"
-msgstr "Choose the entry to REMOVE"
+msgstr "Выберите запись, которую нужно УДАЛИТЬ"
 
 msgid "merge_success"
-msgstr "Entries merged successfully."
+msgstr "Записи успешно объединены."
 
 msgid "merging_smartly"
-msgstr "Merging..."
+msgstr "Объединение..."
 
 msgid "model_free"
 msgstr "бесплатно"
@@ -513,10 +551,10 @@ msgid "msg_added_characters"
 msgstr "Добавлено %d новых персонажей!"
 
 msgid "msg_added_terms"
-msgstr "Added %d new terms!"
+msgstr "Добавлено %d новых терминов!"
 
 msgid "msg_fetch_failed"
-msgstr "AI Fetch Failed"
+msgstr "Ошибка получения данных AI"
 
 msgid "msg_no_bio"
 msgstr "Биография отсутствует."
@@ -528,7 +566,7 @@ msgid "multiple_matches"
 msgstr "Найдено несколько совпадений для '%s'. Кого вы имели в виду?"
 
 msgid "next"
-msgstr "Next"
+msgstr "Далее"
 
 msgid "no"
 msgstr "Нет"
@@ -552,7 +590,7 @@ msgid "no_location_data"
 msgstr "Данных о местах пока нет. Пожалуйста, сначала используйте 'Получить данные X-Ray'."
 
 msgid "no_terms_data"
-msgstr "No terms data yet. Please use 'Fetch X-Ray Data' first."
+msgstr "Данные терминов еще отсутствуют. Пожалуйста, сначала используйте 'Fetch X-Ray Data'."
 
 msgid "no_timeline_data"
 msgstr "Данных хронологии пока нет.\n\nПожалуйста, сначала используйте 'Получить данные X-Ray'.\n\nИИ покажет ключевые события в хронологическом порядке."
@@ -582,7 +620,7 @@ msgid "reasoning_medium"
 msgstr "Средний"
 
 msgid "reasoning_unset"
-msgstr "Unset (Default)"
+msgstr "Не задано (по умолчанию)"
 
 msgid "save"
 msgstr "Сохранить"
@@ -600,34 +638,36 @@ msgid "search_hint"
 msgstr "Введите имя персонажа"
 
 msgid "search_term"
-msgstr "Search Terms"
+msgstr "Поиск терминов"
 
 msgid "series_ask_later_msg"
-msgstr "Series recap postponed. We will ask again when you open/resume this book."
+msgstr "Краткое содержание серии отложено. Мы спросим снова, когда вы откроете/возобновите эту книгу."
 
 msgid "series_context_enabled_toggle"
-msgstr "Enable Series Context"
+msgstr "Включить Series Context"
 
 msgid "series_context_loaded"
-msgstr "Series context loaded (%d prior books)."
+msgstr "Контекст серии загружен (%d предыдущих книг)."
 
 msgid "series_context_prompt_text"
-msgstr "This appears to be Book %d of '%s'. Load a recap of the previous %d book(s)?\n\n(You can disable this in Settings → Series Context)"
+msgstr "Похоже, это книга %d из серии '%s'. Загрузить краткое содержание предыдущих %d книг(и)?
+
+(Вы можете отключить это в Настройки → Series Context)"
 
 msgid "series_context_prompt_title"
-msgstr "Series Detected"
+msgstr "Серия обнаружена"
 
 msgid "series_disabled_msg"
-msgstr "Auto-prompt disabled for this book. You can manually fetch recap from X-Ray menu."
+msgstr "Автоматический запрос отключен для этой книги. Вы можете вручную получить краткое содержание из меню X-Ray."
 
 msgid "series_no_prior_detected"
-msgstr "No prior books detected for this series."
+msgstr "Предыдущие книги для этой серии не обнаружены."
 
 msgid "series_prior_books_header"
 msgstr "── Prior Books ──"
 
 msgid "series_prior_label"
-msgstr "[Prior]"
+msgstr "[Предыдущие]"
 
 msgid "spoiler_free_about"
 msgstr "Режим без спойлеров ограничивает анализ ИИ страницами, которые вы уже прочитали (до вашей текущей страницы), предотвращая спойлеры из будущих глав.\n\nРежим всей книги анализирует всю книгу целиком, что может содержать спойлеры."
@@ -645,7 +685,7 @@ msgid "spoiler_preference_title"
 msgstr "Настройки спойлеров"
 
 msgid "term_not_found"
-msgstr "No term found matching '%s'"
+msgstr "Термин, соответствующий '%s', не найден"
 
 msgid "this_chapter"
 msgstr "Эта глава"

@@ -54,31 +54,31 @@ msgid "book_mode_auto"
 msgstr "Auto"
 
 msgid "book_mode_desc"
-msgstr "Select the mode for this book."
+msgstr "Válassza ki a könyv módját."
 
 msgid "book_mode_fiction"
-msgstr "Fiction"
+msgstr "Szépirodalom"
 
 msgid "book_mode_nonfiction"
-msgstr "Non-Fiction"
+msgstr "Ismeretterjesztő"
 
 msgid "book_mode_saved"
-msgstr "Book mode saved!"
+msgstr "Könyvmód mentve!"
 
 msgid "book_type_about"
-msgstr "The Book Type determines which AI extraction strategy is used and which features are available.\n\n- Fiction: Focuses on narrative, characters, and plot timeline.\n- Non-Fiction: Focuses on terms, concepts, and historical figures.\n\n'Auto-Detect' will let the AI decide after the first fetch."
+msgstr "A Könyvtípus határozza meg, hogy melyik AI kinyerési stratégia kerül alkalmazásra, és mely funkciók érhetőek el.\n\n- Szépirodalom: A történetre, karakterekre és a cselekmény idővonalára fókuszál.\n- Ismeretterjesztő: A kifejezésekre, fogalmakra és történelmi személyekre fókuszál.\n\nAz 'Auto-Detect' lehetővé teszi, hogy az AI döntsön az első lekérés után."
 
 msgid "book_type_auto"
 msgstr "Auto-Detect"
 
 msgid "book_type_fiction"
-msgstr "Fiction"
+msgstr "Szépirodalom"
 
 msgid "book_type_nonfiction"
-msgstr "Non-Fiction"
+msgstr "Ismeretterjesztő"
 
 msgid "book_type_saved"
-msgstr "Book Type saved!"
+msgstr "Könyvtípus mentve!"
 
 msgid "cache_cleared"
 msgstr "Gyorsítótár törölve!\n\nMost már lekérdezhet új adatokat:\nMenü → X-Ray → AI adatok lekérdezése"
@@ -123,7 +123,7 @@ msgid "current_language"
 msgstr "hu"
 
 msgid "current_mode"
-msgstr "Current: "
+msgstr "Jelenlegi: "
 
 msgid "custom_api_endpoint_hint"
 msgstr "pl. https://openrouter.ai/api/v1/chat/completions"
@@ -132,7 +132,7 @@ msgid "custom_api_endpoint_title"
 msgstr "Egyedi API %d — Végpont URL"
 
 msgid "custom_api_is_reasoning"
-msgstr "Gondolkodási modell (pl. DeepSeek-R1)"
+msgstr "Gondolkodási modell (pl. DeepSeek-V4-Pro, DeepSeek-R1)"
 
 msgid "custom_api_key_title"
 msgstr "Egyedi API %d — API kulcs"
@@ -240,7 +240,7 @@ msgid "extracting_more_characters"
 msgstr "További szereplők kinyerése..."
 
 msgid "extracting_more_terms"
-msgstr "Extracting additional terms..."
+msgstr "További kifejezések kinyerése..."
 
 msgid "fetch_button"
 msgstr "Lekérdezés"
@@ -258,7 +258,7 @@ msgid "fetching_author"
 msgstr "Szerzői információk lekérdezése innen: %s..."
 
 msgid "fetching_series_context"
-msgstr "Fetching series context: Book %d of %d…"
+msgstr "Sorozatkontextus lekérése: %1$d. könyv a(z) %2$d-ből…"
 
 msgid "fetching_series_info"
 msgstr "Sorozatkönyvek azonosítása..."
@@ -276,16 +276,16 @@ msgid "label_aliases"
 msgstr "ÁLNEVEK"
 
 msgid "label_category"
-msgstr "CATEGORY"
+msgstr "KATEGÓRIA"
 
 msgid "label_definition"
-msgstr "DEFINITION"
+msgstr "DEFINÍCIÓ"
 
 msgid "label_description"
 msgstr "LEÍRÁS"
 
 msgid "label_expanded"
-msgstr "STANDS FOR"
+msgstr "JELENTÉSE"
 
 msgid "label_gender"
 msgstr "NEM"
@@ -393,7 +393,7 @@ msgid "menu_beta_channel"
 msgstr "Béta csatorna beállításai"
 
 msgid "menu_book_mode"
-msgstr "Book Type"
+msgstr "Könyvtípus"
 
 msgid "menu_characters"
 msgstr "Szereplők"
@@ -423,10 +423,10 @@ msgid "menu_fetch_more_chars"
 msgstr "További szereplők lekérdezése"
 
 msgid "menu_fetch_more_terms"
-msgstr "Fetch More Terms"
+msgstr "További kifejezések lekérése"
 
 msgid "menu_fetch_series_context"
-msgstr "Fetch / Refresh Series Context"
+msgstr "Sorozatkontextus lekérése / frissítése"
 
 msgid "menu_historical_figures"
 msgstr "Történelmi alakok"
@@ -456,13 +456,13 @@ msgid "menu_secondary_ai_model"
 msgstr "Másodlagos AI modell"
 
 msgid "menu_series_context"
-msgstr "Series Context"
+msgstr "Sorozatkontextus"
 
 msgid "menu_settings"
 msgstr "Beállítások"
 
 msgid "menu_terms"
-msgstr "Glossary"
+msgstr "Glosszárium"
 
 msgid "menu_timeline"
 msgstr "Idővonal"
@@ -513,7 +513,7 @@ msgid "msg_added_characters"
 msgstr "%d új szereplő hozzáadva!"
 
 msgid "msg_added_terms"
-msgstr "Added %d new terms!"
+msgstr "%d új kifejezés hozzáadva!"
 
 msgid "msg_fetch_failed"
 msgstr "AI lekérdezés sikertelen"
@@ -552,7 +552,7 @@ msgid "no_location_data"
 msgstr "Még nincsenek helyszínadatok. Kérjük, használja előbb az 'X-Ray adatok lekérdezése' funkciót."
 
 msgid "no_terms_data"
-msgstr "No terms data yet. Please use 'Fetch X-Ray Data' first."
+msgstr "Még nincsenek kifejezésadatok. Kérjük, először használja az 'X-Ray adatok lekérése' opciót."
 
 msgid "no_timeline_data"
 msgstr "Még nincsenek idővonal-adatok.\n\nKérjük, használja előbb az 'X-Ray adatok lekérdezése' funkciót.\n\nAz AI időrendi sorrendben mutatja a legfontosabb eseményeket."
@@ -570,7 +570,7 @@ msgid "quick_menu_title"
 msgstr "X-Ray gyorsmenü"
 
 msgid "reasoning_about"
-msgstr "Szabályozza a 'gondolkodási' mélységet a következtető modelleknél:\n\n• Nincs beállítva: Nincs küldve specifikus utasítás; a modell a saját alapértelmezéseit használja.\n• Alacsony: Gyors, gazdaságos kinyerés egyszerűbb könyvekhez.\n• Közepes: Kiegyensúlyozott mélység a legtöbb történethez.\n• Magas: Részletes elemzés összetett szereplői kapcsolatokhoz.\n\nÉrvényes a következőkre: GPT-5.x, DeepSeek Reasoner, Claude 4.5+ (extended thinking) és Gemini 2.5+."
+msgstr "Szabályozza a 'gondolkodási' mélységet a következtető modelleknél:\n\n• Nincs beállítva: Nincs küldve specifikus utasítás; a modell a saját alapértelmezéseit használja.\n• Alacsony: Gyors, gazdaságos kinyerés egyszerűbb könyvekhez.\n• Közepes: Kiegyensúlyozott mélység a legtöbb történethez.\n• Magas: Részletes elemzés összetett szereplői kapcsolatokhoz.\n\nÉrvényes a következőkre: GPT-5.x (o1/o3/gpt-5), Claude (sonnet/opus/haiku) és Gemini 2.5+.\n\nMegjegyzés: A DeepSeek V4 eleve következtetést végez — ez a beállítás nincs hatással rá."
 
 msgid "reasoning_high"
 msgstr "Magas"
@@ -600,34 +600,34 @@ msgid "search_hint"
 msgstr "Adja meg a szereplő nevét"
 
 msgid "search_term"
-msgstr "Search Terms"
+msgstr "Kifejezések keresése"
 
 msgid "series_ask_later_msg"
-msgstr "Series recap postponed. We will ask again when you open/resume this book."
+msgstr "Sorozatösszefoglaló elhalasztva. Újra megkérdezzük, amikor megnyitja/folytatja ezt a könyvet."
 
 msgid "series_context_enabled_toggle"
-msgstr "Enable Series Context"
+msgstr "Sorozatkontextus engedélyezése"
 
 msgid "series_context_loaded"
-msgstr "Series context loaded (%d prior books)."
+msgstr "Sorozatkontextus betöltve (%d előző könyv)."
 
 msgid "series_context_prompt_text"
-msgstr "This appears to be Book %d of '%s'. Load a recap of the previous %d book(s)?\n\n(You can disable this in Settings → Series Context)"
+msgstr "Úgy tűnik, ez a(z) '%2$s' sorozat %1$d. kötete. Betölti az előző %3$d könyv összefoglalóját?\n\n(Ezt a Beállítások → Sorozatkontextus menüben kapcsolhatja ki)"
 
 msgid "series_context_prompt_title"
-msgstr "Series Detected"
+msgstr "Sorozat észlelve"
 
 msgid "series_disabled_msg"
-msgstr "Auto-prompt disabled for this book. You can manually fetch recap from X-Ray menu."
+msgstr "Az automatikus lekérdezés le van tiltva ehhez a könyvhöz. Manuálisan is lekérheti az összefoglalót az X-Ray menüből."
 
 msgid "series_no_prior_detected"
-msgstr "No prior books detected for this series."
+msgstr "Nem észlelhető előzménykönyv ebben a sorozatban."
 
 msgid "series_prior_books_header"
 msgstr "── Prior Books ──"
 
 msgid "series_prior_label"
-msgstr "[Prior]"
+msgstr "[Előzmény]"
 
 msgid "spoiler_free_about"
 msgstr "A spoilermentes mód a könyvben már elolvasott oldalakra korlátozza az AI kinyerését (a jelenlegi oldaláig), megakadályozva a jövőbeli fejezetekből származó spoilereket.\n\nA Teljes könyv mód a teljes könyvet elemzi, ami spoilereket tartalmazhat."
@@ -645,7 +645,7 @@ msgid "spoiler_preference_title"
 msgstr "Spoiler-preferencia"
 
 msgid "term_not_found"
-msgstr "No term found matching '%s'"
+msgstr "Nem található kifejezés a következőre: '%s'"
 
 msgid "this_chapter"
 msgstr "Ez a fejezet"

@@ -2018,8 +2018,8 @@ function M:getAIModelSelectionMenu(setting_type)
             id = "deepseek",
             display_name = "DeepSeek",
             models = {
-                { id = "deepseek-chat", cost = "paid" },
-                { id = "deepseek-reasoner", cost = "paid" },
+                { id = "deepseek-v4-flash", cost = "paid" },
+                { id = "deepseek-v4-pro", cost = "paid" },
             }
         },
         {
@@ -2267,7 +2267,7 @@ function M:showReasoningEffortSettings()
                         text = self.loc:t("about") or "About",
                         callback = function()
                             UIManager:show(InfoMessage:new{
-                                text = self.loc:t("reasoning_about") or "Controls 'thinking' depth for reasoning models:\n\n• Unset: No specific instruction sent; model uses its internal defaults.\n• Low: Fast, economical extraction for simple books.\n• Medium: Balanced depth for most narratives.\n• High: Detailed analysis for complex character webs.\n\nApplies to: GPT-5.x, DeepSeek Reasoner, Claude 4.5+ (extended thinking), and Gemini 2.5+.",
+                                text = self.loc:t("reasoning_about") or "Controls 'thinking' depth for reasoning models:\n\n• Unset: No specific instruction sent; model uses its internal defaults.\n• Low: Fast, economical extraction for simple books.\n• Medium: Balanced depth for most narratives.\n• High: Detailed analysis for complex character webs.\n\nApplies to: GPT-5.x (o1/o3/gpt-5), Claude (sonnet/opus/haiku), and Gemini 2.5+.\n\nNote: DeepSeek V4 reasons inherently — this setting has no effect on it.",
                                 timeout = 12
                             })
                         end

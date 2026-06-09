@@ -6,7 +6,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "about"
-msgstr "About"
+msgstr "Hakkında"
 
 msgid "ai_fetch_complete"
 msgstr "%s üzerinden başarıyla çekildi!\n\nKitap: %s\nYazar: %s\n\nKarakterler: %d\nMekanlar: %d\nTemalar: %d\nZaman Çizelgesi Olayları: %d\nTarihi Kişiler: %d\n\n%s\n\nÖZET:\n%s"
@@ -36,49 +36,54 @@ msgid "auto_update_sparse"
 msgstr "Seyrek: en fazla 30 dk'da bir kontrol eder"
 
 msgid "back_to_reading"
-msgstr "Back to Reading"
+msgstr "Okumaya Dön"
 
 msgid "beta_channel_desc"
-msgstr "The beta channel allows you to receive pre-release versions of the X-Ray plugin. These versions include the latest features and bug fixes but may be less stable than the regular release."
+msgstr "Beta channel, X-Ray eklentisinin sürüm öncesi sürümlerini almanızı sağlar. Bu sürümler en son özellikleri ve hata düzeltmelerini içerir ancak Stable Channel sürümlerinden daha az kararlı olabilir."
 
 msgid "beta_disabled"
-msgstr "Stable Channel (Recommended)"
+msgstr "Stable Channel (Önerilen)"
 
 msgid "beta_enabled"
-msgstr "Beta Channel Enabled"
+msgstr "Beta Channel Etkinleştirildi"
 
 msgid "beta_preference_desc"
-msgstr "Select your update channel preference:"
+msgstr "Güncelleme kanalı tercihinizi seçin:"
 
 msgid "book_mode_auto"
-msgstr "Auto"
+msgstr "Otomatik"
 
 msgid "book_mode_desc"
-msgstr "Select the mode for this book."
+msgstr "Bu kitap için modu seçin."
 
 msgid "book_mode_fiction"
-msgstr "Fiction"
+msgstr "Kurgu"
 
 msgid "book_mode_nonfiction"
-msgstr "Non-Fiction"
+msgstr "Kurgu Dışı"
 
 msgid "book_mode_saved"
-msgstr "Book mode saved!"
+msgstr "Kitap modu kaydedildi!"
 
 msgid "book_type_about"
-msgstr "The Book Type determines which AI extraction strategy is used and which features are available.\n\n- Fiction: Focuses on narrative, characters, and plot timeline.\n- Non-Fiction: Focuses on terms, concepts, and historical figures.\n\n'Auto-Detect' will let the AI decide after the first fetch."
+msgstr "Kitap Türü, hangi AI çıkarma stratejisinin kullanılacağını ve hangi özelliklerin mevcut olacağını belirler.
+
+- Kurgu: Anlatı, karakterler ve olay örgüsü zaman çizelgesine odaklanır.
+- Kurgu Dışı: Terimlere, kavramlara ve tarihsel kişiliklere odaklanır.
+
+'Otomatik Algıla', ilk getirme işleminden sonra AI'nın karar vermesini sağlar."
 
 msgid "book_type_auto"
-msgstr "Auto-Detect"
+msgstr "Otomatik Algıla"
 
 msgid "book_type_fiction"
-msgstr "Fiction"
+msgstr "Kurgu"
 
 msgid "book_type_nonfiction"
-msgstr "Non-Fiction"
+msgstr "Kurgu Dışı"
 
 msgid "book_type_saved"
-msgstr "Book Type saved!"
+msgstr "Kitap Türü kaydedildi!"
 
 msgid "cache_cleared"
 msgstr "Önbellek temizlendi!\n\nŞimdi yeni verileri çekebilirsiniz:\nMenü → X-Ray → AI Verilerini Çek"
@@ -123,58 +128,91 @@ msgid "current_language"
 msgstr "en"
 
 msgid "current_mode"
-msgstr "Current: "
+msgstr "Mevcut: "
 
 msgid "custom_api_endpoint_hint"
-msgstr "e.g., https://openrouter.ai/api/v1/chat/completions"
+msgstr "örn., https://openrouter.ai/api/v1/chat/completions"
 
 msgid "custom_api_endpoint_title"
 msgstr "Custom API %d — Endpoint URL"
 
 msgid "custom_api_is_reasoning"
-msgstr "Is Reasoning Model (e.g. DeepSeek-R1)"
+msgstr "Akıl Yürüten Model mi (örn. DeepSeek-R1)"
 
 msgid "custom_api_key_title"
 msgstr "Custom API %d — API Key"
 
 msgid "custom_api_model_hint"
-msgstr "e.g., google/gemini-2.5-flash or openai/gpt-4o"
+msgstr "örn., google/gemini-2.5-flash veya openai/gpt-4o"
 
 msgid "custom_api_model_title"
-msgstr "Custom API %d — Default Model"
+msgstr "Custom API %d — Varsayılan Model"
 
 msgid "custom_api_name"
 msgstr "Custom API %d (OpenAI-compatible)"
 
 msgid "custom_api_not_configured"
-msgstr "(not configured — tap to set up)"
+msgstr "(yapılandırılmadı — ayarlamak için dokunun)"
 
 msgid "custom_api_saved"
-msgstr "Custom API %d configuration saved."
+msgstr "Custom API %d yapılandırması kaydedildi."
 
 msgid "desc_len_about_chars"
-msgstr "CHARACTER DESCRIPTIONS\n\n• Short (~80 chars): Name, role, and a brief note.\n• Default (~200 chars): Standard analysis.\n• Detailed (~350 chars): Rich character study with traits and motivations.\n• Very Detailed (~500 chars): Deep analysis.\n\nTRADE-OFF\nLonger descriptions → fewer characters returned during initial/full fetches. Subsequent 'Fetch More' runs are unaffected."
+msgstr "KARAKTER AÇIKLAMALARI
+
+• Kısa (~80 karakter): İsim, rol ve kısa bir not.
+• Varsayılan (~200 karakter): Standart analiz.
+• Detaylı (~350 karakter): Özellikler ve motivasyonlarla zengin karakter incelemesi.
+• Çok Detaylı (~500 karakter): Derin analiz.
+
+ÖDÜNLEŞİM
+Daha uzun açıklamalar → ilk/tam getirme sırasında daha az karakter döndürülür. Sonraki 'Daha Fazla Getir' işlemleri etkilenmez."
 
 msgid "desc_len_about_hist"
-msgstr "HISTORICAL FIGURE BIOGRAPHIES\n\n• Short (~50 chars): Name and primary role.\n• Default (~100 chars): Standard biography.\n• Detailed (~200 chars): Life, significance, and book context.\n• Very Detailed (~300 chars): Comprehensive biography.\n\nTRADE-OFF\nLonger biographies → fewer historical figures returned during initial/full fetches."
+msgstr "TARİHSEL KİŞİLİK BİYOGRAFİLERİ
+
+• Kısa (~50 karakter): İsim ve birincil rol.
+• Varsayılan (~100 karakter): Standart biyografi.
+• Detaylı (~200 karakter): Yaşam, önem ve kitap bağlamı.
+• Çok Detaylı (~300 karakter): Kapsamlı biyografi.
+
+ÖDÜNLEŞİM
+Daha uzun biyografiler → ilk/tam getirme sırasında daha az tarihsel kişilik döndürülür."
 
 msgid "desc_len_about_locs"
-msgstr "LOCATION DESCRIPTIONS\n\n• Short (~50 chars): Place name and one-line context.\n• Default (~100 chars): Standard description.\n• Detailed (~200 chars): Atmosphere, significance, and events.\n• Very Detailed (~300 chars): Full description.\n\nTRADE-OFF\nLonger descriptions → fewer locations returned during initial/full fetches."
+msgstr "KONUM AÇIKLAMALARI
+
+• Kısa (~50 karakter): Yer ismi ve bir satırlık bağlam.
+• Varsayılan (~100 karakter): Standart açıklama.
+• Detaylı (~200 karakter): Atmosfer, önem ve olaylar.
+• Çok Detaylı (~300 karakter): Tam açıklama.
+
+ÖDÜNLEŞİM
+Daha uzun açıklamalar → ilk/tam getirme sırasında daha az konum döndürülür."
 
 msgid "desc_len_about_timeline"
-msgstr "TIMELINE — ONE EVENT PER CHAPTER (always)\n\nTimeline always has exactly one entry per chapter. This setting only affects how much detail is included in each summary.\n\n• Short (~50 chars): Brief one-phrase summary.\n• Default (~80 chars): Standard summary.\n• Detailed (~150 chars): Includes context and consequences.\n• Very Detailed (~200 chars): Full narrative description.\n\nThere is no count trade-off for the timeline."
+msgstr "ZAMAN ÇİZELGESİ — BÖLÜM BAŞINA BİR ETKİNLİK (her zaman)
+
+Zaman çizelgesinde her zaman bölüm başına tam olarak bir girdi bulunur. Bu ayar sadece her özetin ne kadar detay içereceğini etkiler.
+
+• Kısa (~50 karakter): Kısa bir cümlelik özet.
+• Varsayılan (~80 karakter): Standart özet.
+• Detaylı (~150 karakter): Bağlam ve sonuçları içerir.
+• Çok Detaylı (~200 karakter): Tam anlatı açıklaması.
+
+Zaman çizelgesi için sayısal bir ödünleşim yoktur."
 
 msgid "desc_len_default"
-msgstr "Default"
+msgstr "Varsayılan"
 
 msgid "desc_len_detailed"
-msgstr "Detailed"
+msgstr "Detaylı"
 
 msgid "desc_len_short"
-msgstr "Short"
+msgstr "Kısa"
 
 msgid "desc_len_v_detailed"
-msgstr "Very Detailed"
+msgstr "Çok Detaylı"
 
 msgid "dont_ask_again"
 msgstr "Bu kitap için bir daha sorma"
@@ -183,64 +221,64 @@ msgid "entity_not_found"
 msgstr "'%s' bir karakter veya konum olarak bulunamadı."
 
 msgid "error_api_key_desc"
-msgstr "The API key provided was rejected. Please check your settings and ensure the key is correct."
+msgstr "Sağlanan API anahtarı reddedildi. Lütfen ayarlarınızı kontrol edin ve anahtarın doğru olduğundan emin olun."
 
 msgid "error_api_key_title"
-msgstr "Invalid API Key"
+msgstr "Geçersiz API Key"
 
 msgid "error_extract_text"
 msgstr "Hata: Kitap metni çıkarılamadı."
 
 msgid "error_model_access_desc"
-msgstr "Your API key does not have access to the selected model. You might need to use a different model or provider."
+msgstr "API anahtarınız seçilen modele erişemiyor. Farklı bir model veya sağlayıcı kullanmanız gerekebilir."
 
 msgid "error_model_access_title"
-msgstr "Permission Denied"
+msgstr "Erişim Reddedildi"
 
 msgid "error_model_not_found_desc"
-msgstr "The selected AI model is unavailable or the endpoint URL is incorrect."
+msgstr "Seçilen AI modeli mevcut değil veya uç nokta URL'si yanlış."
 
 msgid "error_model_not_found_title"
-msgstr "Model Not Found"
+msgstr "Model Bulunamadı"
 
 msgid "error_no_api_key"
 msgstr "error_no_api_key"
 
 msgid "error_parse_desc"
-msgstr "The AI returned a response that could not be processed. This might be a temporary glitch."
+msgstr "AI, işlenemeyen bir yanıt döndürdü. Bu geçici bir aksaklık olabilir."
 
 msgid "error_parse_title"
-msgstr "Data Error"
+msgstr "Veri Hatası"
 
 msgid "error_quota_desc"
-msgstr "Your API credits are exhausted or you have reached the rate limit. Please check your billing status or wait a while before trying again."
+msgstr "API kredileriniz tükendi veya hız sınırına ulaştınız. Lütfen fatura durumunuzu kontrol edin veya tekrar denemeden önce bir süre bekleyin."
 
 msgid "error_quota_title"
-msgstr "Quota Exceeded"
+msgstr "Kota Aşıldı"
 
 msgid "error_service_down_desc"
-msgstr "The AI service is temporarily unavailable or overloaded. Please try again in a few minutes."
+msgstr "AI hizmeti geçici olarak kullanılamıyor veya aşırı yüklendi. Lütfen birkaç dakika içinde tekrar deneyin."
 
 msgid "error_service_down_title"
-msgstr "Service Unavailable"
+msgstr "Hizmet Kullanılamıyor"
 
 msgid "error_timeout_desc"
-msgstr "The request took too long. This can happen with complex books or slow network connections."
+msgstr "İstek çok uzun sürdü. Bu, karmaşık kitaplarda veya yavaş ağ bağlantılarında olabilir."
 
 msgid "error_timeout_title"
-msgstr "Connection Timed Out"
+msgstr "Bağlantı Zaman Aşımına Uğradı"
 
 msgid "error_unknown_desc"
-msgstr "An unexpected error occurred: %s"
+msgstr "Beklenmedik bir hata oluştu: %s"
 
 msgid "error_unknown_title"
-msgstr "Fetch Failed"
+msgstr "Getirme Başarısız Oldu"
 
 msgid "extracting_more_characters"
 msgstr "Ek karakterler çıkarılıyor..."
 
 msgid "extracting_more_terms"
-msgstr "Extracting additional terms..."
+msgstr "Ek terimler çıkarılıyor..."
 
 msgid "fetch_button"
 msgstr "Çek"
@@ -258,7 +296,7 @@ msgid "fetching_author"
 msgstr "Yazar bilgisi %s üzerinden çekiliyor..."
 
 msgid "fetching_series_context"
-msgstr "Fetching series context: Book %d of %d…"
+msgstr "Seri bağlamı getiriliyor: %d / %d. Kitap…"
 
 msgid "fetching_series_info"
 msgstr "Seri kitapları tanımlanıyor..."
@@ -276,16 +314,16 @@ msgid "label_aliases"
 msgstr "TAKMA ADLAR"
 
 msgid "label_category"
-msgstr "CATEGORY"
+msgstr "KATEGORİ"
 
 msgid "label_definition"
-msgstr "DEFINITION"
+msgstr "TANIM"
 
 msgid "label_description"
 msgstr "AÇIKLAMA"
 
 msgid "label_expanded"
-msgstr "STANDS FOR"
+msgstr "AÇILIMI"
 
 msgid "label_gender"
 msgstr "CİNSİYET"
@@ -318,16 +356,16 @@ msgid "later"
 msgstr "Later"
 
 msgid "linked_entries"
-msgstr "Linked Entries"
+msgstr "Bağlantılı Girdiler"
 
 msgid "linked_entries_disabled"
-msgstr "Disabled"
+msgstr "Devre Dışı"
 
 msgid "linked_entries_enabled"
-msgstr "Enabled"
+msgstr "Etkin"
 
 msgid "linked_entries_setting_desc"
-msgstr "Linked Entries automatically connects characters, locations, and historical figures when they are mentioned in each other's descriptions.\n\nDisabling this will hide the 'Linked Entries' button from detail dialogs."
+msgstr "Bağlantılı Girdiler; karakterler, konumlar ve tarihi şahsiyetler birbirlerinin açıklamalarında geçtiklerinde onları otomatik olarak bağlar.\n\nBunu devre dışı bırakmak, detay diyaloglarından 'Bağlantılı Girdiler' düğmesini gizleyecektir."
 
 msgid "logs_cleared"
 msgstr "Günlükler temizlendi!"
@@ -342,10 +380,10 @@ msgid "mention_return_btn"
 msgstr "← Back"
 
 msgid "mention_return_label"
-msgstr "← Back to p.%d"
+msgstr "← %d. sayfaya dön"
 
 msgid "mentions_at_location"
-msgstr "Mention: %s"
+msgstr "Bahsedilen: %s"
 
 msgid "mentions_disabled"
 msgstr "Devre Dışı"
@@ -381,7 +419,7 @@ msgid "menu_ai_settings"
 msgstr "AI Ayarları"
 
 msgid "menu_api_keys"
-msgstr "API Keys & Providers"
+msgstr "API Keys ve Sağlayıcılar"
 
 msgid "menu_author_info"
 msgstr "Yazar Bilgisi"
@@ -390,7 +428,7 @@ msgid "menu_auto_update_frequency"
 msgstr "Otomatik X-Ray Ayarları"
 
 msgid "menu_beta_channel"
-msgstr "Beta Channel Settings"
+msgstr "Beta Channel Ayarları"
 
 msgid "menu_book_mode"
 msgstr "Book Mode"
@@ -411,7 +449,7 @@ msgid "menu_custom_model_title"
 msgstr "Özel %s Modeli"
 
 msgid "menu_desc_length_settings"
-msgstr "Description Length"
+msgstr "Açıklama Uzunluğu"
 
 msgid "menu_enter_custom_model"
 msgstr "Özel model girin..."
@@ -423,10 +461,10 @@ msgid "menu_fetch_more_chars"
 msgstr "Daha Fazla Karakter Getir"
 
 msgid "menu_fetch_more_terms"
-msgstr "Fetch More Terms"
+msgstr "Daha Fazla Terim Getir"
 
 msgid "menu_fetch_series_context"
-msgstr "Fetch / Refresh Series Context"
+msgstr "Seri Bağlamını Getir / Yenile"
 
 msgid "menu_historical_figures"
 msgstr "Tarihi Kişiler"
@@ -435,7 +473,7 @@ msgid "menu_language"
 msgstr "Dil"
 
 msgid "menu_linked_entries_settings"
-msgstr "Linked Entries Settings"
+msgstr "Bağlantılı Girdiler Ayarları"
 
 msgid "menu_locations"
 msgstr "Mekanlar"
@@ -450,19 +488,19 @@ msgid "menu_primary_ai_model"
 msgstr "Birincil YZ Modeli"
 
 msgid "menu_reasoning_effort"
-msgstr "AI Reasoning Effort"
+msgstr "AI Akıl Yürütme Çabası"
 
 msgid "menu_secondary_ai_model"
 msgstr "İkincil YZ Modeli"
 
 msgid "menu_series_context"
-msgstr "Series Context"
+msgstr "Seri Bağlamı"
 
 msgid "menu_settings"
 msgstr "Ayarlar"
 
 msgid "menu_terms"
-msgstr "Glossary"
+msgstr "Sözlük"
 
 msgid "menu_timeline"
 msgstr "Zaman Çizelgesi"
@@ -483,25 +521,25 @@ msgid "merge_back"
 msgstr "← Back"
 
 msgid "merge_confirm"
-msgstr "Merge %s into %s? The secondary entry will be deleted and its aliases absorbed."
+msgstr "%s, %s içine birleştirilsin mi? İkincil giriş silinecek ve takma adları absorbe edilecektir."
 
 msgid "merge_duplicates"
-msgstr "Merge Duplicates..."
+msgstr "Yinelenenleri Birleştir..."
 
 msgid "merge_failed"
-msgstr "Merge failed."
+msgstr "Birleştirme başarısız."
 
 msgid "merge_pick_primary"
-msgstr "Choose the entry to KEEP"
+msgstr "SAKLANACAK girişi seçin"
 
 msgid "merge_pick_secondary"
-msgstr "Choose the entry to REMOVE"
+msgstr "KALDIRILACAK girişi seçin"
 
 msgid "merge_success"
-msgstr "Entries merged successfully."
+msgstr "Girişler başarıyla birleştirildi."
 
 msgid "merging_smartly"
-msgstr "Merging..."
+msgstr "Birleştiriliyor..."
 
 msgid "model_free"
 msgstr "ücretsiz"
@@ -513,10 +551,10 @@ msgid "msg_added_characters"
 msgstr "%d yeni karakter eklendi!"
 
 msgid "msg_added_terms"
-msgstr "Added %d new terms!"
+msgstr "%d yeni terim eklendi!"
 
 msgid "msg_fetch_failed"
-msgstr "AI Fetch Failed"
+msgstr "AI Getirme Başarısız"
 
 msgid "msg_no_bio"
 msgstr "Biyografi bulunamadı."
@@ -528,7 +566,7 @@ msgid "multiple_matches"
 msgstr "'%s' için birden fazla eşleşme bulundu. Hangisini kastediyordunuz?"
 
 msgid "next"
-msgstr "Next"
+msgstr "İleri"
 
 msgid "no"
 msgstr "Hayır"
@@ -552,7 +590,7 @@ msgid "no_location_data"
 msgstr "Henüz mekan verisi yok. Lütfen önce 'X-Ray Verilerini Çek' seçeneğini kullanın."
 
 msgid "no_terms_data"
-msgstr "No terms data yet. Please use 'Fetch X-Ray Data' first."
+msgstr "Henüz terim verisi yok. Lütfen önce 'X-Ray Verilerini Getir' seçeneğini kullanın."
 
 msgid "no_timeline_data"
 msgstr "Henüz zaman çizelgesi verisi yok.\n\nLütfen önce 'X-Ray Verilerini Çek' seçeneğini kullanın.\n\nAI, önemli olayları kronolojik sırada gösterecektir."
@@ -582,7 +620,7 @@ msgid "reasoning_medium"
 msgstr "Orta"
 
 msgid "reasoning_unset"
-msgstr "Unset (Default)"
+msgstr "Ayarlanmamış (Varsayılan)"
 
 msgid "save"
 msgstr "Kaydet"
@@ -600,34 +638,34 @@ msgid "search_hint"
 msgstr "İsim yazın (örn. Stavrogin)"
 
 msgid "search_term"
-msgstr "Search Terms"
+msgstr "Terimleri Ara"
 
 msgid "series_ask_later_msg"
-msgstr "Series recap postponed. We will ask again when you open/resume this book."
+msgstr "Seri özeti ertelendi. Bu kitabı açtığınızda/devam ettiğinizde tekrar soracağız."
 
 msgid "series_context_enabled_toggle"
-msgstr "Enable Series Context"
+msgstr "Seri Bağlamını Etkinleştir"
 
 msgid "series_context_loaded"
-msgstr "Series context loaded (%d prior books)."
+msgstr "Seri bağlamı yüklendi (%d önceki kitap)."
 
 msgid "series_context_prompt_text"
-msgstr "This appears to be Book %d of '%s'. Load a recap of the previous %d book(s)?\n\n(You can disable this in Settings → Series Context)"
+msgstr "Bu, '%s' serisinin %d. Kitabı gibi görünüyor. Önceki %d kitabın özetini yüklemek ister misiniz?\n\n(Bunu Ayarlar → Seri Bağlamı menüsünden devre dışı bırakabilirsiniz)"
 
 msgid "series_context_prompt_title"
-msgstr "Series Detected"
+msgstr "Seri Algılandı"
 
 msgid "series_disabled_msg"
-msgstr "Auto-prompt disabled for this book. You can manually fetch recap from X-Ray menu."
+msgstr "Bu kitap için otomatik bilgi istemi devre dışı bırakıldı. X-Ray menüsünden özeti manuel olarak getirebilirsiniz."
 
 msgid "series_no_prior_detected"
-msgstr "No prior books detected for this series."
+msgstr "Bu seri için daha önce yayınlanmış kitap algılanmadı."
 
 msgid "series_prior_books_header"
 msgstr "── Prior Books ──"
 
 msgid "series_prior_label"
-msgstr "[Prior]"
+msgstr "[Önceki]"
 
 msgid "spoiler_free_about"
 msgstr "Spoilersiz mod, AI çıkarımını zaten okuduğunuz sayfalarla (mevcut sayfanıza kadar) sınırlayarak gelecek bölümlerden spoiler yemenizi önler.\n\nTam Kitap Modu tüm kitabı analiz eder ve spoiler içerebilir."
@@ -645,7 +683,7 @@ msgid "spoiler_preference_title"
 msgstr "Spoiler Tercihi"
 
 msgid "term_not_found"
-msgstr "No term found matching '%s'"
+msgstr "'%s' ile eşleşen terim bulunamadı"
 
 msgid "this_chapter"
 msgstr "Bu Bölüm"
@@ -657,19 +695,19 @@ msgid "updater_available_header"
 msgstr "X-Ray %s mevcut!\nSizde %s var."
 
 msgid "updater_btn_cancel"
-msgstr "Cancel"
+msgstr "İptal"
 
 msgid "updater_btn_download"
-msgstr "Download and install"
+msgstr "İndir ve yükle"
 
 msgid "updater_btn_later"
-msgstr "Later"
+msgstr "Daha Sonra"
 
 msgid "updater_btn_open_browser"
 msgstr "Tarayıcıda aç"
 
 msgid "updater_btn_restart"
-msgstr "Restart"
+msgstr "Yeniden Başlat"
 
 msgid "updater_cancelled_check"
 msgstr "Güncelleme kontrolü iptal edildi."
@@ -678,16 +716,16 @@ msgid "updater_cancelled_update"
 msgstr "Güncelleme iptal edildi."
 
 msgid "updater_check"
-msgstr "Check for Updates"
+msgstr "Güncellemeleri Kontrol Et"
 
 msgid "updater_checking"
-msgstr "Checking for updates..."
+msgstr "Güncellemeler kontrol ediliyor..."
 
 msgid "updater_download_prompt"
-msgstr "\n\nDownload and install now?"
+msgstr "\n\nŞimdi indirilip kurulsun mu?"
 
 msgid "updater_downloading"
-msgstr "Downloading X-Ray %s..."
+msgstr "X-Ray %s indiriliyor..."
 
 msgid "updater_err_download"
 msgstr "İndirme hatası: %s"
@@ -702,13 +740,13 @@ msgid "updater_error_checking_detail"
 msgstr "Güncelleme kontrolü hatası: %s"
 
 msgid "updater_no_asset"
-msgstr "No automatic update file was found.\n\nOpen the releases page on GitHub?"
+msgstr "Otomatik güncelleme dosyası bulunamadı.\n\nGitHub üzerindeki sürümler sayfasını açmak ister misiniz?"
 
 msgid "updater_success_restart"
-msgstr "X-Ray %s successfully installed.\n\nRestart KOReader to apply the update?"
+msgstr "X-Ray %s başarıyla kuruldu.\n\nGüncellemeyi uygulamak için KOReader'ı yeniden başlatmak ister misiniz?"
 
 msgid "updater_up_to_date"
-msgstr "X-Ray is up to date (%s)."
+msgstr "X-Ray güncel (%s)."
 
 msgid "updater_whats_new"
 msgstr "Yenilikler:"

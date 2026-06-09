@@ -132,7 +132,7 @@ msgid "custom_api_endpoint_title"
 msgstr "Aangepaste API %d — Eindpunt URL"
 
 msgid "custom_api_is_reasoning"
-msgstr "Is een redenerend model (bijv. DeepSeek-R1)"
+msgstr "Is een redenerend model (bijv. DeepSeek-V4-Pro, DeepSeek-R1)"
 
 msgid "custom_api_key_title"
 msgstr "Aangepaste API %d — API-sleutel"
@@ -204,7 +204,7 @@ msgid "error_model_not_found_title"
 msgstr "Model niet gevonden"
 
 msgid "error_no_api_key"
-msgstr "error_no_api_key"
+msgstr "API-sleutel ontbreekt"
 
 msgid "error_parse_desc"
 msgstr "De AI retourneerde een antwoord dat niet kon worden verwerkt. Dit is mogelijk een tijdelijke storing."
@@ -570,7 +570,7 @@ msgid "quick_menu_title"
 msgstr "X-Ray Snelmenu"
 
 msgid "reasoning_about"
-msgstr "Regelt de 'denkdiepte' voor redeneermodellen:\n\n• Niet ingesteld: Geen specifieke instructie verzonden; model gebruikt zijn interne standaardwaarden.\n• Laag: Snelle, zuinige extractie voor eenvoudige boeken.\n• Medium: Gebalanceerde diepte voor de meeste verhalen.\n• Hoog: Gedetailleerde analyse voor complexe relatienetwerken.\n\nVan toepassing op: GPT-5.x, DeepSeek Reasoner, Claude 4.5+ (extended thinking), en Gemini 2.5+."
+msgstr "Regelt de 'denkdiepte' voor redeneermodellen:\n\n• Niet ingesteld: Geen specifieke instructie verzonden; model gebruikt zijn interne standaardwaarden.\n• Laag: Snelle, zuinige extractie voor eenvoudige boeken.\n• Medium: Gebalanceerde diepte voor de meeste verhalen.\n• Hoog: Gedetailleerde analyse voor complexe relatienetwerken.\n\nVan toepassing op: GPT-5.x (o1/o3/gpt-5), Claude (sonnet/opus/haiku), en Gemini 2.5+.\n\nOpmerking: DeepSeek V4 redeneert inherent — deze instelling heeft er geen invloed op."
 
 msgid "reasoning_high"
 msgstr "Hoog"
