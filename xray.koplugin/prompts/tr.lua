@@ -240,6 +240,7 @@ Eğer bu bir seri kitabı DEĞİLSE, şunu döndürün:
 
     prior_book_list = [[Seri: %s
 Mevcut Kitap İndeksi: %d
+Mevcut Kitap Başlığı: %s
 
 GÖREV: Bu seride mevcut kitaptan ÖNCE gelen 1. kitaptan %d. kitaba kadar olan
 kitapların adlarını (ve "%s" yazardan farklıysa yazarlarını) listeleyin.

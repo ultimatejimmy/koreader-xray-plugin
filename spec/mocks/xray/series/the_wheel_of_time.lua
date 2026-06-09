@@ -1,6 +1,7 @@
 -- X-Ray Series Cache v6.0
 return {
-  cached_at = 1781027797,
+  cache_version = "6.0",
+  cached_at = 1781031458,
   books = {
     [1] = {
       locations = {
@@ -17,5 +18,4 @@ return {
       },
     },
   },
-  cache_version = "6.0",
 }

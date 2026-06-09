@@ -239,6 +239,7 @@ Se este NÃO for um livro de série, retorne:
 
     prior_book_list = [[Série: %s
 Índice do livro atual: %d
+Título do livro atual: %s
 
 TAREFA: Liste os títulos (e autores se diferentes de "%s") dos livros de 1 a %d
 que vêm ANTES do livro atual nesta série.

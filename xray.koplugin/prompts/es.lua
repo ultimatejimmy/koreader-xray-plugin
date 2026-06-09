@@ -238,6 +238,7 @@ Si este NO es un libro de serie, devuelva:
 
     prior_book_list = [[Serie: %s
 Índice del libro actual: %d
+Título del libro actual: %s
 
 TAREA: Enumere los títulos (y autores si son diferentes de "%s") de los libros del 1 al %d
 que vienen ANTES del libro actual en esta serie.

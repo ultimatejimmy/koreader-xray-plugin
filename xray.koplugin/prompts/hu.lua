@@ -199,6 +199,7 @@ Ha ez NEM sorozatkönyv, adjon vissza:
 
     prior_book_list = [[Sorozat: %s
 Jelenlegi könyv indexe: %d
+Jelenlegi könyv címe: %s
 
 FELADAT: Listázza az 1. és %d. közötti könyvek címeit (és szerzőit, ha különböznek ettől: "%s"),
 amelyek a sorozat jelenlegi könyve ELŐTT jelentek meg.

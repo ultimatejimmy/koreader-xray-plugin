@@ -238,6 +238,7 @@ Wenn dies KEIN Buch einer Serie ist, geben Sie Folgendes zurück:
 
     prior_book_list = [[Serie: %s
 Aktueller Buchindex: %d
+Aktueller Buchtitel: %s
 
 AUFGABE: Listen Sie die Titel (und Autoren, falls sie sich von "%s" unterscheiden) der Bücher 1 bis %d auf,
 die VOR dem aktuellen Buch in dieser Serie erschienen sind.

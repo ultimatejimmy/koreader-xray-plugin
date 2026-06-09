@@ -1169,7 +1169,7 @@ function AIHelper:createPrompt(title, author, context, section_name, targeted_wo
         success, final_prompt = pcall(string.format, template, enhanced_title, enhanced_author)
     elseif section_name == "prior_book_list" then
         local idx = context and context.index or 1
-        success, final_prompt = pcall(string.format, template, context.series_name or "Unknown", idx, enhanced_author, idx - 1)
+        success, final_prompt = pcall(string.format, template, context.series_name or "Unknown", idx, enhanced_title, enhanced_author, idx - 1)
     elseif section_name == "series_book_summary" then
         local idx = context and context.index or 1
         success, final_prompt = pcall(string.format, template, enhanced_title, enhanced_author, idx, context.series_name or "Unknown")

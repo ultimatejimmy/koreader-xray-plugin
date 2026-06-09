@@ -250,6 +250,7 @@ If this is NOT a series book, return:
 
     prior_book_list = [[Series: %s
 Current Book Index: %d
+Current Book Title: %s
 
 TASK: List the titles (and authors if different from "%s") of books 1 through %d
 that come BEFORE the current book in this series.

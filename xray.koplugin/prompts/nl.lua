@@ -250,6 +250,7 @@ Als dit GEEN serieboek is, geef dan als resultaat:
 
     prior_book_list = [[Serie: %s
 Huidige boekindex: %d
+Huidige boektitel: %s
 
 TAAK: Lijst de titels (en auteurs indien verschillend van "%s") op van boeken 1 tot en met %d
 die VOORAFGAAN aan het huidige boek in deze serie.

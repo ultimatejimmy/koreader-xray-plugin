@@ -187,6 +187,7 @@ CRITICAL FOR HISTORICAL FIGURES: You MAY use your internal knowledge to verify t
 
     prior_book_list = [[Серія: %s
 Індекс поточної книги: %d
+Назва поточної книги: %s
 
 ЗАВДАННЯ: Перелічіть назви (та авторів, якщо вони відрізняються від "%s") книг з 1 по %d,
 які йдуть ПЕРЕД поточною книгою у цій серії.

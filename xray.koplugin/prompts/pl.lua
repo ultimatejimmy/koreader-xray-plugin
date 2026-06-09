@@ -250,6 +250,7 @@ Jeśli to NIE jest książka z serii, zwróć:
 
     prior_book_list = [[Seria: %s
 Bieżący indeks książki: %d
+Tytuł bieżącej książki: %s
 
 ZADANIE: Wypisz tytuły (oraz autorów, jeśli różnią się od "%s") książek od 1 do %d,
 które ukazały się PRZED bieżącą książką w tej serii.
