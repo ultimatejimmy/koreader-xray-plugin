@@ -364,6 +364,8 @@ function Localization:t(key, ...)
             dont_ask_again = "Don't ask again",
             series_ask_later_msg = "Series recap postponed. We will ask again when you open/resume this book.",
             series_disabled_msg = "Auto-prompt disabled for this book. You can manually fetch recap from X-Ray menu.",
+            relookup_button = "Re-lookup '%s'",
+            low_conf_match = "Partial match — showing '%s' for your query. Tap below to fetch the exact term.",
         }
         translation = fallbacks[key] or key
     end

@@ -335,6 +335,9 @@ msgstr "Logs gelöscht!"
 msgid "looking_up_msg"
 msgstr "Suche nach '%s'..."
 
+msgid "low_conf_match"
+msgstr "Partial match — showing '%s' for your query. Tap below to fetch the exact term."
+
 msgid "mention_dismiss_btn"
 msgstr "✕"
 
@@ -583,6 +586,9 @@ msgstr "Mittel"
 
 msgid "reasoning_unset"
 msgstr "Nicht festgelegt (Standard)"
+
+msgid "relookup_button"
+msgstr "Re-lookup '%s'"
 
 msgid "save"
 msgstr "Speichern"

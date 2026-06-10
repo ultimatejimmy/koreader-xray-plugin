@@ -314,9 +314,6 @@ msgstr "Niezgodność języka"
 msgid "language_changed_reopen"
 msgstr "Język został zmieniony. Otwórz ponownie menu, aby zobaczyć zmiany."
 
-msgid "language_name"
-msgstr "Polski"
-
 msgid "later"
 msgstr "Później"
 
@@ -337,6 +334,9 @@ msgstr "Dzienniki wyczyszczone!"
 
 msgid "looking_up_msg"
 msgstr "Wyszukiwanie '%s'..."
+
+msgid "low_conf_match"
+msgstr "Partial match — showing '%s' for your query. Tap below to fetch the exact term."
 
 msgid "mention_dismiss_btn"
 msgstr "✕"
@@ -587,6 +587,9 @@ msgstr "Średni"
 msgid "reasoning_unset"
 msgstr "Nieustawione (domyślny)"
 
+msgid "relookup_button"
+msgstr "Re-lookup '%s'"
+
 msgid "save"
 msgstr "Zapisz"
 
@@ -730,3 +733,4 @@ msgstr "Dodaje przycisk 'X-Ray' do menu słownika i wyboru w celu natychmiastowe
 
 msgid "yes"
 msgstr "Tak"
+

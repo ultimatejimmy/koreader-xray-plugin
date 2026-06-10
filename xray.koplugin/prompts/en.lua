@@ -195,8 +195,8 @@ TASK: Determine if this word represents a Character, Location, Historical Figure
 CRITICAL FOR CHARACTERS AND LOCATIONS: Use the provided "BOOK TEXT CONTEXT" to identify the entity. If the word is provided in a "SEARCH TARGET" or "DIRECT REFERENCE" hint, it IS present in the book at the current position. Do not reject it just because it isn't found exactly in the sub-sampled narrative text. Short names (as short as 2 letters, e.g. "Oz", "Al", "Jo") are valid and should be analyzed.
 CRITICAL FOR FICTIONAL CHARACTERS: Describe ONLY what the provided book text reveals. Do NOT use prior training knowledge about this character, even if you recognize them from a well-known series. If the text only briefly mentions this character, your description must reflect that limited information.
 CRITICAL FOR HISTORICAL FIGURES: You MAY use your internal knowledge to verify their identity and provide their biography/role, ONLY if they are a real, notable historical figure. You MUST still use the text context for their relevance in the book.
-CRITICAL FOR TERMS: If the book is non-fiction, check if the word is a technical term, acronym, or key concept. Provide its definition in context.
-If the word is NOT a character, location, historical figure, or technical term, set `is_valid` to false.
+CRITICAL FOR TERMS: If the book is non-fiction, check if the word is a technical term, acronym, or key concept. For technical terms, concepts, or jargon: the term may appear in chapter samples rather than the immediate page context — treat it as valid if you can define it in the context of this book's subject. Only set `is_valid` to false if the phrase has absolutely no relevance to this book's subject matter.
+If the word is NOT a character, location, historical figure, or technical term/concept, set `is_valid` to false.
 
 REQUIRED JSON FORMAT:
 {

@@ -66,12 +66,7 @@ msgid "book_mode_saved"
 msgstr "Kitap modu kaydedildi!"
 
 msgid "book_type_about"
-msgstr "Kitap Türü, hangi AI çıkarma stratejisinin kullanılacağını ve hangi özelliklerin mevcut olacağını belirler.
-
-- Kurgu: Anlatı, karakterler ve olay örgüsü zaman çizelgesine odaklanır.
-- Kurgu Dışı: Terimlere, kavramlara ve tarihsel kişiliklere odaklanır.
-
-'Otomatik Algıla', ilk getirme işleminden sonra AI'nın karar vermesini sağlar."
+msgstr "The Book Type determines which AI extraction strategy is used and which features are available.\n\n- Fiction: Focuses on narrative, characters, and plot timeline.\n- Non-Fiction: Focuses on terms, concepts, and historical figures.\n\n'Auto-Detect' will let the AI decide after the first fetch."
 
 msgid "book_type_auto"
 msgstr "Otomatik Algıla"
@@ -158,49 +153,16 @@ msgid "custom_api_saved"
 msgstr "Custom API %d yapılandırması kaydedildi."
 
 msgid "desc_len_about_chars"
-msgstr "KARAKTER AÇIKLAMALARI
-
-• Kısa (~80 karakter): İsim, rol ve kısa bir not.
-• Varsayılan (~200 karakter): Standart analiz.
-• Detaylı (~350 karakter): Özellikler ve motivasyonlarla zengin karakter incelemesi.
-• Çok Detaylı (~500 karakter): Derin analiz.
-
-ÖDÜNLEŞİM
-Daha uzun açıklamalar → ilk/tam getirme sırasında daha az karakter döndürülür. Sonraki 'Daha Fazla Getir' işlemleri etkilenmez."
+msgstr "CHARACTER DESCRIPTIONS\n\n• Short (~80 chars): Name, role, and a brief note.\n• Default (~200 chars): Standard analysis.\n• Detailed (~350 chars): Rich character study with traits and motivations.\n• Very Detailed (~500 chars): Deep analysis.\n\nTRADE-OFF\nLonger descriptions → fewer characters returned during initial/full fetches. Subsequent 'Fetch More' runs are unaffected."
 
 msgid "desc_len_about_hist"
-msgstr "TARİHSEL KİŞİLİK BİYOGRAFİLERİ
-
-• Kısa (~50 karakter): İsim ve birincil rol.
-• Varsayılan (~100 karakter): Standart biyografi.
-• Detaylı (~200 karakter): Yaşam, önem ve kitap bağlamı.
-• Çok Detaylı (~300 karakter): Kapsamlı biyografi.
-
-ÖDÜNLEŞİM
-Daha uzun biyografiler → ilk/tam getirme sırasında daha az tarihsel kişilik döndürülür."
+msgstr "HISTORICAL FIGURE BIOGRAPHIES\n\n• Short (~50 chars): Name and primary role.\n• Default (~100 chars): Standard biography.\n• Detailed (~200 chars): Life, significance, and book context.\n• Very Detailed (~300 chars): Comprehensive biography.\n\nTRADE-OFF\nLonger biographies → fewer historical figures returned during initial/full fetches."
 
 msgid "desc_len_about_locs"
-msgstr "KONUM AÇIKLAMALARI
-
-• Kısa (~50 karakter): Yer ismi ve bir satırlık bağlam.
-• Varsayılan (~100 karakter): Standart açıklama.
-• Detaylı (~200 karakter): Atmosfer, önem ve olaylar.
-• Çok Detaylı (~300 karakter): Tam açıklama.
-
-ÖDÜNLEŞİM
-Daha uzun açıklamalar → ilk/tam getirme sırasında daha az konum döndürülür."
+msgstr "LOCATION DESCRIPTIONS\n\n• Short (~50 chars): Place name and one-line context.\n• Default (~100 chars): Standard description.\n• Detailed (~200 chars): Atmosphere, significance, and events.\n• Very Detailed (~300 chars): Full description.\n\nTRADE-OFF\nLonger descriptions → fewer locations returned during initial/full fetches."
 
 msgid "desc_len_about_timeline"
-msgstr "ZAMAN ÇİZELGESİ — BÖLÜM BAŞINA BİR ETKİNLİK (her zaman)
-
-Zaman çizelgesinde her zaman bölüm başına tam olarak bir girdi bulunur. Bu ayar sadece her özetin ne kadar detay içereceğini etkiler.
-
-• Kısa (~50 karakter): Kısa bir cümlelik özet.
-• Varsayılan (~80 karakter): Standart özet.
-• Detaylı (~150 karakter): Bağlam ve sonuçları içerir.
-• Çok Detaylı (~200 karakter): Tam anlatı açıklaması.
-
-Zaman çizelgesi için sayısal bir ödünleşim yoktur."
+msgstr "TIMELINE — ONE EVENT PER CHAPTER (always)\n\nTimeline always has exactly one entry per chapter. This setting only affects how much detail is included in each summary.\n\n• Short (~50 chars): Brief one-phrase summary.\n• Default (~80 chars): Standard summary.\n• Detailed (~150 chars): Includes context and consequences.\n• Very Detailed (~200 chars): Full narrative description.\n\nThere is no count trade-off for the timeline."
 
 msgid "desc_len_default"
 msgstr "Varsayılan"
@@ -372,6 +334,9 @@ msgstr "Günlükler temizlendi!"
 
 msgid "looking_up_msg"
 msgstr "'%s' aranıyor..."
+
+msgid "low_conf_match"
+msgstr "Partial match — showing '%s' for your query. Tap below to fetch the exact term."
 
 msgid "mention_dismiss_btn"
 msgstr "✕"
@@ -621,6 +586,9 @@ msgstr "Orta"
 
 msgid "reasoning_unset"
 msgstr "Ayarlanmamış (Varsayılan)"
+
+msgid "relookup_button"
+msgstr "Re-lookup '%s'"
 
 msgid "save"
 msgstr "Kaydet"

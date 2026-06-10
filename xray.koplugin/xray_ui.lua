@@ -672,7 +672,7 @@ function M:showLocationDetails(loc_item)
     UIManager:show(self.active_details_dialog)
 end
 
-function M:showTermDetails(term)
+function M:showTermDetails(term, opts)
     local name = term.name or "???"
     local lines = { (self.loc:t("label_name") or "NAME") .. ": " .. name }
     if term.aliases and type(term.aliases) == "table" and #term.aliases > 0 then
@@ -698,10 +698,30 @@ function M:showTermDetails(term)
     table.insert(lines, (self.loc:t("label_definition") or "DEFINITION") .. ":")
     table.insert(lines, term.definition or "---")
     
+    if opts and opts.low_confidence then
+        table.insert(lines, "")
+        local warning = self.loc:t("low_conf_match", name)
+            or string.format("Partial match — showing '%s' for your query. Tap below to fetch the exact term.", name)
+        table.insert(lines, warning)
+    end
+
     local body_text = table.concat(lines, "\n")
     local linked_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.linked_entries_enabled ~= false
     local related = linked_enabled and self:findRelatedEntities(term.definition or "", name) or {}
     local mentions_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.mentions_enabled ~= false
+
+    local function get_relookup_row()
+        return {
+            {
+                text = self.loc:t("relookup_button", opts.original_text:sub(1, 30))
+                    or ("Re-lookup '" .. opts.original_text:sub(1, 30) .. "'"),
+                callback = function()
+                    if self.active_details_dialog then UIManager:close(self.active_details_dialog); self.active_details_dialog = nil end
+                    self:fetchSingleWord(opts.original_text, opts.pos0, opts.pos1)
+                end,
+            }
+        }
+    end
 
     if #related > 0 then
         local buttons = {
@@ -731,26 +751,57 @@ function M:showTermDetails(term)
             }
         }
         if not mentions_enabled then table.remove(buttons[2], 1) end
+        if opts and opts.low_confidence then
+            table.insert(buttons, 1, get_relookup_row())
+        end
         self.active_details_dialog = ButtonDialog:new{ title = body_text, buttons = buttons }
     else
-        if mentions_enabled then
-            self.active_details_dialog = ConfirmBox:new{
-                text = body_text, icon = "info",
-                ok_text = self.loc:t("find_mentions") or "Find Mentions",
-                cancel_text = self.loc:t("close") or "Close",
-                ok_callback = function()
-                    if self.active_details_dialog then UIManager:close(self.active_details_dialog); self.active_details_dialog = nil end
-                    self:showMentionsForEntity(term)
-                end,
-                cancel_callback = function() self.active_details_dialog = nil end,
+        if opts and opts.low_confidence then
+            -- Convert to ButtonDialog to accommodate relookup button
+            local buttons = {
+                get_relookup_row()
             }
+            if mentions_enabled then
+                table.insert(buttons, {
+                    {
+                        text = self.loc:t("find_mentions") or "Find Mentions",
+                        callback = function()
+                            if self.active_details_dialog then UIManager:close(self.active_details_dialog); self.active_details_dialog = nil end
+                            self:showMentionsForEntity(term)
+                        end,
+                    }
+                })
+            end
+            table.insert(buttons, {
+                {
+                    text = self.loc:t("close") or "Close",
+                    callback = function()
+                        if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
+                        self.active_details_dialog = nil
+                    end,
+                }
+            })
+            self.active_details_dialog = ButtonDialog:new{ title = body_text, buttons = buttons }
         else
-            self.active_details_dialog = ConfirmBox:new{
-                text = body_text, icon = "info",
-                ok_text = self.loc:t("close") or "Close",
-                ok_callback = function() self.active_details_dialog = nil end,
-                cancel_callback = function() self.active_details_dialog = nil end,
-            }
+            if mentions_enabled then
+                self.active_details_dialog = ConfirmBox:new{
+                    text = body_text, icon = "info",
+                    ok_text = self.loc:t("find_mentions") or "Find Mentions",
+                    cancel_text = self.loc:t("close") or "Close",
+                    ok_callback = function()
+                        if self.active_details_dialog then UIManager:close(self.active_details_dialog); self.active_details_dialog = nil end
+                        self:showMentionsForEntity(term)
+                    end,
+                    cancel_callback = function() self.active_details_dialog = nil end,
+                }
+            else
+                self.active_details_dialog = ConfirmBox:new{
+                    text = body_text, icon = "info",
+                    ok_text = self.loc:t("close") or "Close",
+                    ok_callback = function() self.active_details_dialog = nil end,
+                    cancel_callback = function() self.active_details_dialog = nil end,
+                }
+            end
         end
     end
     UIManager:show(self.active_details_dialog)

@@ -66,12 +66,7 @@ msgid "book_mode_saved"
 msgstr "Modo do livro salvo!"
 
 msgid "book_type_about"
-msgstr "O Tipo de Livro determina qual estratégia de extração de AI é usada e quais recursos estão disponíveis.
-
-- Ficção: Foca na narrativa, personagens e linha do tempo do enredo.
-- Não-Ficção: Foca em termos, conceitos e figuras históricas.
-
-'Auto-Detectar' permitirá que a AI decida após a primeira busca."
+msgstr "The Book Type determines which AI extraction strategy is used and which features are available.\n\n- Fiction: Focuses on narrative, characters, and plot timeline.\n- Non-Fiction: Focuses on terms, concepts, and historical figures.\n\n'Auto-Detect' will let the AI decide after the first fetch."
 
 msgid "book_type_auto"
 msgstr "Auto-Detectar"
@@ -86,10 +81,7 @@ msgid "book_type_saved"
 msgstr "Tipo de livro salvo!"
 
 msgid "cache_cleared"
-msgstr "Cache limpo!
-
-Você agora pode buscar novos dados:
-Menu → X-Ray → Fetch AI Data"
+msgstr "Cache cleared!\n\nYou can now fetch new data:\nMenu → X-Ray → Fetch AI Data"
 
 msgid "cache_save_failed"
 msgstr "Falha ao salvar cache"
@@ -161,49 +153,16 @@ msgid "custom_api_saved"
 msgstr "Configuração da Custom API %d salva."
 
 msgid "desc_len_about_chars"
-msgstr "DESCRIÇÕES DE PERSONAGENS
-
-• Curto (~80 chars): Nome, papel e uma nota breve.
-• Padrão (~200 chars): Análise padrão.
-• Detalhado (~350 chars): Estudo rico de personagem com traços e motivações.
-• Muito Detalhado (~500 chars): Análise profunda.
-
-COMPENSAÇÃO
-Descrições mais longas → menos personagens retornados durante buscas iniciais/completas. Execuções subsequentes de 'Buscar Mais' não são afetadas."
+msgstr "CHARACTER DESCRIPTIONS\n\n• Short (~80 chars): Name, role, and a brief note.\n• Default (~200 chars): Standard analysis.\n• Detailed (~350 chars): Rich character study with traits and motivations.\n• Very Detailed (~500 chars): Deep analysis.\n\nTRADE-OFF\nLonger descriptions → fewer characters returned during initial/full fetches. Subsequent 'Fetch More' runs are unaffected."
 
 msgid "desc_len_about_hist"
-msgstr "BIOGRAFIAS DE FIGURAS HISTÓRICAS
-
-• Curto (~50 chars): Nome e papel principal.
-• Padrão (~100 chars): Biografia padrão.
-• Detalhado (~200 chars): Vida, importância e contexto do livro.
-• Muito Detalhado (~300 chars): Biografia abrangente.
-
-COMPENSAÇÃO
-Biografias mais longas → menos figuras históricas retornadas durante buscas iniciais/completas."
+msgstr "HISTORICAL FIGURE BIOGRAPHIES\n\n• Short (~50 chars): Name and primary role.\n• Default (~100 chars): Standard biography.\n• Detailed (~200 chars): Life, significance, and book context.\n• Very Detailed (~300 chars): Comprehensive biography.\n\nTRADE-OFF\nLonger biographies → fewer historical figures returned during initial/full fetches."
 
 msgid "desc_len_about_locs"
-msgstr "DESCRIÇÕES DE LOCAIS
-
-• Curto (~50 chars): Nome do local e contexto de uma linha.
-• Padrão (~100 chars): Descrição padrão.
-• Detalhado (~200 chars): Atmosfera, importância e eventos.
-• Muito Detalhado (~300 chars): Descrição completa.
-
-COMPENSAÇÃO
-Descrições mais longas → menos locais retornados durante buscas iniciais/completas."
+msgstr "LOCATION DESCRIPTIONS\n\n• Short (~50 chars): Place name and one-line context.\n• Default (~100 chars): Standard description.\n• Detailed (~200 chars): Atmosphere, significance, and events.\n• Very Detailed (~300 chars): Full description.\n\nTRADE-OFF\nLonger descriptions → fewer locations returned during initial/full fetches."
 
 msgid "desc_len_about_timeline"
-msgstr "LINHA DO TEMPO — UM EVENTO POR CAPÍTULO (sempre)
-
-A linha do tempo sempre tem exatamente uma entrada por capítulo. Esta configuração apenas afeta a quantidade de detalhes incluída em cada resumo.
-
-• Curto (~50 chars): Resumo breve de uma frase.
-• Padrão (~80 chars): Resumo padrão.
-• Detalhado (~150 chars): Inclui contexto e consequências.
-• Muito Detalhado (~200 chars): Descrição narrativa completa.
-
-Não há compensação de contagem para a linha do tempo."
+msgstr "TIMELINE — ONE EVENT PER CHAPTER (always)\n\nTimeline always has exactly one entry per chapter. This setting only affects how much detail is included in each summary.\n\n• Short (~50 chars): Brief one-phrase summary.\n• Default (~80 chars): Standard summary.\n• Detailed (~150 chars): Includes context and consequences.\n• Very Detailed (~200 chars): Full narrative description.\n\nThere is no count trade-off for the timeline."
 
 msgid "desc_len_default"
 msgstr "Padrão"
@@ -368,15 +327,16 @@ msgid "linked_entries_enabled"
 msgstr "Ativado"
 
 msgid "linked_entries_setting_desc"
-msgstr "Entradas Vinculadas conecta automaticamente personagens, locais e figuras históricas quando eles são mencionados nas descrições uns dos outros.
-
-Desativar isso ocultará o botão 'Entradas Vinculadas' das caixas de diálogo de detalhes."
+msgstr "Linked Entries automatically connects characters, locations, and historical figures when they are mentioned in each other's descriptions.\n\nDisabling this will hide the 'Linked Entries' button from detail dialogs."
 
 msgid "logs_cleared"
 msgstr "Logs limpos!"
 
 msgid "looking_up_msg"
 msgstr "Buscando por '%s'..."
+
+msgid "low_conf_match"
+msgstr "Partial match — showing '%s' for your query. Tap below to fetch the exact term."
 
 msgid "mention_dismiss_btn"
 msgstr "✕"
@@ -627,6 +587,9 @@ msgstr "Médio"
 msgid "reasoning_unset"
 msgstr "Não definido (Padrão)"
 
+msgid "relookup_button"
+msgstr "Re-lookup '%s'"
+
 msgid "save"
 msgstr "Salvar"
 
@@ -655,9 +618,7 @@ msgid "series_context_loaded"
 msgstr "Series context carregado (%d livros anteriores)."
 
 msgid "series_context_prompt_text"
-msgstr "Este parece ser o Livro %d de '%s'. Carregar um resumo do(s) %d livro(s) anterior(es)?
-
-(Você pode desativar isso em Configurações → Series Context)"
+msgstr "This appears to be Book %d of '%s'. Load a recap of the previous %d book(s)?\n\n(You can disable this in Settings → Series Context)"
 
 msgid "series_context_prompt_title"
 msgstr "Série Detectada"

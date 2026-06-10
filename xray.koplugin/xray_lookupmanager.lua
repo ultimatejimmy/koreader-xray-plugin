@@ -3,7 +3,12 @@ local logger = require("logger")
 local UIManager = require("ui/uimanager")
 local InfoMessage = require("ui/widget/infomessage")
 
+-- Minimum score to consider a match "high confidence" and skip the re-lookup prompt.
+-- Scores 100 (exact) and 95 (alias exact) are above this; 50/40/30 are below.
+local LOW_CONFIDENCE_THRESHOLD = 70
+
 local LookupManager = {}
+
 
 function LookupManager:new(plugin)
     local o = {
@@ -104,7 +109,8 @@ function LookupManager:lookupAll(text)
 
         if checkContains(norm) then
             seen[n] = true
-            table.insert(final_results, { item = item, item_type = item_type, score = 50 })
+            local contains_score = (item_type == "term") and 30 or 50
+            table.insert(final_results, { item = item, item_type = item_type, score = contains_score })
             return
         end
 
@@ -112,7 +118,8 @@ function LookupManager:lookupAll(text)
             for _, anorm in ipairs(item._norm_aliases) do
                 if checkContains(anorm) then
                     seen[n] = true
-                    table.insert(final_results, { item = item, item_type = item_type, score = 40 })
+                    local alias_score = (item_type == "term") and 25 or 40
+                    table.insert(final_results, { item = item, item_type = item_type, score = alias_score })
                     return
                 end
             end
@@ -142,7 +149,7 @@ function LookupManager:lookup(text)
 end
 
 -- Dispatch a single result to the appropriate UI handler
-function LookupManager:showResult(item, item_type)
+function LookupManager:showResult(item, item_type, opts)
     if item_type == "character" then
         self.plugin:showCharacterDetails(item)
     elseif item_type == "historical" or item_type == "historical_figure" then
@@ -150,7 +157,7 @@ function LookupManager:showResult(item, item_type)
     elseif item_type == "location" then
         self.plugin:showLocationDetails(item)
     elseif item_type == "term" then
-        self.plugin:showTermDetails(item)
+        self.plugin:showTermDetails(item, opts)
     end
 end
 
@@ -163,7 +170,18 @@ function LookupManager:handleLookup(text, pos0, pos1)
 
     if #all == 1 then
         -- Unambiguous — show directly
-        self:showResult(all[1].item, all[1].item_type)
+        local match = all[1]
+        if match.item_type == "term" and match.score < LOW_CONFIDENCE_THRESHOLD then
+            self:showResult(match.item, match.item_type, {
+                low_confidence = true,
+                original_text  = text,
+                pos0           = pos0,
+                pos1           = pos1,
+                score          = match.score,
+            })
+        else
+            self:showResult(match.item, match.item_type)
+        end
 
     elseif #all > 1 then
         -- Multiple candidates — let the user pick

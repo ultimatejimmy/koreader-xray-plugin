@@ -89,13 +89,14 @@ function M:fetchSingleWord(text, pos0, pos1)
             end
             local book_text = self.chapter_analyzer:getTextFromPageRange(self.ui, math.max(1, current_page - 1), end_page, 25000)
             
-            -- Ensure the word is always present and prioritized in the context for the AI
-            local context_prefix = "SEARCH TARGET: " .. text .. "\n(Note: If the exact spelling varies slightly in the text below, use the context to identify the intended character/location.)\n\n"
+            local context_prefix = "SEARCH TARGET: \"" .. text .. "\"\n"
+                .. "IMPORTANT: The reader highlighted exactly this text. It IS a meaningful term from this book.\n"
+                .. "Even if the exact phrase does not appear in the page samples below, it was highlighted on the reader's current page. Treat it as a valid term and provide its definition.\n\n"
             book_text = context_prefix .. (book_text or "")
             
-            -- Fallback injection if missing from narrative
-            if book_text and text and not book_text:lower():find(text:lower(), 1, true) then
-                book_text = book_text .. "\n\n[DIRECT REFERENCE FROM CURRENT PAGE]: " .. text
+            -- Always inject a direct reference to ensure the AI validates the term
+            if book_text and text then
+                book_text = book_text .. "\n\n[TERM HIGHLIGHTED BY READER — MUST DEFINE]: \"" .. text .. "\""
             end
             
             self:log("fetchSingleWord: extracted book_text length: " .. tostring(book_text and #book_text or 0))

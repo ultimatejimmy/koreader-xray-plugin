@@ -66,12 +66,7 @@ msgid "book_mode_saved"
 msgstr "Режим книги сохранен!"
 
 msgid "book_type_about"
-msgstr "Тип книги определяет, какая стратегия извлечения AI используется и какие функции доступны.
-
-- Художественная: фокус на повествовании, персонажах и хронологии сюжета.
-- Документальная: фокус на терминах, понятиях и исторических личностях.
-
-«Автоопределение» позволит AI сделать выбор после первой загрузки."
+msgstr "The Book Type determines which AI extraction strategy is used and which features are available.\n\n- Fiction: Focuses on narrative, characters, and plot timeline.\n- Non-Fiction: Focuses on terms, concepts, and historical figures.\n\n'Auto-Detect' will let the AI decide after the first fetch."
 
 msgid "book_type_auto"
 msgstr "Автоопределение"
@@ -158,49 +153,16 @@ msgid "custom_api_saved"
 msgstr "Конфигурация Custom API %d сохранена."
 
 msgid "desc_len_about_chars"
-msgstr "ОПИСАНИЯ ПЕРСОНАЖЕЙ
-
-• Коротко (~80 символов): Имя, роль и краткое примечание.
-• Стандартно (~200 символов): Стандартный анализ.
-• Подробно (~350 символов): Развернутое исследование персонажа с чертами характера и мотивами.
-• Очень подробно (~500 символов): Глубокий анализ.
-
-КОМПРОМИСС
-Более длинные описания → меньше персонажей, возвращаемых при начальной/полной загрузке. Последующие запуски «Загрузить еще» не затрагиваются."
+msgstr "CHARACTER DESCRIPTIONS\n\n• Short (~80 chars): Name, role, and a brief note.\n• Default (~200 chars): Standard analysis.\n• Detailed (~350 chars): Rich character study with traits and motivations.\n• Very Detailed (~500 chars): Deep analysis.\n\nTRADE-OFF\nLonger descriptions → fewer characters returned during initial/full fetches. Subsequent 'Fetch More' runs are unaffected."
 
 msgid "desc_len_about_hist"
-msgstr "БИОГРАФИИ ИСТОРИЧЕСКИХ ЛИЧНОСТЕЙ
-
-• Коротко (~50 символов): Имя и основная роль.
-• Стандартно (~100 символов): Стандартная биография.
-• Подробно (~200 символов): Жизнь, значимость и контекст книги.
-• Очень подробно (~300 символов): Полная биография.
-
-КОМПРОМИСС
-Более длинные биографии → меньше исторических личностей, возвращаемых при начальной/полной загрузке."
+msgstr "HISTORICAL FIGURE BIOGRAPHIES\n\n• Short (~50 chars): Name and primary role.\n• Default (~100 chars): Standard biography.\n• Detailed (~200 chars): Life, significance, and book context.\n• Very Detailed (~300 chars): Comprehensive biography.\n\nTRADE-OFF\nLonger biographies → fewer historical figures returned during initial/full fetches."
 
 msgid "desc_len_about_locs"
-msgstr "ОПИСАНИЯ МЕСТ
-
-• Коротко (~50 символов): Название места и краткий контекст.
-• Стандартно (~100 символов): Стандартное описание.
-• Подробно (~200 символов): Атмосфера, значимость и события.
-• Очень подробно (~300 символов): Полное описание.
-
-КОМПРОМИСС
-Более длинные описания → меньше локаций, возвращаемых при начальной/полной загрузке."
+msgstr "LOCATION DESCRIPTIONS\n\n• Short (~50 chars): Place name and one-line context.\n• Default (~100 chars): Standard description.\n• Detailed (~200 chars): Atmosphere, significance, and events.\n• Very Detailed (~300 chars): Full description.\n\nTRADE-OFF\nLonger descriptions → fewer locations returned during initial/full fetches."
 
 msgid "desc_len_about_timeline"
-msgstr "ХРОНОЛОГИЯ — ОДНО СОБЫТИЕ НА ГЛАВУ (всегда)
-
-Хронология всегда содержит ровно одну запись на главу. Эта настройка влияет только на то, насколько подробно описано каждое событие.
-
-• Коротко (~50 символов): Краткое описание одной фразой.
-• Стандартно (~80 символов): Стандартное описание.
-• Подробно (~150 символов): Включает контекст и последствия.
-• Очень подробно (~200 символов): Полное повествовательное описание.
-
-Количество записей в хронологии не меняется."
+msgstr "TIMELINE — ONE EVENT PER CHAPTER (always)\n\nTimeline always has exactly one entry per chapter. This setting only affects how much detail is included in each summary.\n\n• Short (~50 chars): Brief one-phrase summary.\n• Default (~80 chars): Standard summary.\n• Detailed (~150 chars): Includes context and consequences.\n• Very Detailed (~200 chars): Full narrative description.\n\nThere is no count trade-off for the timeline."
 
 msgid "desc_len_default"
 msgstr "Стандартно"
@@ -372,6 +334,9 @@ msgstr "Логи очищены!"
 
 msgid "looking_up_msg"
 msgstr "Поиск '%s'..."
+
+msgid "low_conf_match"
+msgstr "Partial match — showing '%s' for your query. Tap below to fetch the exact term."
 
 msgid "mention_dismiss_btn"
 msgstr "✕"
@@ -622,6 +587,9 @@ msgstr "Средний"
 msgid "reasoning_unset"
 msgstr "Не задано (по умолчанию)"
 
+msgid "relookup_button"
+msgstr "Re-lookup '%s'"
+
 msgid "save"
 msgstr "Сохранить"
 
@@ -650,9 +618,7 @@ msgid "series_context_loaded"
 msgstr "Контекст серии загружен (%d предыдущих книг)."
 
 msgid "series_context_prompt_text"
-msgstr "Похоже, это книга %d из серии '%s'. Загрузить краткое содержание предыдущих %d книг(и)?
-
-(Вы можете отключить это в Настройки → Series Context)"
+msgstr "This appears to be Book %d of '%s'. Load a recap of the previous %d book(s)?\n\n(You can disable this in Settings → Series Context)"
 
 msgid "series_context_prompt_title"
 msgstr "Серия обнаружена"

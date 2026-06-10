@@ -66,12 +66,7 @@ msgid "book_mode_saved"
 msgstr "书籍模式已保存！"
 
 msgid "book_type_about"
-msgstr "书籍类型决定了使用哪种 AI 提取策略以及可用的功能。
-
-- 虚构：侧重于叙事、人物和情节时间线。
-- 非虚构：侧重于术语、概念和历史人物。
-
-“自动检测”将让 AI 在首次获取后自行决定。"
+msgstr "The Book Type determines which AI extraction strategy is used and which features are available.\n\n- Fiction: Focuses on narrative, characters, and plot timeline.\n- Non-Fiction: Focuses on terms, concepts, and historical figures.\n\n'Auto-Detect' will let the AI decide after the first fetch."
 
 msgid "book_type_auto"
 msgstr "自动检测"
@@ -158,49 +153,16 @@ msgid "custom_api_saved"
 msgstr "Custom API %d 配置已保存。"
 
 msgid "desc_len_about_chars"
-msgstr "角色描述
-
-• 短 (~80 字符)：姓名、角色和简短备注。
-• 默认 (~200 字符)：标准分析。
-• 详细 (~350 字符)：包含性格特征和动机的丰富角色研究。
-• 非常详细 (~500 字符)：深度分析。
-
-取舍权衡
-更长的描述 → 在初始/完整获取期间返回的角色数量会减少。后续的“获取更多”操作不受影响。"
+msgstr "CHARACTER DESCRIPTIONS\n\n• Short (~80 chars): Name, role, and a brief note.\n• Default (~200 chars): Standard analysis.\n• Detailed (~350 chars): Rich character study with traits and motivations.\n• Very Detailed (~500 chars): Deep analysis.\n\nTRADE-OFF\nLonger descriptions → fewer characters returned during initial/full fetches. Subsequent 'Fetch More' runs are unaffected."
 
 msgid "desc_len_about_hist"
-msgstr "历史人物传记
-
-• 短 (~50 字符)：姓名和主要角色。
-• 默认 (~100 字符)：标准传记。
-• 详细 (~200 字符)：生平、意义及书中的背景。
-• 非常详细 (~300 字符)：综合传记。
-
-取舍权衡
-更长的传记 → 在初始/完整获取期间返回的历史人物数量会减少。"
+msgstr "HISTORICAL FIGURE BIOGRAPHIES\n\n• Short (~50 chars): Name and primary role.\n• Default (~100 chars): Standard biography.\n• Detailed (~200 chars): Life, significance, and book context.\n• Very Detailed (~300 chars): Comprehensive biography.\n\nTRADE-OFF\nLonger biographies → fewer historical figures returned during initial/full fetches."
 
 msgid "desc_len_about_locs"
-msgstr "地点描述
-
-• 短 (~50 字符)：地点名称和一行背景。
-• 默认 (~100 字符)：标准描述。
-• 详细 (~200 字符)：氛围、意义和事件。
-• 非常详细 (~300 字符)：完整描述。
-
-取舍权衡
-更长的描述 → 在初始/完整获取期间返回的地点数量会减少。"
+msgstr "LOCATION DESCRIPTIONS\n\n• Short (~50 chars): Place name and one-line context.\n• Default (~100 chars): Standard description.\n• Detailed (~200 chars): Atmosphere, significance, and events.\n• Very Detailed (~300 chars): Full description.\n\nTRADE-OFF\nLonger descriptions → fewer locations returned during initial/full fetches."
 
 msgid "desc_len_about_timeline"
-msgstr "时间线 — 每个章节一个事件（固定）
-
-时间线始终保证每个章节恰好有一个条目。此设置仅影响每个摘要中包含的详细程度。
-
-• 短 (~50 字符)：简短的短语摘要。
-• 默认 (~80 字符)：标准摘要。
-• 详细 (~150 字符)：包含背景和后果。
-• 非常详细 (~200 字符)：完整的叙述性描述。
-
-时间线没有数量上的取舍权衡。"
+msgstr "TIMELINE — ONE EVENT PER CHAPTER (always)\n\nTimeline always has exactly one entry per chapter. This setting only affects how much detail is included in each summary.\n\n• Short (~50 chars): Brief one-phrase summary.\n• Default (~80 chars): Standard summary.\n• Detailed (~150 chars): Includes context and consequences.\n• Very Detailed (~200 chars): Full narrative description.\n\nThere is no count trade-off for the timeline."
 
 msgid "desc_len_default"
 msgstr "默认"
@@ -372,6 +334,9 @@ msgstr "日志已清除！"
 
 msgid "looking_up_msg"
 msgstr "正在查询 '%s'..."
+
+msgid "low_conf_match"
+msgstr "Partial match — showing '%s' for your query. Tap below to fetch the exact term."
 
 msgid "mention_dismiss_btn"
 msgstr "✕"
@@ -622,6 +587,9 @@ msgstr "中"
 msgid "reasoning_unset"
 msgstr "未设置（默认）"
 
+msgid "relookup_button"
+msgstr "Re-lookup '%s'"
+
 msgid "save"
 msgstr "保存"
 
@@ -650,9 +618,7 @@ msgid "series_context_loaded"
 msgstr "Series context 已加载（包含 %d 本前序书籍）。"
 
 msgid "series_context_prompt_text"
-msgstr "这似乎是“%s”的第 %d 本书。是否加载前 %d 本书的剧情回顾？
-
-（你可以在 设置 → Series Context 中禁用此功能）"
+msgstr "This appears to be Book %d of '%s'. Load a recap of the previous %d book(s)?\n\n(You can disable this in Settings → Series Context)"
 
 msgid "series_context_prompt_title"
 msgstr "检测到系列书籍"

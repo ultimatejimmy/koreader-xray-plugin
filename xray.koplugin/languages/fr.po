@@ -335,6 +335,9 @@ msgstr "Logs effacés !"
 msgid "looking_up_msg"
 msgstr "Recherche de '%s'..."
 
+msgid "low_conf_match"
+msgstr "Partial match — showing '%s' for your query. Tap below to fetch the exact term."
+
 msgid "mention_dismiss_btn"
 msgstr "✕"
 
@@ -584,6 +587,9 @@ msgstr "Moyen"
 msgid "reasoning_unset"
 msgstr "Non défini (Par défaut)"
 
+msgid "relookup_button"
+msgstr "Re-lookup '%s'"
+
 msgid "save"
 msgstr "Enregistrer"
 
@@ -612,9 +618,7 @@ msgid "series_context_loaded"
 msgstr "Series context chargé (%d livres précédents)."
 
 msgid "series_context_prompt_text"
-msgstr "Ceci semble être le livre %d de « %s ». Charger un récapitulatif des %d livre(s) précédent(s) ?
-
-(Vous pouvez désactiver ceci dans Paramètres → Series Context)"
+msgstr "This appears to be Book %d of '%s'. Load a recap of the previous %d book(s)?\n\n(You can disable this in Settings → Series Context)"
 
 msgid "series_context_prompt_title"
 msgstr "Série détectée"
