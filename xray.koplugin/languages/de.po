@@ -44,6 +44,9 @@ msgstr "Wenn aktiviert, fordert X-Ray die KI nach jedem Datenabruf automatisch a
 msgid "auto_dupe_check_setting_title"
 msgstr "Duplikatsprüfung"
 
+msgid "auto_fetch_page_interval_prompt"
+msgstr "Seitenintervall"
+
 msgid "auto_update_aggressive"
 msgstr "Aggressiv: prüft jedes neue Kapitel"
 
@@ -64,6 +67,9 @@ msgstr "Hintergrund-Abrufhäufigkeit:"
 
 msgid "auto_update_sparse"
 msgstr "Selten: prüft max. alle 30 Min."
+
+msgid "auto_update_ultra"
+msgstr "Ultra: prüft alle %d Seiten"
 
 msgid "back_to_reading"
 msgstr "Zurück zum Lesen"
@@ -785,6 +791,9 @@ msgstr "Was ist neu:"
 msgid "updating_ai"
 msgstr "X-Ray Daten werden aktualisiert..."
 
+msgid "val"
+msgstr "???"
+
 msgid "xray_disabled_label"
 msgstr "Deaktiviert"
 
@@ -797,9 +806,3 @@ msgstr "Fügt eine 'X-Ray'-Schaltfläche zu Wörterbuch- und Auswahlmenüs für 
 msgid "yes"
 msgstr "Yes"
 
-
-msgid "auto_update_ultra"
-msgstr "Ultra: prüft alle %d Seiten"
-
-msgid "auto_fetch_page_interval_prompt"
-msgstr "Seitenintervall"

@@ -44,6 +44,9 @@ msgstr "Indien ingeschakeld, vraagt X-Ray de IA automatisch om te controleren op
 msgid "auto_dupe_check_setting_title"
 msgstr "Duplicaatcontrole"
 
+msgid "auto_fetch_page_interval_prompt"
+msgstr "Pagina-interval"
+
 msgid "auto_update_aggressive"
 msgstr "Agressief: controleert elk nieuw hoofdstuk"
 
@@ -64,6 +67,9 @@ msgstr "Frequentie ophalen achtergrond:"
 
 msgid "auto_update_sparse"
 msgstr "Sparing: controleert maximaal elke 30 min"
+
+msgid "auto_update_ultra"
+msgstr "Ultra: controleert elke %d pagina's"
 
 msgid "back_to_reading"
 msgstr "Terug naar lezen"
@@ -785,6 +791,9 @@ msgstr "Wat is er nieuw:"
 msgid "updating_ai"
 msgstr "X-Ray-gegevens bijwerken..."
 
+msgid "val"
+msgstr "???"
+
 msgid "xray_disabled_label"
 msgstr "Uitgeschakeld"
 
@@ -797,9 +806,3 @@ msgstr "Voegt een 'X-Ray'-knop toe aan woordenboek- en selectiemenu's voor direc
 msgid "yes"
 msgstr "Ja"
 
-
-msgid "auto_update_ultra"
-msgstr "Ultra: controleert elke %d pagina's"
-
-msgid "auto_fetch_page_interval_prompt"
-msgstr "Pagina-interval"

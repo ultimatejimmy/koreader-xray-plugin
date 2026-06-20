@@ -44,6 +44,9 @@ msgstr "Ha engedélyezve van, az X-Ray minden adatletöltés után automatikusan
 msgid "auto_dupe_check_setting_title"
 msgstr "Duplikátum ellenőrzés"
 
+msgid "auto_fetch_page_interval_prompt"
+msgstr "Oldalintervallum"
+
 msgid "auto_update_aggressive"
 msgstr "Agresszív: minden új fejezetnél ellenőrzi"
 
@@ -64,6 +67,9 @@ msgstr "Háttérben történő lekérdezés gyakorisága:"
 
 msgid "auto_update_sparse"
 msgstr "Ritka: legfeljebb 30 percenként ellenőrzi"
+
+msgid "auto_update_ultra"
+msgstr "Ultra: ellenőrzi minden %d oldalnál"
 
 msgid "back_to_reading"
 msgstr "Vissza az olvasáshoz"
@@ -785,6 +791,9 @@ msgstr "Újdonságok:"
 msgid "updating_ai"
 msgstr "X-Ray adatok frissítése..."
 
+msgid "val"
+msgstr "???"
+
 msgid "xray_disabled_label"
 msgstr "Kikapcsolva"
 
@@ -797,9 +806,3 @@ msgstr "Hozzáad egy 'X-Ray' gombot a szótár és kijelölés menükhöz az azo
 msgid "yes"
 msgstr "Igen"
 
-
-msgid "auto_update_ultra"
-msgstr "Ultra: ellenőrzi minden %d oldalnál"
-
-msgid "auto_fetch_page_interval_prompt"
-msgstr "Oldalintervallum"

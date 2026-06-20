@@ -44,6 +44,9 @@ msgstr "Cuando está activado, X-Ray solicita automáticamente a la IA que verif
 msgid "auto_dupe_check_setting_title"
 msgstr "Verificación de duplicados"
 
+msgid "auto_fetch_page_interval_prompt"
+msgstr "Intervalo de páginas"
+
 msgid "auto_update_aggressive"
 msgstr "Agresivo: comprueba cada nuevo capítulo"
 
@@ -64,6 +67,9 @@ msgstr "Frecuencia de obtención en segundo plano:"
 
 msgid "auto_update_sparse"
 msgstr "Escaso: comprueba cada 30 min máximo"
+
+msgid "auto_update_ultra"
+msgstr "Ultra: comprueba cada %d páginas"
 
 msgid "back_to_reading"
 msgstr "Volver a la lectura"
@@ -785,6 +791,9 @@ msgstr "Novedades:"
 msgid "updating_ai"
 msgstr "Actualizando datos de X-Ray..."
 
+msgid "val"
+msgstr "???"
+
 msgid "xray_disabled_label"
 msgstr "Desactivado"
 
@@ -797,9 +806,3 @@ msgstr "Añade un botón 'X-Ray' a los menús de diccionario y selección para c
 msgid "yes"
 msgstr "Sí"
 
-
-msgid "auto_update_ultra"
-msgstr "Ultra: comprueba cada %d páginas"
-
-msgid "auto_fetch_page_interval_prompt"
-msgstr "Intervalo de páginas"

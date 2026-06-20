@@ -44,6 +44,9 @@ msgstr "Gdy ta opcja jest włączona, X-Ray automatycznie prosi AI o sprawdzenie
 msgid "auto_dupe_check_setting_title"
 msgstr "Sprawdzanie duplikatów"
 
+msgid "auto_fetch_page_interval_prompt"
+msgstr "Przedział stron"
+
 msgid "auto_update_aggressive"
 msgstr "Agresywny: sprawdza każdy nowy rozdział"
 
@@ -64,6 +67,9 @@ msgstr "Częstotliwość pobierania w tle:"
 
 msgid "auto_update_sparse"
 msgstr "Rzadki: sprawdza maksymalnie co 30 min"
+
+msgid "auto_update_ultra"
+msgstr "Ultra: sprawdza co %d stron"
 
 msgid "back_to_reading"
 msgstr "Wróć do czytania"
@@ -785,6 +791,9 @@ msgstr "Co nowego:"
 msgid "updating_ai"
 msgstr "Aktualizowanie danych X-Ray..."
 
+msgid "val"
+msgstr "???"
+
 msgid "xray_disabled_label"
 msgstr "Wyłączone"
 
@@ -797,9 +806,3 @@ msgstr "Dodaje przycisk 'X-Ray' do menu słownika i wyboru w celu natychmiastowe
 msgid "yes"
 msgstr "Tak"
 
-
-msgid "auto_update_ultra"
-msgstr "Ultra: sprawdza co %d stron"
-
-msgid "auto_fetch_page_interval_prompt"
-msgstr "Przedział stron"

@@ -44,6 +44,9 @@ msgstr "Etkinleştirildiğinde, X-Ray her veri getirmeden sonra yapay zekadan yi
 msgid "auto_dupe_check_setting_title"
 msgstr "Yinelenen Kontrolü"
 
+msgid "auto_fetch_page_interval_prompt"
+msgstr "Sayfa aralığı"
+
 msgid "auto_update_aggressive"
 msgstr "Agresif: her yeni bölümde kontrol eder"
 
@@ -64,6 +67,9 @@ msgstr "Arka plan çekim sıklığı:"
 
 msgid "auto_update_sparse"
 msgstr "Seyrek: en fazla 30 dk'da bir kontrol eder"
+
+msgid "auto_update_ultra"
+msgstr "Ultra: her %d sayfada kontrol eder"
 
 msgid "back_to_reading"
 msgstr "Okumaya Dön"
@@ -785,6 +791,9 @@ msgstr "Yenilikler:"
 msgid "updating_ai"
 msgstr "X-Ray verileri güncelleniyor..."
 
+msgid "val"
+msgstr "???"
+
 msgid "xray_disabled_label"
 msgstr "Devre Dışı"
 
@@ -797,9 +806,3 @@ msgstr "Anında arama yapmak için sözlük ve seçim menülerine bir 'X-Ray' d�
 msgid "yes"
 msgstr "Evet"
 
-
-msgid "auto_update_ultra"
-msgstr "Ultra: her %d sayfada kontrol eder"
-
-msgid "auto_fetch_page_interval_prompt"
-msgstr "Sayfa aralığı"

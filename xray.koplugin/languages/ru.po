@@ -44,6 +44,9 @@ msgstr "Если включено, X-Ray автоматически запраш
 msgid "auto_dupe_check_setting_title"
 msgstr "Проверка дубликатов"
 
+msgid "auto_fetch_page_interval_prompt"
+msgstr "Интервал страниц"
+
 msgid "auto_update_aggressive"
 msgstr "Агрессивный: проверка в каждой главе"
 
@@ -64,6 +67,9 @@ msgstr "Частота фонового получения:"
 
 msgid "auto_update_sparse"
 msgstr "Редкий: раз в 30 мин"
+
+msgid "auto_update_ultra"
+msgstr "Ультра: проверяет каждые %d страниц"
 
 msgid "back_to_reading"
 msgstr "Вернуться к чтению"
@@ -785,6 +791,9 @@ msgstr "Что нового:"
 msgid "updating_ai"
 msgstr "Обновление данных X-Ray..."
 
+msgid "val"
+msgstr "???"
+
 msgid "xray_disabled_label"
 msgstr "Выключено"
 
@@ -797,9 +806,3 @@ msgstr "Добавляет кнопку 'X-Ray' в меню словаря и в
 msgid "yes"
 msgstr "Да"
 
-
-msgid "auto_update_ultra"
-msgstr "Ультра: проверяет каждые %d страниц"
-
-msgid "auto_fetch_page_interval_prompt"
-msgstr "Интервал страниц"
