@@ -594,6 +594,13 @@ function AIHelper:makeRequestAsync(request_params, result_file)
         end
 
         -- Exit child cleanly
+        local ffi_ok, ffi = pcall(require, "ffi")
+        if ffi_ok then
+            pcall(function()
+                ffi.cdef[[ void _exit(int status); ]]
+                ffi.C._exit(0)
+            end)
+        end
         local posix_ok, posix = pcall(require, "posix.unistd")
         if posix_ok and posix and posix._exit then
             posix._exit(0)
@@ -734,6 +741,26 @@ function AIHelper:checkAsyncResult(result_file)
         return parsed_data
     else
         return false, "error_parse", tostring(parse_err)
+    end
+end
+
+function AIHelper:cancelAsyncChild()
+    if self._async_child_pid then
+        self:log("AIHelper: Cancelling async child process PID " .. tostring(self._async_child_pid))
+        pcall(function()
+            local ffi = require("ffi")
+            ffi.cdef[[
+                int kill(int pid, int sig);
+                int waitpid(int pid, int *status, int options);
+            ]]
+            ffi.C.kill(self._async_child_pid, 9) -- SIGKILL
+            ffi.C.waitpid(self._async_child_pid, nil, 1) -- WNOHANG = 1
+        end)
+        pcall(function()
+            local posix_sys = require("posix.sys.wait")
+            posix_sys.wait(self._async_child_pid, posix_sys.WNOHANG)
+        end)
+        self._async_child_pid = nil
     end
 end
 

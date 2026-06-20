@@ -75,7 +75,7 @@ function M:fetchSingleWord(text, pos0, pos1)
         UIManager:show(wait_msg)
 
         UIManager:scheduleIn(0.5, function()
-            if is_cancelled then return end
+            if is_cancelled or self.destroyed then return end
             if not self.chapter_analyzer then self.chapter_analyzer = require(plugin_path .. "xray_chapteranalyzer"):new() end
             
             -- 1. Distributed chapter samples (Start/Mid/End of each chapter up to current)
@@ -259,7 +259,7 @@ function M:continueWithFetch(reading_percent, is_update, last_fetch_page, is_sil
     end
 
     UIManager:scheduleIn(0.5, function()
-        if is_cancelled then self.bg_fetch_active = false; return end
+        if is_cancelled or self.destroyed then self.bg_fetch_active = false; return end
         if not self.chapter_analyzer then self.chapter_analyzer = require(plugin_path .. "xray_chapteranalyzer"):new() end
 
         local current_page = self.ui:getCurrentPage()
@@ -307,7 +307,7 @@ function M:continueWithFetch(reading_percent, is_update, last_fetch_page, is_sil
         end
 
         UIManager:scheduleIn(0, function()
-            if is_cancelled then self.bg_fetch_active = false; return end
+            if is_cancelled or self.destroyed then self.bg_fetch_active = false; return end
             if not self.ui or not self.ui.document then self.bg_fetch_active = false; return end
 
             local samples, chapter_titles = self.chapter_analyzer:getDetailedChapterSamples(self.ui, 200, 150000, reading_percent == 100, first_missing_page, known_chapters)
@@ -759,6 +759,7 @@ function M:finalizeXRayData(final_book_data, title, author, book_text, is_update
     local cache_saved = self.cache_manager:asyncSaveCache(self.ui.document.file, updated_data)
 
     UIManager:scheduleIn(1, function()
+        if self.destroyed then return end
         local reading_percent = 100
         if self.ui and self.ui.document and self.ui.document.getPageCount and current_page then
             local page_count = self.ui.document:getPageCount()
@@ -801,6 +802,7 @@ function M:runPostFetchDuplicateCheck(title, author, reading_percent, is_silent)
     local function checkList(list, list_name, entity_label, on_done)
         if not list or #list < 2 then on_done(nil); return end
         UIManager:scheduleIn(0.1, function()
+            if self.destroyed then return end
             local pairs_found, err_code, err_msg = self.ai_helper:findDuplicates(
                 title, author, list, entity_label, reading_percent
             )
@@ -833,6 +835,7 @@ function M:runPostFetchDuplicateCheck(title, author, reading_percent, is_silent)
                     else
                         -- Show immediately after fetch success dialog
                         UIManager:scheduleIn(0.5, function()
+                            if self.destroyed then return end
                             if has_chars then
                                 self:showAIFindDuplicatesFlow(self.characters, "characters",
                                     self.loc:t("entity_label_characters") or "characters")
@@ -885,7 +888,7 @@ function M:fetchMoreCharacters()
         UIManager:show(wait_msg)
         
         UIManager:scheduleIn(0.5, function()
-            if is_cancelled then return end
+            if is_cancelled or self.destroyed then return end
             if not self.chapter_analyzer then self.chapter_analyzer = require(plugin_path .. "xray_chapteranalyzer"):new() end
             
             -- EVEN SAMPLING: Divide the readable range into equal segments
@@ -1001,6 +1004,7 @@ function M:fetchMoreCharacters()
             if spoiler_setting == "full_book" then reading_percent = 100 end
 
             UIManager:scheduleIn(0.5, function()
+                if self.destroyed then return end
                 self:runPostFetchDuplicateCheck(title, author, reading_percent, false)
             end)
             
@@ -1050,7 +1054,7 @@ function M:fetchMoreTerms()
         UIManager:show(wait_msg)
         
         UIManager:scheduleIn(0.5, function()
-            if is_cancelled then return end
+            if is_cancelled or self.destroyed then return end
             if not self.chapter_analyzer then self.chapter_analyzer = require(plugin_path .. "xray_chapteranalyzer"):new() end
             
             local pages_per_sample = 20
@@ -1176,7 +1180,7 @@ function M:fetchAuthorInfo()
     }
     UIManager:show(wait_msg)
     UIManager:scheduleIn(0.5, function()
-        if is_cancelled then return end
+        if is_cancelled or self.destroyed then return end
         
         if not self.chapter_analyzer then
             local ChapterAnalyzer = require(plugin_path .. "xray_chapteranalyzer")
@@ -1561,7 +1565,7 @@ function M:fetchSeriesContext(is_silent, init_wait_dialog, cancel_ref)
             showProgress(step_idx, #missing_books, current_book.title)
 
             UIManager:scheduleIn(0.5, function()
-                if is_cancelled then return end
+                if is_cancelled or self.destroyed then return end
 
                 local context = {
                     series_name = series_info.name,

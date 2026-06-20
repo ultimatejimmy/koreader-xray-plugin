@@ -308,6 +308,7 @@ function M:closeAllMenus()
     
     -- Pass 2: Staggered 100ms safety pass
     UIManager:scheduleIn(0.1, function()
+        if self.destroyed then return end
         executeClear()
         -- Reset cancellation flag after all passes are done
         self.is_cancelled = false
@@ -359,6 +360,7 @@ function M:showCharacters()
     UIManager:show(self.char_menu)
 
     UIManager:scheduleIn(0.3, function()
+        if self.destroyed then return end
         if self.pending_duplicate_review and self.pending_duplicate_review.characters then
             local pairs = self.pending_duplicate_review.characters
             self.pending_duplicate_review.characters = nil
@@ -1220,6 +1222,7 @@ function M:showAIFindDuplicatesFlow(list, list_name, entity_label)
     UIManager:show(wait_msg)
 
     UIManager:scheduleIn(0.1, function()
+        if self.destroyed then return end
         local pairs_found, err_code, err_msg = self.ai_helper:findDuplicates(
             title, author, list, entity_label, reading_percent
         )
@@ -1375,6 +1378,7 @@ function M:showMergeFlow(list, list_name)
                                 UIManager:show(wait_msg)
                                 
                                 UIManager:scheduleIn(0.1, function()
+                                    if self.destroyed then return end
                                     local ai_merged_desc = nil
                                     if self.ai_helper and self.ai_helper:hasApiKey() then
                                         local sec_item = nil
@@ -1831,6 +1835,7 @@ function M:showLocations()
     UIManager:show(self.loc_menu)
 
     UIManager:scheduleIn(0.3, function()
+        if self.destroyed then return end
         if self.pending_duplicate_review and self.pending_duplicate_review.locations then
             local pairs = self.pending_duplicate_review.locations
             self.pending_duplicate_review.locations = nil

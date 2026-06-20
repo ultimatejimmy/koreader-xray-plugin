@@ -225,6 +225,10 @@ function XRayPlugin:destroy()
     self:log("XRayPlugin: destroy called, marking as destroyed")
     self.destroyed = true
     
+    if self.ai_helper then
+        self.ai_helper:cancelAsyncChild()
+    end
+    
     if self.active_mention_scan and self.active_mention_scan.cancel_handle then
         self.active_mention_scan.cancel_handle:cancel()
         self.active_mention_scan = nil

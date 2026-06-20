@@ -266,6 +266,13 @@ function CacheManager:asyncSaveCache(book_path, data, on_done_cb)
                 ffi.C.close(write_fd)
             end)
         end
+        local ffi_ok, ffi = pcall(require, "ffi")
+        if ffi_ok then
+            pcall(function()
+                ffi.cdef[[ void _exit(int status); ]]
+                ffi.C._exit(0)
+            end)
+        end
         local posix_ok, posix = pcall(require, "posix.unistd")
         if posix_ok and posix and posix._exit then
             posix._exit(0)
