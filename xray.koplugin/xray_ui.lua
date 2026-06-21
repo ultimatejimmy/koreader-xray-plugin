@@ -147,31 +147,45 @@ function XRayBottomPopup:init()
         has_metadata = true
     end
 
+    -- Helper to safely convert to string (handling tables)
+    local function safe_str(val)
+        if type(val) == "table" then
+            return table.concat(val, ", ")
+        elseif val then
+            return tostring(val)
+        end
+        return ""
+    end
+
     -- 3. Role
-    if e.role and e.role ~= "" and e.role ~= "---" then
+    local role_str = safe_str(e.role)
+    if role_str ~= "" and role_str ~= "---" then
         vg[#vg+1] = VerticalSpan:new{ width = gap }
-        vg[#vg+1] = make_text(get_loc_t("label_role", "ROLE") .. ": " .. e.role, face_small_normal, "justify")
+        vg[#vg+1] = make_text(get_loc_t("label_role", "ROLE") .. ": " .. role_str, face_small_normal, "justify")
         has_metadata = true
     end
 
     -- 4. Gender
-    if e.gender and e.gender ~= "" and e.gender ~= "---" then
+    local gender_str = safe_str(e.gender)
+    if gender_str ~= "" and gender_str ~= "---" then
         vg[#vg+1] = VerticalSpan:new{ width = gap }
-        vg[#vg+1] = make_text(get_loc_t("label_gender", "GENDER") .. ": " .. e.gender, face_small_normal, "justify")
+        vg[#vg+1] = make_text(get_loc_t("label_gender", "GENDER") .. ": " .. gender_str, face_small_normal, "justify")
         has_metadata = true
     end
 
     -- 5. Occupation
-    if e.occupation and e.occupation ~= "" and e.occupation ~= "---" then
+    local occ_str = safe_str(e.occupation)
+    if occ_str ~= "" and occ_str ~= "---" then
         vg[#vg+1] = VerticalSpan:new{ width = gap }
-        vg[#vg+1] = make_text(get_loc_t("label_occupation", "OCCUPATION") .. ": " .. e.occupation, face_small_normal, "justify")
+        vg[#vg+1] = make_text(get_loc_t("label_occupation", "OCCUPATION") .. ": " .. occ_str, face_small_normal, "justify")
         has_metadata = true
     end
 
     -- 6. AI Reasoning
-    if e.ai_reasoning and e.ai_reasoning ~= "" then
+    local air_str = safe_str(e.ai_reasoning)
+    if air_str ~= "" then
         vg[#vg+1] = VerticalSpan:new{ width = gap }
-        vg[#vg+1] = make_text("[" .. get_loc_t("label_reasoning", "AI REASONING") .. "]\n" .. e.ai_reasoning, face_small_normal, "justify")
+        vg[#vg+1] = make_text("[" .. get_loc_t("label_reasoning", "AI REASONING") .. "]\n" .. air_str, face_small_normal, "justify")
         has_metadata = true
     end
 
