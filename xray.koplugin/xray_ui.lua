@@ -33,20 +33,18 @@ local DEFAULT_POPUP_FONT_SIZE = 18
 
 local function _getPopupFontSize()
     local size
-    local scaled = false
     if G_reader_settings then
         size = G_reader_settings:readSetting("cre_font_size") or G_reader_settings:readSetting("kopt_font_size")
     end
     if size then
-        size = math.floor(size * 1.20)
+        return size
     else
-        size = 22
-        scaled = true
+        size = 18
+        if Screen and Screen.scaleBySize then
+            size = Screen:scaleBySize(size)
+        end
+        return size
     end
-    if scaled and Screen.scaleBySize then
-        size = Screen:scaleBySize(size)
-    end
-    return size
 end
 
 local XRayBottomPopup = InputContainer:extend{
@@ -62,6 +60,13 @@ function XRayBottomPopup:init()
     local fs  = self.font_size
     local pad = self.margin_size  -- symmetric left/right/top/bottom
 
+    local function scaleSafe(val)
+        if Screen and Screen.scaleBySize then
+            return Screen:scaleBySize(val)
+        end
+        return val
+    end
+
     -- Uniform gap between every block
     local gap = math.max(1, math.floor(fs * 0.08))
 
@@ -69,73 +74,12 @@ function XRayBottomPopup:init()
 
     local e = self.entity or {}
 
-    local function resolveDocFontFilename(family)
-        if not family or family == "" then return nil, nil end
-        local path, idx
-        
-        local function ensureInFontList(p)
-            if not p or p == "" then return p end
-            pcall(function()
-                local FontList = require("fontlist")
-                local fl = FontList:getFontList()
-                local found = false
-                for _, v in ipairs(fl) do
-                    if v == p then found = true break end
-                end
-                if not found then
-                    table.insert(fl, p)
-                end
-            end)
-            return p
-        end
-
-        -- 1. Try CRe directly, as it knows exactly what file it uses for this family
-        pcall(function()
-            local cre = require("document/credocument"):engineInit()
-            if cre and cre.getFontFaceFilenameAndFaceIndex then
-                path, idx = cre.getFontFaceFilenameAndFaceIndex(family)
-            end
-        end)
-        
-        if type(path) == "string" and path ~= "" then
-            return ensureInFontList(path), idx
-        end
-        
-        -- 2. Fallback to FontList mapping
-        pcall(function()
-            local FontList = require("fontlist")
-            if not FontList.fontlist[1] then FontList:getFontList() end
-            if FontList.fontnames and FontList.fontnames[family] then
-                local infos = FontList.fontnames[family]
-                if infos and infos[1] and infos[1].path then
-                    path = ensureInFontList(infos[1].path)
-                    idx = infos[1].index
-                end
-            end
-        end)
-        return path, idx
-    end
-
-    local doc_family = G_reader_settings and G_reader_settings:readSetting("cre_font_family")
-    local doc_filename, doc_faceindex = resolveDocFontFilename(doc_family)
-
-    local function getFontSafe(preferred, preferred_idx, fallback, size)
-        local face = Font:getFace(fallback, size)
-        if preferred then
-            pcall(function()
-                local f = Font:getFace(preferred, size, preferred_idx)
-                if f then face = f end
-            end)
-        end
-        return face
-    end
-
-    -- Fonts
-    local face_normal = getFontSafe(doc_filename, doc_faceindex, "NotoSerif-Regular", fs)
+    -- Fonts: simple and safe fallback, no Android crash overhead
+    local face_normal = Font:getFace("cfont", fs)
     local face_btn    = Font:getFace("cfont", math.max(12, fs - 2))
 
     local fs_small    = math.max(12, fs - 3)
-    local face_small_normal = getFontSafe(doc_filename, doc_faceindex, "NotoSerif-Regular", fs_small)
+    local face_small_normal = Font:getFace("cfont", fs_small)
 
     -- TextBoxWidget — wrap multilínea, justificado con guionado
     local function make_text(text, face, align, is_bold)
@@ -228,7 +172,7 @@ function XRayBottomPopup:init()
     -- 6. AI Reasoning
     if e.ai_reasoning and e.ai_reasoning ~= "" then
         vg[#vg+1] = VerticalSpan:new{ width = gap }
-        vg[#vg+1] = make_text("[" .. get_loc_t("label_reasoning", "AI REASONING") .. "]\n" .. e.ai_reasoning, face_small_italic, "justify")
+        vg[#vg+1] = make_text("[" .. get_loc_t("label_reasoning", "AI REASONING") .. "]\n" .. e.ai_reasoning, face_small_normal, "justify")
         has_metadata = true
     end
 
@@ -316,7 +260,11 @@ function XRayBottomPopup:init()
     }
 
     local pad_top_px    = math.floor(fs * 0.55)
-    local pad_bottom_px = math.floor(fs * 0.35)
+    local pad_bottom_px = math.floor(fs * 0.35) + scaleSafe(10)
+    local Device = require("device")
+    if Device:isAndroid() then
+        pad_bottom_px = pad_bottom_px + scaleSafe(12)
+    end
 
     local outer_vg = VerticalGroup:new{ align = "left" }
     outer_vg[1] = separator
