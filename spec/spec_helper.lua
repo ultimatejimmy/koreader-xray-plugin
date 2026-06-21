@@ -6,6 +6,7 @@ package.path = package.path .. ";/home/jpautz/.luarocks/share/lua/5.1/?/init.lua
 -- Mocking KOReader environment
 package.loaded["device"] = {
     getModel = function() return "K5" end,
+    isAndroid = function() return false end,
     isKindle = function() return true end,
     isPocketBook = function() return false end,
     isKobo = function() return false end,

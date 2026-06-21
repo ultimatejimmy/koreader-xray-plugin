@@ -82,14 +82,13 @@ function XRayBottomPopup:init()
     local face_small_normal = Font:getFace("cfont", fs_small)
 
     -- TextBoxWidget — wrap multilínea, justificado con guionado
-    local function make_text(text, face, align, is_bold)
+    local function make_text(text, face, align)
         return TextBoxWidget:new{
             text       = text,
             face       = face,
             width      = inner_w,
             alignment  = align or "justify",
             justified  = true,
-            bold       = is_bold,
         }
     end
 
@@ -123,7 +122,7 @@ function XRayBottomPopup:init()
     local vg = VerticalGroup:new{ align = "left" }
 
     -- 1. Name (bold, justified)
-    vg[#vg+1] = make_text(tostring(e.name or "?"), face_normal, "justify", true)
+    vg[#vg+1] = make_text(tostring(e.name or "?"), face_normal, "justify")
 
     local has_metadata = false
 
