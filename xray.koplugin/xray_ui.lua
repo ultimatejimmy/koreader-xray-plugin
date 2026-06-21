@@ -29,22 +29,19 @@ local LineWidget      = require("ui/widget/linewidget")
 local Button          = require("ui/widget/button")
 local Size            = require("ui/size")
 
-local DEFAULT_POPUP_FONT_SIZE = 18
+local DEFAULT_POPUP_FONT_SIZE = 22
 
 local function _getPopupFontSize()
     local size
-    local scaled = false
     if G_reader_settings then
         size = G_reader_settings:readSetting("cre_font_size") or G_reader_settings:readSetting("kopt_font_size")
     end
     if size then
-        size = math.floor(size * 1.20)
+        -- Match the book size exactly, capped at 22 pt minimum to prevent it from being too small
+        size = math.max(22, size)
     else
+        -- Default fallback size (22 pt unscaled)
         size = 22
-        scaled = true
-    end
-    if scaled and Screen.scaleBySize then
-        size = Screen:scaleBySize(size)
     end
     return size
 end
@@ -130,6 +127,15 @@ function XRayBottomPopup:init()
             pcall(function() FontList:getFontList() end)
         end
         if FontList.fontnames then
+            local function getRegularInfo(infos)
+                for _, info in ipairs(infos) do
+                    if not info.italic and not info.bold then
+                        return info
+                    end
+                end
+                return infos[1]
+            end
+
             local candidates = {
                 "free serif", "droid serif", "noto serif", "dejavu serif",
                 "gentium book basic", "charis sil", "libertinus serif",
@@ -138,16 +144,18 @@ function XRayBottomPopup:init()
             for _, cand in ipairs(candidates) do
                 for family_name, infos in pairs(FontList.fontnames) do
                     if family_name:lower():find(cand, 1, true) then
-                        if infos and infos[1] and infos[1].path then
-                            return infos[1].path, infos[1].index
+                        local info = getRegularInfo(infos)
+                        if info and info.path then
+                            return info.path, info.index
                         end
                     end
                 end
             end
             for family_name, infos in pairs(FontList.fontnames) do
                 if family_name:lower():find("serif", 1, true) then
-                    if infos and infos[1] and infos[1].path then
-                        return infos[1].path, infos[1].index
+                    local info = getRegularInfo(infos)
+                    if info and info.path then
+                        return info.path, info.index
                     end
                 end
             end
@@ -173,7 +181,7 @@ function XRayBottomPopup:init()
     local face_normal = getFontSafe(doc_filename, doc_faceindex, serif_path, serif_idx, fs)
     local face_btn    = Font:getFace("cfont", math.max(12, fs - 2))
 
-    local fs_small    = math.max(12, fs - 3)
+    local fs_small    = math.max(12, fs - 4)
     local face_small_normal = getFontSafe(doc_filename, doc_faceindex, serif_path, serif_idx, fs_small)
 
     -- TextBoxWidget — wrap multilínea, justificado con guionado
@@ -190,16 +198,18 @@ function XRayBottomPopup:init()
 
     local HorizontalGroup = require("ui/widget/horizontalgroup")
     local HorizontalSpan  = require("ui/widget/horizontalspan")
-    local btn_padding     = (Size.padding and Size.padding.small) or 4
+    local btn_padding_h   = (Size.padding and Size.padding.large) or 12
+    local btn_padding_v   = (Size.padding and Size.padding.small) or 4
 
     local function make_btn(label, cb)
         return Button:new{
             text       = label,
             face       = face_btn,
-            padding    = btn_padding,
+            padding_h  = btn_padding_h,
+            padding_v  = btn_padding_v,
             margin     = 0,
-            radius     = 0,
-            bordersize = 0,
+            radius     = 4,
+            bordersize = 2,
             callback   = cb,
         }
     end
@@ -350,6 +360,14 @@ function XRayBottomPopup:init()
 
     local pad_top_px    = math.floor(fs * 0.55)
     local pad_bottom_px = math.floor(fs * 0.35)
+    if Device:isAndroid() then
+        -- Add a safe area inset at the bottom for rounded screens and gesture bar
+        local safe_bottom = 20
+        if Screen.scaleBySize then
+            safe_bottom = Screen:scaleBySize(20)
+        end
+        pad_bottom_px = pad_bottom_px + safe_bottom
+    end
 
     local outer_vg = VerticalGroup:new{ align = "left" }
     outer_vg[1] = separator
