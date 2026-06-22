@@ -659,6 +659,9 @@ msgstr "Alakítsa át olvasási élményét AI-alapú könyvelemzéssel, pont mi
 msgid "quick_menu_title"
 msgstr "X-Ray gyorsmenü"
 
+msgid "read_more"
+msgstr "Read More"
+
 msgid "reason"
 msgstr "Reason"
 

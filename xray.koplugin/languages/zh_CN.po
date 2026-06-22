@@ -659,6 +659,9 @@ msgstr "使用 AI 驱动的书籍分析提升您的阅读体验，就像 Kindle 
 msgid "quick_menu_title"
 msgstr "X-Ray 快捷菜单"
 
+msgid "read_more"
+msgstr "Read More"
+
 msgid "reason"
 msgstr "Reason"
 

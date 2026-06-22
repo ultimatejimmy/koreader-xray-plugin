@@ -659,6 +659,9 @@ msgstr "Transform your reading experience with AI-powered book analysis, just li
 msgid "quick_menu_title"
 msgstr "X-Ray Quick Menu"
 
+msgid "read_more"
+msgstr "Read More"
+
 msgid "reason"
 msgstr "Reason"
 

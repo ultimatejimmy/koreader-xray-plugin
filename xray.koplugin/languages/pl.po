@@ -659,6 +659,9 @@ msgstr "Odmień swoje wrażenia z czytania dzięki analizie książek opartej na
 msgid "quick_menu_title"
 msgstr "Szybkie menu X-Ray"
 
+msgid "read_more"
+msgstr "Read More"
+
 msgid "reason"
 msgstr "Reason"
 

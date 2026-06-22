@@ -758,11 +758,6 @@ function XRayPlugin:getSubMenuItems()
                         end,
                     },
                     {
-                        text = self.loc:t("menu_desc_length_settings") or "Description Length Settings",
-                        keep_menu_open = true,
-                        callback = function() self:showDescriptionLengthSettings() end,
-                    },
-                    {
                         text = self.loc:t("menu_linked_entries_settings") or "Linked Entries Settings",
                         keep_menu_open = true,
                         callback = function() self:showLinkedEntriesSettings() end,
@@ -800,9 +795,9 @@ function XRayPlugin:getSubMenuItems()
                         callback = function() self:showBookTypeSettings() end,
                     },
                     {
-                        text = self.loc:t("spoiler_preference_title") or "Spoiler Settings",
+                        text = self.loc:t("menu_desc_length_settings") or "Description Length Settings",
                         keep_menu_open = true,
-                        callback = function() self:showSpoilerSettings() end,
+                        callback = function() self:showDescriptionLengthSettings() end,
                     },
                     {
                         text = self.loc:t("menu_series_context") or "Series Context",
@@ -819,6 +814,11 @@ function XRayPlugin:getSubMenuItems()
                                 callback = function() self:manualFetchSeriesContext() end,
                             }
                         }
+                    },
+                    {
+                        text = self.loc:t("spoiler_preference_title") or "Spoiler Settings",
+                        keep_menu_open = true,
+                        callback = function() self:showSpoilerSettings() end,
                     },
                 }
             },

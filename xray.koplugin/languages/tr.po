@@ -659,6 +659,9 @@ msgstr "Amazon Kindle X-Ray gibi, YZ destekli kitap analizi ile okuma deneyimini
 msgid "quick_menu_title"
 msgstr "X-Ray Hızlı Menü"
 
+msgid "read_more"
+msgstr "Read More"
+
 msgid "reason"
 msgstr "Reason"
 

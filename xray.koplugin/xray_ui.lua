@@ -277,13 +277,24 @@ function XRayBottomPopup:init()
         has_metadata = true
     end
 
-    -- 7. Description
+    -- 7. Description (with Preview/Read More truncation)
     local desc_str = tostring(e.description or e.biography or e.definition or e.desc or "")
     desc_str = desc_str:match("^%s*(.-)%s*$")
+    local display_desc = desc_str
+    local is_truncated = false
     if desc_str ~= "" then
+        if #desc_str > 400 then
+            is_truncated = true
+            display_desc = desc_str:sub(1, 350)
+            local last_space = display_desc:match("^.*()%s")
+            if last_space then
+                display_desc = display_desc:sub(1, last_space - 1)
+            end
+            display_desc = display_desc .. " ..."
+        end
         local desc_gap = has_metadata and math.max(12, gap * 3) or gap
         vg[#vg+1] = VerticalSpan:new{ width = desc_gap }
-        vg[#vg+1] = make_text(desc_str, face_normal, "justify")
+        vg[#vg+1] = make_text(display_desc, face_normal, "justify")
     end
 
     -- ── buttons ──────────────────────────────────────────────────────────────
@@ -295,19 +306,47 @@ function XRayBottomPopup:init()
     end
     local mentions_enabled = plugin and plugin.ai_helper and plugin.ai_helper.settings and plugin.ai_helper.settings.mentions_enabled ~= false
 
-    local left_btn
+    local active_btns = {}
+
+    -- A. Read More button (if truncated)
+    if is_truncated then
+        local read_more_btn = make_btn(get_loc_t("read_more", "Read More"), function()
+            UIManager:close(self)
+            local TextViewer = require("ui/widget/textviewer")
+            local full_text_for_viewer = tostring(e.name or "?") .. "\n"
+            if #attrs > 0 then
+                full_text_for_viewer = full_text_for_viewer .. table.concat(attrs, " | ") .. "\n"
+            end
+            if aliases_str then
+                full_text_for_viewer = full_text_for_viewer .. get_loc_t("label_aliases", "Aliases") .. ": " .. aliases_str .. "\n"
+            end
+            full_text_for_viewer = full_text_for_viewer .. "\n" .. desc_str
+            if e.ai_reasoning and e.ai_reasoning ~= "" then
+                full_text_for_viewer = full_text_for_viewer .. "\n\n[" .. get_loc_t("label_reasoning", "AI Reasoning") .. "]\n" .. e.ai_reasoning
+            end
+            local viewer = TextViewer:new{
+                title = e.name,
+                text = full_text_for_viewer,
+            }
+            UIManager:show(viewer)
+        end)
+        table.insert(active_btns, read_more_btn)
+    end
+
+    -- B. Linked Entries button
     if #related > 0 then
-        left_btn = make_btn(get_loc_t("linked_entries", "Linked Entries"), function()
+        local left_btn = make_btn(get_loc_t("linked_entries", "Linked Entries"), function()
             UIManager:close(self)
             if plugin and plugin.showRelatedEntities then
                 plugin:showRelatedEntities(related)
             end
         end)
+        table.insert(active_btns, left_btn)
     end
 
-    local right_btn
+    -- C. Find Mentions button
     if mentions_enabled then
-        right_btn = make_btn(get_loc_t("find_mentions", "Find Mentions"), function()
+        local right_btn = make_btn(get_loc_t("find_mentions", "Find Mentions"), function()
             UIManager:close(self)
             if plugin then
                 if     plugin.showMentionsForEntity then plugin:showMentionsForEntity(e)
@@ -316,34 +355,22 @@ function XRayBottomPopup:init()
                 end
             end
         end)
+        table.insert(active_btns, right_btn)
     end
 
     -- Layout buttons row
     local btn_row
-    if left_btn or right_btn then
-        local row_h = math.max(
-            left_btn and left_btn:getSize().h or 0,
-            right_btn and right_btn:getSize().h or 0
-        )
+    if #active_btns > 0 then
+        local row_h = 0
+        for _, btn in ipairs(active_btns) do
+            row_h = math.max(row_h, btn:getSize().h)
+        end
         btn_row = HorizontalGroup:new{ align = "center" }
-        if left_btn and right_btn then
-            btn_row[1] = LeftContainer:new{
-                dimen = Geom:new{ w = math.floor(inner_w * 0.48), h = row_h },
-                left_btn,
-            }
-            btn_row[2] = RightContainer:new{
-                dimen = Geom:new{ w = math.ceil(inner_w * 0.48), h = row_h },
-                right_btn,
-            }
-        elseif left_btn then
-            btn_row[1] = LeftContainer:new{
-                dimen = Geom:new{ w = inner_w, h = row_h },
-                left_btn,
-            }
-        elseif right_btn then
-            btn_row[1] = LeftContainer:new{
-                dimen = Geom:new{ w = inner_w, h = row_h },
-                right_btn,
+        local btn_w = math.floor(inner_w / #active_btns)
+        for i, btn in ipairs(active_btns) do
+            btn_row[i] = LeftContainer:new{
+                dimen = Geom:new{ w = btn_w, h = row_h },
+                btn,
             }
         end
     end
@@ -1061,7 +1088,7 @@ function M:showCharacterDetails(character, opts)
         table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
         table.insert(vg, TextBoxWidget:new{
             text = (self.loc:t("label_aliases") or "ALIASES") .. ": " .. table.concat(meaningful_aliases, ", "),
-            face = Font:getFace("cfont", fs),
+            face = Font:getFace("cfont", math.max(12, fs - 4)),
             width = title_group_width,
             alignment = "left",
         })
@@ -1109,10 +1136,21 @@ function M:showCharacterDetails(character, opts)
 
     -- 5. Description (no label)
     local resolved_desc = self:resolveDescriptionForPage(character)
+    local display_desc = resolved_desc
+    local is_truncated = false
     if resolved_desc and resolved_desc ~= "" and resolved_desc ~= "---" then
+        if #resolved_desc > 500 then
+            is_truncated = true
+            display_desc = resolved_desc:sub(1, 450)
+            local last_space = display_desc:match("^.*()%s")
+            if last_space then
+                display_desc = display_desc:sub(1, last_space - 1)
+            end
+            display_desc = display_desc .. " ..."
+        end
         table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
         table.insert(vg, TextBoxWidget:new{
-            text = resolved_desc,
+            text = display_desc,
             face = Font:getFace("cfont", fs),
             width = title_group_width,
             alignment = "left",
@@ -1189,6 +1227,34 @@ function M:showCharacterDetails(character, opts)
         end
     end
 
+    if is_truncated then
+        table.insert(buttons, 1, {
+            {
+                text = self.loc:t("read_more") or "Read More",
+                keep_menu_open = true,
+                callback = function()
+                    local TextViewer = require("ui/widget/textviewer")
+                    local full_text = character.name .. "\n"
+                    if #attrs > 0 then
+                        full_text = full_text .. table.concat(attrs, " | ") .. "\n"
+                    end
+                    if #meaningful_aliases > 0 then
+                        full_text = full_text .. (self.loc:t("label_aliases") or "Aliases") .. ": " .. table.concat(meaningful_aliases, ", ") .. "\n"
+                    end
+                    full_text = full_text .. "\n" .. resolved_desc
+                    if character.ai_reasoning then
+                        full_text = full_text .. "\n\n[" .. (self.loc:t("label_reasoning") or "AI Reasoning") .. "]\n" .. character.ai_reasoning
+                    end
+                    local viewer = TextViewer:new{
+                        title = character.name,
+                        text = full_text,
+                    }
+                    UIManager:show(viewer)
+                end
+            }
+        })
+    end
+
     self.active_details_dialog = ButtonDialog:new{
         _added_widgets = { vg },
         buttons = buttons,
@@ -1225,10 +1291,21 @@ function M:showLocationDetails(loc_item, opts)
     -- 2. Description (no label)
     local desc = self:resolveDescriptionForPage(loc_item)
     if desc == "---" then desc = "" end
+    local display_desc = desc
+    local is_truncated = false
     if desc and desc ~= "" then
+        if #desc > 500 then
+            is_truncated = true
+            display_desc = desc:sub(1, 450)
+            local last_space = display_desc:match("^.*()%s")
+            if last_space then
+                display_desc = display_desc:sub(1, last_space - 1)
+            end
+            display_desc = display_desc .. " ..."
+        end
         table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
         table.insert(vg, TextBoxWidget:new{
-            text = desc,
+            text = display_desc,
             face = Font:getFace("cfont", fs),
             width = title_group_width,
             alignment = "left",
@@ -1305,6 +1382,24 @@ function M:showLocationDetails(loc_item, opts)
         end
     end
 
+    if is_truncated then
+        table.insert(buttons, 1, {
+            {
+                text = self.loc:t("read_more") or "Read More",
+                keep_menu_open = true,
+                callback = function()
+                    local TextViewer = require("ui/widget/textviewer")
+                    local full_text = loc_item.name .. "\n\n" .. desc
+                    local viewer = TextViewer:new{
+                        title = loc_item.name,
+                        text = full_text,
+                    }
+                    UIManager:show(viewer)
+                end
+            }
+        })
+    end
+
     self.active_details_dialog = ButtonDialog:new{
         _added_widgets = { vg },
         buttons = buttons,
@@ -1353,7 +1448,7 @@ function M:showTermDetails(term, opts)
         table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
         table.insert(vg, TextBoxWidget:new{
             text = (self.loc:t("label_aliases") or "ALIASES") .. ": " .. table.concat(meaningful_aliases, ", "),
-            face = Font:getFace("cfont", fs),
+            face = Font:getFace("cfont", math.max(12, fs - 4)),
             width = title_group_width,
             alignment = "left",
         })
@@ -1378,10 +1473,22 @@ function M:showTermDetails(term, opts)
     end
 
     -- 4. Definition (no label)
-    if term.definition and term.definition ~= "" and term.definition ~= "---" then
+    local resolved_definition = term.definition
+    local display_definition = resolved_definition
+    local is_truncated = false
+    if resolved_definition and resolved_definition ~= "" and resolved_definition ~= "---" then
+        if #resolved_definition > 500 then
+            is_truncated = true
+            display_definition = resolved_definition:sub(1, 450)
+            local last_space = display_definition:match("^.*()%s")
+            if last_space then
+                display_definition = display_definition:sub(1, last_space - 1)
+            end
+            display_definition = display_definition .. " ..."
+        end
         table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
         table.insert(vg, TextBoxWidget:new{
-            text = term.definition,
+            text = display_definition,
             face = Font:getFace("cfont", fs),
             width = title_group_width,
             alignment = "left",
@@ -1509,6 +1616,31 @@ function M:showTermDetails(term, opts)
                 }
             end
         end
+    end
+
+    if is_truncated then
+        table.insert(buttons, 1, {
+            {
+                text = self.loc:t("read_more") or "Read More",
+                keep_menu_open = true,
+                callback = function()
+                    local TextViewer = require("ui/widget/textviewer")
+                    local full_text = term.name .. "\n"
+                    if #attrs > 0 then
+                        full_text = full_text .. table.concat(attrs, " | ") .. "\n"
+                    end
+                    if #meaningful_aliases > 0 then
+                        full_text = full_text .. (self.loc:t("label_aliases") or "Aliases") .. ": " .. table.concat(meaningful_aliases, ", ") .. "\n"
+                    end
+                    full_text = full_text .. "\n" .. resolved_definition
+                    local viewer = TextViewer:new{
+                        title = term.name,
+                        text = full_text,
+                    }
+                    UIManager:show(viewer)
+                end
+            }
+        })
     end
 
     self.active_details_dialog = ButtonDialog:new{
@@ -2746,10 +2878,21 @@ function M:showHistoricalFigureDetails(fig, opts)
     -- 2. Biography/Description (no label)
     local bio = self:resolveDescriptionForPage(fig)
     if bio == "---" then bio = self.loc:t("msg_no_bio") or "No biography available." end
+    local display_bio = bio
+    local is_truncated = false
     if bio and bio ~= "" then
+        if #bio > 500 then
+            is_truncated = true
+            display_bio = bio:sub(1, 450)
+            local last_space = display_bio:match("^.*()%s")
+            if last_space then
+                display_bio = display_bio:sub(1, last_space - 1)
+            end
+            display_bio = display_bio .. " ..."
+        end
         table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
         table.insert(vg, TextBoxWidget:new{
-            text = bio,
+            text = display_bio,
             face = Font:getFace("cfont", fs),
             width = title_group_width,
             alignment = "left",
@@ -2825,6 +2968,24 @@ function M:showHistoricalFigureDetails(fig, opts)
                 }
             }
         end
+    end
+
+    if is_truncated then
+        table.insert(buttons, 1, {
+            {
+                text = self.loc:t("read_more") or "Read More",
+                keep_menu_open = true,
+                callback = function()
+                    local TextViewer = require("ui/widget/textviewer")
+                    local full_text = fig.name .. "\n\n" .. bio
+                    local viewer = TextViewer:new{
+                        title = fig.name,
+                        text = full_text,
+                    }
+                    UIManager:show(viewer)
+                end
+            }
+        })
     end
 
     self.active_details_dialog = ButtonDialog:new{
