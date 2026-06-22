@@ -88,10 +88,39 @@ describe("xray_ui", function()
             plugin:showCharacterDetails(char)
             local last = _G.ui_tracker.last_shown
             assert.is_not_nil(last)
-            -- Based on logic, if no related entries, it shows a ConfirmBox
-            assert.are.equal("ConfirmBox", last.type)
-            assert.truthy(last.args.text:find("Bob"))
-            assert.truthy(last.args.text:find("A builder"))
+            assert.are.equal("ButtonDialog", last.type)
+            
+            local function find_texts(w)
+                local texts = {}
+                local seen = {}
+                local function traverse(node)
+                    if not node or type(node) ~= "table" or seen[node] then return end
+                    seen[node] = true
+                    if node.type == "TextBoxWidget" and node.args and node.args.text then
+                        table.insert(texts, node.args.text)
+                    end
+                    for k, v in pairs(node) do
+                        if type(v) == "table" and k ~= "parent" then traverse(v) end
+                    end
+                    if node.args and type(node.args) == "table" then
+                        for _, v in ipairs(node.args) do
+                            if type(v) == "table" then traverse(v) end
+                        end
+                    end
+                end
+                traverse(w)
+                return texts
+            end
+
+            local texts = find_texts(last)
+            local name_found = false
+            local desc_found = false
+            for _, t in ipairs(texts) do
+                if t:find("Bob") then name_found = true end
+                if t:find("A builder") then desc_found = true end
+            end
+            assert.is_true(name_found)
+            assert.is_true(desc_found)
         end)
 
         it("should show bottom popup when ui_popup toggles are true", function()
@@ -129,6 +158,81 @@ describe("xray_ui", function()
             assert.is_true(plugin.ai_helper.settings.ui_popup_intext)
             assert.is_true(plugin.ai_helper.settings.ui_popup_menu)
             assert.is_nil(plugin.ai_helper.settings.entity_ui_mode)
+        end)
+
+        it("should format attributes horizontally without labels, except Alias", function()
+            -- 1. Test modern footnote popup layout
+            plugin.ai_helper.settings.ui_popup_intext = true
+            plugin.ai_helper.settings.ui_popup_menu = true
+            local char = {
+                name = "Bob",
+                aliases = { "Bobby" },
+                role = "Protagonist",
+                occupation = "Detective",
+                gender = "Female",
+                description = "A builder"
+            }
+            plugin:showCharacterDetails(char, { source = "in_text" })
+            local last = _G.ui_tracker.last_shown
+            assert.is_not_nil(last)
+            
+            -- Traverse and find text labels
+            local function find_texts(w)
+                local texts = {}
+                local seen = {}
+                local function traverse(node)
+                    if not node or type(node) ~= "table" or seen[node] then return end
+                    seen[node] = true
+                    if node.type == "TextBoxWidget" and node.args and node.args.text then
+                        table.insert(texts, node.args.text)
+                    end
+                    for k, v in pairs(node) do
+                        if type(v) == "table" and k ~= "parent" then traverse(v) end
+                    end
+                    if node.args and type(node.args) == "table" then
+                        for _, v in ipairs(node.args) do
+                            if type(v) == "table" then traverse(v) end
+                        end
+                    end
+                end
+                traverse(w)
+                return texts
+            end
+
+            local texts = find_texts(last)
+            local combined_found = false
+            local aliases_found = false
+            for _, t in ipairs(texts) do
+                if t:find("Protagonist | Detective | Female") then combined_found = true end
+                if t:find("label_aliases: Bobby") then aliases_found = true end
+                -- Verify individual labels are NOT present
+                assert.is_nil(t:find("ROLE:"))
+                assert.is_nil(t:find("GENDER:"))
+                assert.is_nil(t:find("OCCUPATION:"))
+            end
+            assert.is_true(combined_found)
+            assert.is_true(aliases_found)
+
+            -- 2. Test classic full-screen dialog details view layout
+            plugin.ai_helper.settings.ui_popup_menu = false
+            plugin:showCharacterDetails(char, { source = "menu" })
+            local dialog = _G.ui_tracker.last_shown
+            assert.is_not_nil(dialog)
+            assert.are.equal("ButtonDialog", dialog.type)
+            
+            local texts_classic = find_texts(dialog)
+            local combined_found_classic = false
+            local aliases_found_classic = false
+            for _, t in ipairs(texts_classic) do
+                if t:find("Protagonist | Detective | Female") then combined_found_classic = true end
+                if t:find("label_aliases: Bobby") then aliases_found_classic = true end
+                -- Verify individual labels are NOT present
+                assert.is_nil(t:find("ROLE:"))
+                assert.is_nil(t:find("GENDER:"))
+                assert.is_nil(t:find("OCCUPATION:"))
+            end
+            assert.is_true(combined_found_classic)
+            assert.is_true(aliases_found_classic)
         end)
     end)
 

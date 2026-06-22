@@ -252,24 +252,21 @@ function XRayBottomPopup:init()
         has_metadata = true
     end
 
-    -- 3. Role
+    -- 3. Combined non-description attributes (Role, Occupation, Gender)
+    local attrs = {}
     if e.role and e.role ~= "" and e.role ~= "---" then
-        vg[#vg+1] = VerticalSpan:new{ width = gap }
-        vg[#vg+1] = make_text(get_loc_t("label_role", "ROLE") .. ": " .. e.role, face_small_normal, "justify")
-        has_metadata = true
+        table.insert(attrs, e.role)
     end
-
-    -- 4. Gender
-    if e.gender and e.gender ~= "" and e.gender ~= "---" then
-        vg[#vg+1] = VerticalSpan:new{ width = gap }
-        vg[#vg+1] = make_text(get_loc_t("label_gender", "GENDER") .. ": " .. e.gender, face_small_normal, "justify")
-        has_metadata = true
-    end
-
-    -- 5. Occupation
     if e.occupation and e.occupation ~= "" and e.occupation ~= "---" then
+        table.insert(attrs, e.occupation)
+    end
+    if e.gender and e.gender ~= "" and e.gender ~= "---" then
+        table.insert(attrs, e.gender)
+    end
+
+    if #attrs > 0 then
         vg[#vg+1] = VerticalSpan:new{ width = gap }
-        vg[#vg+1] = make_text(get_loc_t("label_occupation", "OCCUPATION") .. ": " .. e.occupation, face_small_normal, "justify")
+        vg[#vg+1] = make_text(table.concat(attrs, " | "), face_small_normal, "justify")
         has_metadata = true
     end
 
@@ -1028,43 +1025,107 @@ function M:showCharacterDetails(character, opts)
         showBottomPopup(self, character)
         return
     end
-    local lines = {
-        (self.loc:t("label_name") or "NAME") .. ": " .. (character.name or "???")
-    }
+    local fs = _getPopupFontSize()
+    local border_window = (Size.border and Size.border.window) or 1
+    local padding_button = (Size.padding and Size.padding.button) or 10
+    local padding_default = (Size.padding and Size.padding.default) or 10
+    local margin_default = (Size.margin and Size.margin.default) or 5
+
+    local dialog_width = math.floor(math.min(Screen:getWidth(), Screen:getHeight()) * 0.9)
+    local buttontable_width = dialog_width - 2 * border_window - 2 * padding_button
+    local title_group_width = buttontable_width - 2 * (padding_default + margin_default)
+
+    local vg = VerticalGroup:new{ align = "left" }
+
+    -- 1. Bold Name (no label)
+    table.insert(vg, TextBoxWidget:new{
+        text = character.name or "???",
+        face = Font:getFace("cfont", fs),
+        width = title_group_width,
+        bold = true,
+        alignment = "left",
+    })
+
+    -- 2. Aliases (with label, if present)
+    local meaningful_aliases = {}
     if character.aliases and type(character.aliases) == "table" and #character.aliases > 0 then
-        local meaningful_aliases = {}
         local name_lower = (character.name or ""):lower()
-        -- Filter out aliases that are already trivial parts of the name
         for _, alias in ipairs(character.aliases) do
             local al_lower = tostring(alias):lower()
             if #al_lower > 1 and not name_lower:find(al_lower, 1, true) then
                 table.insert(meaningful_aliases, alias)
             end
         end
-        if #meaningful_aliases > 0 then
-            table.insert(lines, (self.loc:t("label_aliases") or "ALIASES") .. ": " .. table.concat(meaningful_aliases, ", "))
-        end
     end
-    table.insert(lines, (self.loc:t("label_role") or "ROLE") .. ": " .. (character.role or "---"))
-    table.insert(lines, (self.loc:t("label_gender") or "GENDER") .. ": " .. (character.gender or "---"))
-    table.insert(lines, (self.loc:t("label_occupation") or "OCCUPATION") .. ": " .. (character.occupation or "---"))
+    if #meaningful_aliases > 0 then
+        table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
+        table.insert(vg, TextBoxWidget:new{
+            text = (self.loc:t("label_aliases") or "ALIASES") .. ": " .. table.concat(meaningful_aliases, ", "),
+            face = Font:getFace("cfont", fs),
+            width = title_group_width,
+            alignment = "left",
+        })
+    end
+
+    -- 3. Combined attributes line (smaller, no label)
+    local attrs = {}
+    if character.role and character.role ~= "" and character.role ~= "---" then
+        table.insert(attrs, character.role)
+    end
+    if character.occupation and character.occupation ~= "" and character.occupation ~= "---" then
+        table.insert(attrs, character.occupation)
+    end
+    if character.gender and character.gender ~= "" and character.gender ~= "---" then
+        table.insert(attrs, character.gender)
+    end
+    if #attrs > 0 then
+        table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
+        table.insert(vg, TextBoxWidget:new{
+            text = table.concat(attrs, " | "),
+            face = Font:getFace("cfont", math.max(12, fs - 4)),
+            width = title_group_width,
+            alignment = "left",
+        })
+    end
+
+    -- 4. AI Reasoning (if present)
     if character.ai_reasoning then
-        table.insert(lines, "")
-        table.insert(lines, "[" .. (self.loc:t("label_reasoning") or "AI REASONING") .. "]")
-        table.insert(lines, character.ai_reasoning)
+        table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
+        table.insert(vg, TextBoxWidget:new{
+            text = "[" .. (self.loc:t("label_reasoning") or "AI REASONING") .. "]",
+            face = Font:getFace("cfont", fs),
+            width = title_group_width,
+            bold = true,
+            alignment = "left",
+        })
+        table.insert(vg, VerticalSpan:new{ width = math.max(4, math.floor(fs * 0.2)) })
+        table.insert(vg, TextBoxWidget:new{
+            text = character.ai_reasoning,
+            face = Font:getFace("cfont", fs),
+            width = title_group_width,
+            alignment = "left",
+        })
     end
-    table.insert(lines, "")
-    table.insert(lines, (self.loc:t("label_description") or "DESCRIPTION") .. ":")
+
+    -- 5. Description (no label)
     local resolved_desc = self:resolveDescriptionForPage(character)
-    table.insert(lines, resolved_desc)
-    local body_text = table.concat(lines, "\n")
-    
+    if resolved_desc and resolved_desc ~= "" and resolved_desc ~= "---" then
+        table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
+        table.insert(vg, TextBoxWidget:new{
+            text = resolved_desc,
+            face = Font:getFace("cfont", fs),
+            width = title_group_width,
+            alignment = "left",
+        })
+    end
+
     local linked_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.linked_entries_enabled ~= false
     local related = linked_enabled and self:findRelatedEntities(resolved_desc or "", character.name) or {}
     local mentions_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.mentions_enabled ~= false
     
+    local buttons = {}
     if #related > 0 then
-        local buttons = {
+        buttons = {
             {
                 {
                     text = self.loc:t("linked_entries") or "Linked Entries",
@@ -1090,40 +1151,48 @@ function M:showCharacterDetails(character, opts)
                 }
             }
         }
-        
         if not mentions_enabled then
             table.remove(buttons[2], 1)
         end
-        
-        self.active_details_dialog = ButtonDialog:new{
-            title = table.concat(lines, "\n"),
-            buttons = buttons,
-        }
     else
         if mentions_enabled then
-            self.active_details_dialog = ConfirmBox:new{
-                text = table.concat(lines, "\n"),
-                icon = "info",
-                ok_text = self.loc:t("find_mentions") or "Find Mentions",
-                cancel_text = self.loc:t("close") or "Close",
-                ok_callback = function()
-                    if self.active_details_dialog then UIManager:close(self.active_details_dialog); self.active_details_dialog = nil end
-                    self:showMentionsForEntity(character)
-                end,
-                cancel_callback = function()
-                    self.active_details_dialog = nil
-                end,
+            buttons = {
+                {
+                    {
+                        text = self.loc:t("find_mentions") or "Find Mentions",
+                        callback = function()
+                            if self.active_details_dialog then UIManager:close(self.active_details_dialog); self.active_details_dialog = nil end
+                            self:showMentionsForEntity(character)
+                        end,
+                    },
+                    {
+                        text = self.loc:t("close") or "Close",
+                        callback = function()
+                            if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
+                            self.active_details_dialog = nil
+                        end,
+                    }
+                }
             }
         else
-            self.active_details_dialog = ConfirmBox:new{
-                text = table.concat(lines, "\n"),
-                icon = "info",
-                ok_text = self.loc:t("close") or "Close",
-                ok_callback = function() self.active_details_dialog = nil end,
-                cancel_callback = function() self.active_details_dialog = nil end,
+            buttons = {
+                {
+                    {
+                        text = self.loc:t("close") or "Close",
+                        callback = function()
+                            if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
+                            self.active_details_dialog = nil
+                        end,
+                    }
+                }
             }
         end
     end
+
+    self.active_details_dialog = ButtonDialog:new{
+        _added_widgets = { vg },
+        buttons = buttons,
+    }
     UIManager:show(self.active_details_dialog)
 end
 
@@ -1132,16 +1201,47 @@ function M:showLocationDetails(loc_item, opts)
         showBottomPopup(self, loc_item)
         return
     end
-    local name = loc_item.name or "???"
+    local fs = _getPopupFontSize()
+    local border_window = (Size.border and Size.border.window) or 1
+    local padding_button = (Size.padding and Size.padding.button) or 10
+    local padding_default = (Size.padding and Size.padding.default) or 10
+    local margin_default = (Size.margin and Size.margin.default) or 5
+
+    local dialog_width = math.floor(math.min(Screen:getWidth(), Screen:getHeight()) * 0.9)
+    local buttontable_width = dialog_width - 2 * border_window - 2 * padding_button
+    local title_group_width = buttontable_width - 2 * (padding_default + margin_default)
+
+    local vg = VerticalGroup:new{ align = "left" }
+
+    -- 1. Bold Name (no label)
+    table.insert(vg, TextBoxWidget:new{
+        text = loc_item.name or "???",
+        face = Font:getFace("cfont", fs),
+        width = title_group_width,
+        bold = true,
+        alignment = "left",
+    })
+
+    -- 2. Description (no label)
     local desc = self:resolveDescriptionForPage(loc_item)
     if desc == "---" then desc = "" end
-    local body_text = name .. "\n\n" .. desc
+    if desc and desc ~= "" then
+        table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
+        table.insert(vg, TextBoxWidget:new{
+            text = desc,
+            face = Font:getFace("cfont", fs),
+            width = title_group_width,
+            alignment = "left",
+        })
+    end
+
     local linked_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.linked_entries_enabled ~= false
-    local related = linked_enabled and self:findRelatedEntities(desc, name) or {}
+    local related = linked_enabled and self:findRelatedEntities(desc, loc_item.name) or {}
     local mentions_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.mentions_enabled ~= false
     
+    local buttons = {}
     if #related > 0 then
-        local buttons = {
+        buttons = {
             {
                 {
                     text = self.loc:t("linked_entries") or "Linked Entries",
@@ -1167,40 +1267,48 @@ function M:showLocationDetails(loc_item, opts)
                 }
             }
         }
-        
         if not mentions_enabled then
             table.remove(buttons[2], 1)
         end
-        
-        self.active_details_dialog = ButtonDialog:new{
-            title = body_text,
-            buttons = buttons,
-        }
     else
         if mentions_enabled then
-            self.active_details_dialog = ConfirmBox:new{
-                text = body_text,
-                icon = "info",
-                ok_text = self.loc:t("find_mentions") or "Find Mentions",
-                cancel_text = self.loc:t("close") or "Close",
-                ok_callback = function()
-                    if self.active_details_dialog then UIManager:close(self.active_details_dialog); self.active_details_dialog = nil end
-                    self:showMentionsForEntity(loc_item)
-                end,
-                cancel_callback = function()
-                    self.active_details_dialog = nil
-                end,
+            buttons = {
+                {
+                    {
+                        text = self.loc:t("find_mentions") or "Find Mentions",
+                        callback = function()
+                            if self.active_details_dialog then UIManager:close(self.active_details_dialog); self.active_details_dialog = nil end
+                            self:showMentionsForEntity(loc_item)
+                        end,
+                    },
+                    {
+                        text = self.loc:t("close") or "Close",
+                        callback = function()
+                            if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
+                            self.active_details_dialog = nil
+                        end,
+                    }
+                }
             }
         else
-            self.active_details_dialog = ConfirmBox:new{
-                text = body_text,
-                icon = "info",
-                ok_text = self.loc:t("close") or "Close",
-                ok_callback = function() self.active_details_dialog = nil end,
-                cancel_callback = function() self.active_details_dialog = nil end,
+            buttons = {
+                {
+                    {
+                        text = self.loc:t("close") or "Close",
+                        callback = function()
+                            if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
+                            self.active_details_dialog = nil
+                        end,
+                    }
+                }
             }
         end
     end
+
+    self.active_details_dialog = ButtonDialog:new{
+        _added_widgets = { vg },
+        buttons = buttons,
+    }
     UIManager:show(self.active_details_dialog)
 end
 
@@ -1209,41 +1317,92 @@ function M:showTermDetails(term, opts)
         showBottomPopup(self, term)
         return
     end
-    local name = term.name or "???"
-    local lines = { (self.loc:t("label_name") or "NAME") .. ": " .. name }
+    local fs = _getPopupFontSize()
+    local border_window = (Size.border and Size.border.window) or 1
+    local padding_button = (Size.padding and Size.padding.button) or 10
+    local padding_default = (Size.padding and Size.padding.default) or 10
+    local margin_default = (Size.margin and Size.margin.default) or 5
+
+    local dialog_width = math.floor(math.min(Screen:getWidth(), Screen:getHeight()) * 0.9)
+    local buttontable_width = dialog_width - 2 * border_window - 2 * padding_button
+    local title_group_width = buttontable_width - 2 * (padding_default + margin_default)
+
+    local vg = VerticalGroup:new{ align = "left" }
+
+    -- 1. Bold Name (no label)
+    table.insert(vg, TextBoxWidget:new{
+        text = term.name or "???",
+        face = Font:getFace("cfont", fs),
+        width = title_group_width,
+        bold = true,
+        alignment = "left",
+    })
+
+    -- 2. Aliases (with label, if present)
+    local meaningful_aliases = {}
     if term.aliases and type(term.aliases) == "table" and #term.aliases > 0 then
-        local meaningful_aliases = {}
-        local name_lower = name:lower()
+        local name_lower = (term.name or ""):lower()
         for _, alias in ipairs(term.aliases) do
             local al_lower = tostring(alias):lower()
             if #al_lower > 1 and not name_lower:find(al_lower, 1, true) then
                 table.insert(meaningful_aliases, alias)
             end
         end
-        if #meaningful_aliases > 0 then
-            table.insert(lines, (self.loc:t("label_aliases") or "ALIASES") .. ": " .. table.concat(meaningful_aliases, ", "))
-        end
     end
-    if term.expanded and term.expanded ~= "" and term.expanded ~= term.name then
-        table.insert(lines, (self.loc:t("label_expanded") or "STANDS FOR") .. ": " .. term.expanded)
-    end
-    if term.category and term.category ~= "" then
-        table.insert(lines, (self.loc:t("label_category") or "CATEGORY") .. ": " .. term.category)
-    end
-    table.insert(lines, "")
-    table.insert(lines, (self.loc:t("label_definition") or "DEFINITION") .. ":")
-    table.insert(lines, term.definition or "---")
-    
-    if opts and opts.low_confidence then
-        table.insert(lines, "")
-        local warning = self.loc:t("low_conf_match", name)
-            or string.format("Partial match — showing '%s' for your query. Tap below to fetch the exact term.", name)
-        table.insert(lines, warning)
+    if #meaningful_aliases > 0 then
+        table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
+        table.insert(vg, TextBoxWidget:new{
+            text = (self.loc:t("label_aliases") or "ALIASES") .. ": " .. table.concat(meaningful_aliases, ", "),
+            face = Font:getFace("cfont", fs),
+            width = title_group_width,
+            alignment = "left",
+        })
     end
 
-    local body_text = table.concat(lines, "\n")
+    -- 3. Combined attributes (expanded, category) - smaller size
+    local attrs = {}
+    if term.expanded and term.expanded ~= "" and term.expanded ~= term.name then
+        table.insert(attrs, term.expanded)
+    end
+    if term.category and term.category ~= "" then
+        table.insert(attrs, term.category)
+    end
+    if #attrs > 0 then
+        table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
+        table.insert(vg, TextBoxWidget:new{
+            text = table.concat(attrs, " | "),
+            face = Font:getFace("cfont", math.max(12, fs - 4)),
+            width = title_group_width,
+            alignment = "left",
+        })
+    end
+
+    -- 4. Definition (no label)
+    if term.definition and term.definition ~= "" and term.definition ~= "---" then
+        table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
+        table.insert(vg, TextBoxWidget:new{
+            text = term.definition,
+            face = Font:getFace("cfont", fs),
+            width = title_group_width,
+            alignment = "left",
+        })
+    end
+
+    -- 5. Low confidence warning (if present)
+    if opts and opts.low_confidence then
+        local warning = self.loc:t("low_conf_match", term.name)
+            or string.format("Partial match — showing '%s' for your query. Tap below to fetch the exact term.", term.name)
+        table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
+        table.insert(vg, TextBoxWidget:new{
+            text = warning,
+            face = Font:getFace("cfont", fs),
+            width = title_group_width,
+            alignment = "left",
+        })
+    end
+
     local linked_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.linked_entries_enabled ~= false
-    local related = linked_enabled and self:findRelatedEntities(term.definition or "", name) or {}
+    local related = linked_enabled and self:findRelatedEntities(term.definition or "", term.name) or {}
     local mentions_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.mentions_enabled ~= false
 
     local function get_relookup_row()
@@ -1259,8 +1418,9 @@ function M:showTermDetails(term, opts)
         }
     end
 
+    local buttons = {}
     if #related > 0 then
-        local buttons = {
+        buttons = {
             {
                 {
                     text = self.loc:t("linked_entries") or "Linked Entries",
@@ -1290,11 +1450,9 @@ function M:showTermDetails(term, opts)
         if opts and opts.low_confidence then
             table.insert(buttons, 1, get_relookup_row())
         end
-        self.active_details_dialog = ButtonDialog:new{ title = body_text, buttons = buttons }
     else
         if opts and opts.low_confidence then
-            -- Convert to ButtonDialog to accommodate relookup button
-            local buttons = {
+            buttons = {
                 get_relookup_row()
             }
             if mentions_enabled then
@@ -1317,29 +1475,46 @@ function M:showTermDetails(term, opts)
                     end,
                 }
             })
-            self.active_details_dialog = ButtonDialog:new{ title = body_text, buttons = buttons }
         else
             if mentions_enabled then
-                self.active_details_dialog = ConfirmBox:new{
-                    text = body_text, icon = "info",
-                    ok_text = self.loc:t("find_mentions") or "Find Mentions",
-                    cancel_text = self.loc:t("close") or "Close",
-                    ok_callback = function()
-                        if self.active_details_dialog then UIManager:close(self.active_details_dialog); self.active_details_dialog = nil end
-                        self:showMentionsForEntity(term)
-                    end,
-                    cancel_callback = function() self.active_details_dialog = nil end,
+                buttons = {
+                    {
+                        {
+                            text = self.loc:t("find_mentions") or "Find Mentions",
+                            callback = function()
+                                if self.active_details_dialog then UIManager:close(self.active_details_dialog); self.active_details_dialog = nil end
+                                self:showMentionsForEntity(term)
+                            end,
+                        },
+                        {
+                            text = self.loc:t("close") or "Close",
+                            callback = function()
+                                if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
+                                self.active_details_dialog = nil
+                            end,
+                        }
+                    }
                 }
             else
-                self.active_details_dialog = ConfirmBox:new{
-                    text = body_text, icon = "info",
-                    ok_text = self.loc:t("close") or "Close",
-                    ok_callback = function() self.active_details_dialog = nil end,
-                    cancel_callback = function() self.active_details_dialog = nil end,
+                buttons = {
+                    {
+                        {
+                            text = self.loc:t("close") or "Close",
+                            callback = function()
+                                if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
+                                self.active_details_dialog = nil
+                            end,
+                        }
+                    }
                 }
             end
         end
     end
+
+    self.active_details_dialog = ButtonDialog:new{
+        _added_widgets = { vg },
+        buttons = buttons,
+    }
     UIManager:show(self.active_details_dialog)
 end
 
@@ -2547,16 +2722,47 @@ function M:showHistoricalFigureDetails(fig, opts)
         showBottomPopup(self, fig)
         return
     end
-    local name = fig.name or "???"
+    local fs = _getPopupFontSize()
+    local border_window = (Size.border and Size.border.window) or 1
+    local padding_button = (Size.padding and Size.padding.button) or 10
+    local padding_default = (Size.padding and Size.padding.default) or 10
+    local margin_default = (Size.margin and Size.margin.default) or 5
+
+    local dialog_width = math.floor(math.min(Screen:getWidth(), Screen:getHeight()) * 0.9)
+    local buttontable_width = dialog_width - 2 * border_window - 2 * padding_button
+    local title_group_width = buttontable_width - 2 * (padding_default + margin_default)
+
+    local vg = VerticalGroup:new{ align = "left" }
+
+    -- 1. Bold Name (no label)
+    table.insert(vg, TextBoxWidget:new{
+        text = fig.name or "???",
+        face = Font:getFace("cfont", fs),
+        width = title_group_width,
+        bold = true,
+        alignment = "left",
+    })
+
+    -- 2. Biography/Description (no label)
     local bio = self:resolveDescriptionForPage(fig)
     if bio == "---" then bio = self.loc:t("msg_no_bio") or "No biography available." end
-    local body_text = name .. "\n\n" .. bio
+    if bio and bio ~= "" then
+        table.insert(vg, VerticalSpan:new{ width = math.max(6, math.floor(fs * 0.3)) })
+        table.insert(vg, TextBoxWidget:new{
+            text = bio,
+            face = Font:getFace("cfont", fs),
+            width = title_group_width,
+            alignment = "left",
+        })
+    end
+
     local linked_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.linked_entries_enabled ~= false
-    local related = linked_enabled and self:findRelatedEntities(bio, name) or {}
+    local related = linked_enabled and self:findRelatedEntities(bio, fig.name) or {}
     local mentions_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.mentions_enabled ~= false
     
+    local buttons = {}
     if #related > 0 then
-        local buttons = {
+        buttons = {
             {
                 {
                     text = self.loc:t("linked_entries") or "Linked Entries",
@@ -2586,36 +2792,45 @@ function M:showHistoricalFigureDetails(fig, opts)
         if not mentions_enabled then
             table.remove(buttons[2], 1)
         end
-        
-        self.active_details_dialog = ButtonDialog:new{
-            title = body_text,
-            buttons = buttons,
-        }
     else
         if mentions_enabled then
-            self.active_details_dialog = ConfirmBox:new{
-                text = body_text,
-                icon = "info",
-                ok_text = self.loc:t("find_mentions") or "Find Mentions",
-                cancel_text = self.loc:t("close") or "Close",
-                ok_callback = function()
-                    if self.active_details_dialog then UIManager:close(self.active_details_dialog); self.active_details_dialog = nil end
-                    self:showMentionsForEntity(fig)
-                end,
-                cancel_callback = function()
-                    self.active_details_dialog = nil
-                end,
+            buttons = {
+                {
+                    {
+                        text = self.loc:t("find_mentions") or "Find Mentions",
+                        callback = function()
+                            if self.active_details_dialog then UIManager:close(self.active_details_dialog); self.active_details_dialog = nil end
+                            self:showMentionsForEntity(fig)
+                        end,
+                    },
+                    {
+                        text = self.loc:t("close") or "Close",
+                        callback = function()
+                            if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
+                            self.active_details_dialog = nil
+                        end,
+                    }
+                }
             }
         else
-            self.active_details_dialog = ConfirmBox:new{
-                text = body_text,
-                icon = "info",
-                ok_text = self.loc:t("close") or "Close",
-                ok_callback = function() self.active_details_dialog = nil end,
-                cancel_callback = function() self.active_details_dialog = nil end,
+            buttons = {
+                {
+                    {
+                        text = self.loc:t("close") or "Close",
+                        callback = function()
+                            if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
+                            self.active_details_dialog = nil
+                        end,
+                    }
+                }
             }
         end
     end
+
+    self.active_details_dialog = ButtonDialog:new{
+        _added_widgets = { vg },
+        buttons = buttons,
+    }
     UIManager:show(self.active_details_dialog)
 end
 
