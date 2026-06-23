@@ -21,12 +21,14 @@ def get_gemini_key():
     return os.environ.get("GEMINI_API_KEY")
 
 def call_gemini(prompt):
+    import time
+    import urllib.error
     key = get_gemini_key()
     if not key:
         print("Error: GEMINI_API_KEY environment variable not set. Cannot run automated translations.")
         sys.exit(1)
     
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={key}"
     headers = {"Content-Type": "application/json"}
     data = {
         "contents": [{"parts": [{"text": prompt}]}],
@@ -34,14 +36,33 @@ def call_gemini(prompt):
     }
     
     req = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), headers=headers, method='POST')
-    try:
-        with urllib.request.urlopen(req) as response:
-            res_data = json.loads(response.read().decode('utf-8'))
-            text = res_data['candidates'][0]['content']['parts'][0]['text']
-            return json.loads(text.strip())
-    except Exception as e:
-        print(f"API Error calling Gemini: {e}")
-        sys.exit(1)
+    
+    max_retries = 6
+    backoff = 2
+    for attempt in range(max_retries):
+        try:
+            with urllib.request.urlopen(req) as response:
+                res_data = json.loads(response.read().decode('utf-8'))
+                text = res_data['candidates'][0]['content']['parts'][0]['text']
+                time.sleep(4.0)  # Space out requests to avoid 15 RPM rate limits
+                text_stripped = text.strip()
+                first_brace = text_stripped.find('{')
+                last_brace = text_stripped.rfind('}')
+                if first_brace != -1 and last_brace != -1:
+                    json_str = text_stripped[first_brace:last_brace+1]
+                    return json.loads(json_str)
+                return json.loads(text_stripped)
+        except urllib.error.HTTPError as e:
+            if e.code in (429, 500, 502, 503, 504) and attempt < max_retries - 1:
+                sleep_time = backoff ** attempt + 2
+                print(f"Gemini API returned code {e.code}. Retrying in {sleep_time} seconds (attempt {attempt + 1}/{max_retries})...")
+                time.sleep(sleep_time)
+            else:
+                print(f"API Error calling Gemini: {e}")
+                sys.exit(1)
+        except Exception as e:
+            print(f"API Error calling Gemini: {e}")
+            sys.exit(1)
 
 # PO File Parser & Generator
 def parse_po(file_path):

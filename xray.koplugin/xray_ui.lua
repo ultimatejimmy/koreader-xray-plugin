@@ -600,6 +600,7 @@ function M:showLanguageSelection()
         pl = "Polski",
         id = "Bahasa Indonesia",
         ar = "العربية",
+        it = "Italiano",
     }
     
     local langs = self.loc and self.loc.available_languages or { "en", "de", "fr", "ru", "zh_CN", "tr", "pt_br", "es", "uk", "hu" }
@@ -744,6 +745,7 @@ function M:checkBookLanguageMatch()
         pl = "Polski",
         id = "Bahasa Indonesia",
         ar = "العربية",
+        it = "Italiano",
     }
     
     local supported = {}

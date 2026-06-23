@@ -41,3 +41,13 @@ Whenever you modify the logic or structure of an AI prompt (e.g., `comprehensive
 3.  Ensure that all **variable placeholders** (`%s`, `%d`, `%%`) and **JSON keys** remain identical across all languages to avoid parsing errors.
 4.  Verify that the "ALGORITHM" and "PROTOCOL" sections are translated accurately to maintain AI steering performance in all regions.
 
+## Registering the Localized Language in the UI Selection List
+When adding support for a new language, you must register it in the codebase so that it displays with its localized name in the UI and is correctly auto-detected:
+
+1. **`xray.koplugin/xray_ui.lua`**:
+   - Add the language code and its localized display name (e.g., `it = "Italiano"`) to the `LANGUAGE_NAMES` table defined in `showLanguageSelection()`.
+   - Add the language code and its localized display name to the `LANGUAGE_NAMES` table defined in `suggestBookLanguage()`.
+2. **`xray.koplugin/xray_aihelper.lua`**:
+   - Add the language code to the `supported` lookup table (e.g., `local supported = { ..., <lang_code>=1 }`) inside the helper settings initialization to enable correct auto-detection based on KOReader's system language.
+
+
