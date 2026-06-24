@@ -26,6 +26,9 @@ msgstr "Duplicado detectado por IA"
 msgid "ai_merged_n"
 msgstr "%d par(es) mesclado(s) com sucesso."
 
+msgid "ai_scan"
+msgstr "AI Scan"
+
 msgid "ai_scanning_duplicates"
 msgstr "IA procurando duplicados..."
 
@@ -395,6 +398,9 @@ msgstr "Buscando por '%s'..."
 msgid "low_conf_match"
 msgstr "Correspondência parcial – exibindo '%s' para sua consulta. Toque abaixo para buscar o termo exato."
 
+msgid "manual_pick"
+msgstr "Manual Pick"
+
 msgid "mention_dismiss_btn"
 msgstr "✕"
 
@@ -647,6 +653,9 @@ msgstr "Sem dados de linha do tempo ainda.\n\nUse 'Buscar Dados X-Ray' primeiro.
 msgid "ok"
 msgstr "OK"
 
+msgid "pair_rejected"
+msgstr "Pair marked as not a duplicate."
+
 msgid "path"
 msgstr "plugins/xray.koplugin"
 
@@ -679,6 +688,9 @@ msgstr "Médio"
 
 msgid "reasoning_unset"
 msgstr "Não definido (Padrão)"
+
+msgid "reject_pair"
+msgstr "Reject"
 
 msgid "relookup_button"
 msgstr "Buscar novamente '%s'"

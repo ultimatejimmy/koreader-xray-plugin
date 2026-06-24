@@ -865,6 +865,27 @@ function M:runPostFetchDuplicateCheck(title, author, reading_percent, is_silent)
             checkListAsync(self.locations, "locations",
                 self.loc:t("entity_label_locations") or "locations",
                 function(loc_pairs)
+                    local rejected_pairs = self.book_data and self.book_data.rejected_merge_pairs or {}
+                    
+                    local function filterRejected(pairs)
+                        if not pairs then return nil end
+                        local filtered = {}
+                        for _, pair in ipairs(pairs) do
+                            if pair.primary and pair.secondary then
+                                local p_name = pair.primary:lower()
+                                local s_name = pair.secondary:lower()
+                                local key = p_name < s_name and (p_name .. "|" .. s_name) or (s_name .. "|" .. p_name)
+                                if not rejected_pairs[key] then
+                                    table.insert(filtered, pair)
+                                end
+                            end
+                        end
+                        return filtered
+                    end
+
+                    char_pairs = filterRejected(char_pairs)
+                    loc_pairs = filterRejected(loc_pairs)
+
                     local has_chars = char_pairs and #char_pairs > 0
                     local has_locs  = loc_pairs  and #loc_pairs  > 0
 
@@ -872,8 +893,8 @@ function M:runPostFetchDuplicateCheck(title, author, reading_percent, is_silent)
 
                     if is_silent then
                         self.pending_duplicate_review = {
-                            characters = char_pairs,
-                            locations  = loc_pairs,
+                            characters = has_chars and char_pairs or nil,
+                            locations  = has_locs and loc_pairs or nil,
                         }
                         self:log("XRayPlugin: Stored " .. tostring(has_chars and #char_pairs or 0) .. " char and " .. tostring(has_locs and #loc_pairs or 0) .. " loc duplicate pairs for later review")
                     else

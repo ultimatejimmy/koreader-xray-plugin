@@ -26,6 +26,9 @@ msgstr "تم الكشف عن تكرار بواسطة الذكاء الاصطنا
 msgid "ai_merged_n"
 msgstr "تم دمج %d زوج (أزواج) بنجاح."
 
+msgid "ai_scan"
+msgstr "AI Scan"
+
 msgid "ai_scanning_duplicates"
 msgstr "يقوم الذكاء الاصطناعي بالبحث عن التكرارات..."
 
@@ -395,6 +398,9 @@ msgstr "جاري البحث عن '%s'..."
 msgid "low_conf_match"
 msgstr "تطابق جزئي — يظهر '%s' لاستعلامك. انقر أدناه لجلب المصطلح الدقيق."
 
+msgid "manual_pick"
+msgstr "Manual Pick"
+
 msgid "mention_dismiss_btn"
 msgstr "✕"
 
@@ -647,6 +653,9 @@ msgstr "لا توجد بيانات مخطط زمني بعد. يرجى استخد
 msgid "ok"
 msgstr "موافق"
 
+msgid "pair_rejected"
+msgstr "Pair marked as not a duplicate."
+
 msgid "path"
 msgstr "plugins/xray.koplugin"
 
@@ -679,6 +688,9 @@ msgstr "متوسط"
 
 msgid "reasoning_unset"
 msgstr "غير معين (الافتراضي)"
+
+msgid "reject_pair"
+msgstr "Reject"
 
 msgid "relookup_button"
 msgstr "إعادة البحث عن '%s'"

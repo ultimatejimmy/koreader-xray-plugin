@@ -246,6 +246,91 @@ describe("xray_ui", function()
         end)
     end)
 
+    describe("showAIFindDuplicatesFlow", function()
+        before_each(function()
+            plugin.ai_helper = {
+                hasApiKey = function() return true end,
+                findDuplicates = function()
+                    return {
+                        { primary = "Jon", secondary = "John", reason = "Similar spelling" },
+                        { primary = "Alice", secondary = "Bob", reason = "Different" }
+                    }
+                end,
+                settings = {}
+            }
+            plugin.characters = {
+                { name = "Jon", description = "Character 1" },
+                { name = "John", description = "Character 2" },
+                { name = "Alice", description = "Character 3" },
+                { name = "Bob", description = "Character 4" }
+            }
+            plugin.ui = {
+                document = {
+                    file = "test_book.epub",
+                    getProps = function() return { title = "Test", authors = "Author" } end,
+                    getPageCount = function() return 100 end
+                }
+            }
+            plugin.ui.getCurrentPage = function() return 10 end
+            plugin.book_data = {}
+            local loc_xray = require("localization_xray")
+            plugin.loc = {
+                t = function(self, key, ...)
+                    return loc_xray:t(key, ...)
+                end
+            }
+        end)
+
+        it("should show ButtonDialog for duplicate pairs and support Reject", function()
+            plugin:showAIFindDuplicatesFlow(plugin.characters, "characters", "characters")
+            local last = _G.ui_tracker.last_shown
+            assert.are.equal("ButtonDialog", last.type)
+            
+            -- Verify buttons: Merge, Skip, Reject, Stop
+            local buttons = last.args.buttons[1]
+            assert.are.equal(4, #buttons)
+            assert.are.equal("Merge", buttons[1].text)
+            assert.are.equal("Skip", buttons[2].text)
+            assert.are.equal("Reject", buttons[3].text)
+            assert.are.equal("Stop", buttons[4].text)
+
+            -- Tap Reject
+            local reject_cb = buttons[3].callback
+            reject_cb()
+
+            -- Verify it added the pair to rejected_merge_pairs in book_data
+            assert.is_not_nil(plugin.book_data.rejected_merge_pairs)
+            assert.is_true(plugin.book_data.rejected_merge_pairs["john|jon"])
+
+            -- Run duplicate check again, the rejected pair should be filtered out
+            _G.ui_tracker.shown = {}
+            plugin:showAIFindDuplicatesFlow(plugin.characters, "characters", "characters")
+            
+            -- Only Alice vs Bob should be shown
+            local dialog = _G.ui_tracker.last_shown
+            assert.are.equal("ButtonDialog", dialog.type)
+            assert.truthy(dialog.args.title:find("Alice") and dialog.args.title:find("Bob"))
+        end)
+
+        it("should walk pre-scanned duplicate pairs directly without calling AI", function()
+            local called_ai = false
+            plugin.ai_helper.findDuplicates = function()
+                called_ai = true
+                return {}
+            end
+            
+            local pairs = {
+                { primary = "Jon", secondary = "John", reason = "Similar spelling" }
+            }
+            plugin:walkDuplicatePairs(plugin.characters, "characters", pairs)
+            
+            assert.is_false(called_ai)
+            local last = _G.ui_tracker.last_shown
+            assert.are.equal("ButtonDialog", last.type)
+            assert.truthy(last.args.title:find("Jon") and last.args.title:find("John"))
+        end)
+    end)
+
     describe("showTerms", function()
         it("should show a Menu even if no terms, containing Fetch More", function()
             plugin.terms = {}
@@ -305,6 +390,44 @@ describe("xray_ui", function()
             assert.are.equal("yes", buttons[1].text)
             assert.are.equal("later", buttons[2].text)
             assert.are.equal("dont_ask_again", buttons[3].text)
+        end)
+
+        it("should cache check outcome and not show prompt if series index is 1", function()
+            -- Mock NetworkMgr
+            package.loaded["ui/network/manager"] = {
+                isConnected = function() return true end,
+                isOnline = function() return true end
+            }
+            -- Mock series manager detectSeries
+            plugin.series_manager = {
+                detectSeries = function()
+                    return { name = "Mistborn", index = 1, slug = "mistborn" }
+                end
+            }
+            plugin.ai_helper = {
+                settings = {
+                    series_context_enabled = true
+                }
+            }
+            plugin.book_data = {}
+
+            -- Mock cache_manager
+            local asyncSave_called = false
+            plugin.cache_manager = {
+                loadCache = function() return {} end,
+                asyncSaveCache = function(self_cm, file, data)
+                    asyncSave_called = true
+                end
+            }
+
+            plugin:checkSeriesContext()
+
+            -- Dialog shouldn't have been shown since index <= 1
+            local last = _G.ui_tracker.last_shown
+            assert.is_nil(last)
+            -- Verify cache was saved with series_context_dismissed = true
+            assert.is_true(asyncSave_called)
+            assert.is_true(plugin.book_data.series_context_dismissed)
         end)
     end)
 end)

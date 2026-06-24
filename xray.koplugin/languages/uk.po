@@ -26,6 +26,9 @@ msgstr "ШІ виявив дублікат"
 msgid "ai_merged_n"
 msgstr "Успішно об'єднано %d пар(и)."
 
+msgid "ai_scan"
+msgstr "AI Scan"
+
 msgid "ai_scanning_duplicates"
 msgstr "ШІ сканує дублікати..."
 
@@ -395,6 +398,9 @@ msgstr "Пошук '%s'..."
 msgid "low_conf_match"
 msgstr "Частковий збіг — показано '%s' для вашого запиту. Натисніть нижче, щоб знайти точний термін."
 
+msgid "manual_pick"
+msgstr "Manual Pick"
+
 msgid "mention_dismiss_btn"
 msgstr "✕"
 
@@ -647,6 +653,9 @@ msgstr "Даних хронології поки немає.\n\nСпочатку
 msgid "ok"
 msgstr "ОК"
 
+msgid "pair_rejected"
+msgstr "Pair marked as not a duplicate."
+
 msgid "path"
 msgstr "plugins/xray.koplugin"
 
@@ -679,6 +688,9 @@ msgstr "Середній"
 
 msgid "reasoning_unset"
 msgstr "Не встановлено (За замовчуванням)"
+
+msgid "reject_pair"
+msgstr "Reject"
 
 msgid "relookup_button"
 msgstr "Повторити пошук '%s'"

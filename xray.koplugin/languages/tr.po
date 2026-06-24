@@ -26,6 +26,9 @@ msgstr "Yapay Zeka Kopyası Algılandı"
 msgid "ai_merged_n"
 msgstr "%d çift başarıyla birleştirildi."
 
+msgid "ai_scan"
+msgstr "AI Scan"
+
 msgid "ai_scanning_duplicates"
 msgstr "Yapay zeka kopyaları tarıyor..."
 
@@ -395,6 +398,9 @@ msgstr "'%s' aranıyor..."
 msgid "low_conf_match"
 msgstr "Kısmi eşleşme – sorgunuz için '%s' gösteriliyor. Tam terimi getirmek için aşağıya dokunun."
 
+msgid "manual_pick"
+msgstr "Manual Pick"
+
 msgid "mention_dismiss_btn"
 msgstr "✕"
 
@@ -647,6 +653,9 @@ msgstr "Henüz zaman çizelgesi verisi yok.\n\nLütfen önce 'X-Ray Verilerini �
 msgid "ok"
 msgstr "Tamam"
 
+msgid "pair_rejected"
+msgstr "Pair marked as not a duplicate."
+
 msgid "path"
 msgstr "plugins/xray.koplugin"
 
@@ -679,6 +688,9 @@ msgstr "Orta"
 
 msgid "reasoning_unset"
 msgstr "Ayarlanmamış (Varsayılan)"
+
+msgid "reject_pair"
+msgstr "Reject"
 
 msgid "relookup_button"
 msgstr "'%s' için tekrar ara"

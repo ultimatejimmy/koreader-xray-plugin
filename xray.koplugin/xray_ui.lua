@@ -833,7 +833,30 @@ function M:showCharacters()
     local items = {}
     if #self.characters > 0 then
         table.insert(items, { text = "⌕ " .. self.loc:t("search_character"), callback = function() self:showCharacterSearch() end })
-        table.insert(items, { text = "⋈ " .. (self.loc:t("merge_duplicates") or "Merge Duplicates..."), callback = function() self:showMergeFlow(self.characters, "characters") end })
+        table.insert(items, { text = "⋈ " .. (self.loc:t("merge_duplicates") or "Merge Duplicates..."), callback = function()
+            local ButtonDialog = require("ui/widget/buttondialog")
+            local merge_dialog
+            merge_dialog = ButtonDialog:new{
+                title = self.loc:t("merge_duplicates") or "Merge Duplicates",
+                buttons = {{
+                    {
+                        text = "✦ " .. (self.loc:t("ai_scan") or "AI Scan"),
+                        callback = function()
+                            UIManager:close(merge_dialog)
+                            self:showAIFindDuplicatesFlow(self.characters, "characters", self.loc:t("entity_label_characters") or "characters")
+                        end
+                    },
+                    {
+                        text = self.loc:t("manual_pick") or "Manual Pick",
+                        callback = function()
+                            UIManager:close(merge_dialog)
+                            self:showMergeFlow(self.characters, "characters")
+                        end
+                    }
+                }}
+            }
+            UIManager:show(merge_dialog)
+        end })
     end
     table.insert(items, { text = "✚ " .. (self.loc:t("menu_fetch_more_chars") or "Fetch More Characters"), keep_menu_open = true, callback = function() self:fetchMoreCharacters() end, separator = #self.characters > 0 })
     for _, char in ipairs(self.characters) do
@@ -875,7 +898,7 @@ function M:showCharacters()
 
     UIManager:scheduleIn(0.3, function()
         if self.destroyed then return end
-        if self.pending_duplicate_review and self.pending_duplicate_review.characters then
+        if self.pending_duplicate_review and self.pending_duplicate_review.characters and #self.pending_duplicate_review.characters > 0 then
             local pairs = self.pending_duplicate_review.characters
             self.pending_duplicate_review.characters = nil
             local ConfirmBox = require("ui/widget/confirmbox")
@@ -888,8 +911,8 @@ function M:showCharacters()
                 ok_text     = self.loc:t("review") or "Review",
                 cancel_text = self.loc:t("later")  or "Later",
                 ok_callback = function()
-                    self:showAIFindDuplicatesFlow(self.characters, "characters",
-                        self.loc:t("entity_label_characters") or "characters")
+                    self:log("XRayPlugin: User chose to review pending " .. tostring(#pairs) .. " duplicate(s) for characters")
+                    self:walkDuplicatePairs(self.characters, "characters", pairs)
                 end,
             })
         end
@@ -1251,8 +1274,7 @@ function M:showCharacterDetails(character, opts)
     end
 
     self.active_details_dialog = ButtonDialog:new{
-        title = character.name or "Details",
-        widget = vg,
+        _added_widgets = { vg },
         buttons = buttons,
     }
     UIManager:show(self.active_details_dialog)
@@ -1400,8 +1422,7 @@ function M:showLocationDetails(loc_item, opts)
     end
 
     self.active_details_dialog = ButtonDialog:new{
-        title = loc_item.name or "Details",
-        widget = vg,
+        _added_widgets = { vg },
         buttons = buttons,
     }
     UIManager:show(self.active_details_dialog)
@@ -1645,8 +1666,7 @@ function M:showTermDetails(term, opts)
     end
 
     self.active_details_dialog = ButtonDialog:new{
-        title = term.name or "Details",
-        widget = vg,
+        _added_widgets = { vg },
         buttons = buttons,
     }
     UIManager:show(self.active_details_dialog)
@@ -2018,9 +2038,217 @@ function M:showLinkedEntriesSettings()
     showSettings()
 end
 
+function M:walkDuplicatePairs(list, list_name, pairs_found)
+    local InfoMessage = require("ui/widget/infomessage")
+    local ButtonDialog = require("ui/widget/buttondialog")
+
+    self:log("XRayPlugin: Walking " .. tostring(pairs_found and #pairs_found or 0) .. " duplicate pair(s) for " .. tostring(list_name))
+
+    if not pairs_found or #pairs_found == 0 then
+        UIManager:show(InfoMessage:new{
+            text = self.loc:t("no_duplicates_found") or "No duplicates found.",
+            timeout = 3
+        })
+        return
+    end
+
+    if not self.book_data then
+        if not self.cache_manager then
+            self.cache_manager = require(plugin_path .. "xray_cachemanager"):new()
+        end
+        self.book_data = self.cache_manager:loadCache(self.ui.document.file) or {}
+    end
+
+    local rejected_pairs = self.book_data.rejected_merge_pairs or {}
+    local filtered_pairs = {}
+    for _, pair in ipairs(pairs_found) do
+        if pair.primary and pair.secondary then
+            local p_name = pair.primary:lower()
+            local s_name = pair.secondary:lower()
+            local key = p_name < s_name and (p_name .. "|" .. s_name) or (s_name .. "|" .. p_name)
+            if not rejected_pairs[key] then
+                -- Validate both entries still exist in the current list
+                local primary_item, secondary_item
+                for _, it in ipairs(list) do
+                    if it.name and it.name:lower() == p_name then
+                        primary_item = it
+                    end
+                    if it.name and it.name:lower() == s_name then
+                        secondary_item = it
+                    end
+                end
+                if primary_item and secondary_item then
+                    table.insert(filtered_pairs, pair)
+                end
+            end
+        end
+    end
+    pairs_found = filtered_pairs
+
+    self:log("XRayPlugin: " .. tostring(#pairs_found) .. " pair(s) remain after filtering rejected/non-existent for " .. tostring(list_name))
+
+    if #pairs_found == 0 then
+        UIManager:show(InfoMessage:new{
+            text = self.loc:t("no_duplicates_found") or "No duplicates found.",
+            timeout = 3
+        })
+        return
+    end
+
+    -- Walk through pairs one at a time
+    local pair_idx = 1
+    local merge_count = 0
+
+    local function saveAndRefresh()
+        if merge_count == 0 then return end
+        if not self.cache_manager then
+            self.cache_manager = require(plugin_path .. "xray_cachemanager"):new()
+        end
+        if not self.book_data then
+            self.book_data = self.cache_manager:loadCache(self.ui.document.file) or {}
+        end
+        local cache = self.book_data
+        if list_name == "characters" then
+            cache.characters = list
+        elseif list_name == "locations" then
+            cache.locations = list
+        end
+        self.cache_manager:asyncSaveCache(self.ui.document.file, cache)
+        -- Clear normalized lookup caches
+        for _, it in ipairs(list) do
+            it._norm_name = nil
+            it._norm_aliases = nil
+        end
+    end
+
+    local function processNextPair()
+        if pair_idx > #pairs_found then
+            saveAndRefresh()
+            local msg = merge_count > 0
+                and self.loc:t("ai_merged_n", merge_count)
+                or  (self.loc:t("no_merges_performed") or "No merges performed.")
+            UIManager:show(InfoMessage:new{ text = msg, timeout = 3 })
+            self:log("XRayPlugin: Duplicate walk complete. " .. tostring(merge_count) .. " merge(s) performed.")
+            if list_name == "characters" then self:showCharacters()
+            elseif list_name == "locations" then self:showLocations() end
+            return
+        end
+
+        local pair = pairs_found[pair_idx]
+        pair_idx = pair_idx + 1
+
+        -- Validate both entries still exist (earlier merge may have removed one)
+        local primary_item, secondary_item
+        for _, it in ipairs(list) do
+            if it.name and it.name:lower() == (pair.primary or ""):lower() then
+                primary_item = it
+            end
+            if it.name and it.name:lower() == (pair.secondary or ""):lower() then
+                secondary_item = it
+            end
+        end
+
+        if not primary_item or not secondary_item then
+            processNextPair()  -- skip silently
+            return
+        end
+
+        local confirm_text = string.format(
+            "%s\n\nKEEP:   %s\nREMOVE: %s\n\n%s: %s",
+            self.loc:t("ai_merge_confirm_title") or "AI Duplicate Detected",
+            pair.primary, pair.secondary,
+            self.loc:t("reason") or "Reason",
+            pair.reason or "Similar entries"
+        )
+
+        local confirm_dialog
+        confirm_dialog = ButtonDialog:new{
+            title = confirm_text,
+            buttons = {{
+                {
+                    text = self.loc:t("merge_button") or "Merge",
+                    callback = function()
+                        self:log("XRayPlugin: Merging duplicate pair: keep '" .. tostring(pair.primary) .. "', remove '" .. tostring(pair.secondary) .. "'")
+                        UIManager:close(confirm_dialog)
+                        local p_desc = primary_item.description or primary_item.biography
+                        local s_desc = secondary_item.description or secondary_item.biography
+                        if p_desc and s_desc then
+                            local wait_msg = InfoMessage:new{ text = self.loc:t("merging_smartly") or "Merging...", timeout = 120 }
+                            UIManager:show(wait_msg)
+                            UIManager:scheduleIn(0.1, function()
+                                if self.destroyed then return end
+                                if self.ai_helper then self.ai_helper:setTrapWidget(wait_msg) end
+                                local ai_desc = self.ai_helper:mergeDescriptionsWithAI(p_desc, s_desc)
+                                if self.ai_helper then self.ai_helper:resetTrapWidget() end
+                                UIManager:close(wait_msg)
+                                self:mergeEntries(list, pair.primary, pair.secondary, ai_desc)
+                                merge_count = merge_count + 1
+                                processNextPair()
+                            end)
+                        else
+                            self:mergeEntries(list, pair.primary, pair.secondary, nil)
+                            merge_count = merge_count + 1
+                            processNextPair()
+                        end
+                    end
+                },
+                {
+                    text = self.loc:t("skip") or "Skip",
+                    callback = function()
+                        self:log("XRayPlugin: Skipping pair '" .. tostring(pair.primary) .. "' / '" .. tostring(pair.secondary) .. "'")
+                        UIManager:close(confirm_dialog)
+                        processNextPair()
+                    end
+                },
+                {
+                    text = self.loc:t("reject_pair") or "Reject",
+                    callback = function()
+                        self:log("XRayPlugin: Rejecting pair '" .. tostring(pair.primary) .. "' / '" .. tostring(pair.secondary) .. "'")
+                        UIManager:close(confirm_dialog)
+                        if not self.book_data then
+                            if not self.cache_manager then
+                                self.cache_manager = require(plugin_path .. "xray_cachemanager"):new()
+                            end
+                            self.book_data = self.cache_manager:loadCache(self.ui.document.file) or {}
+                        end
+                        self.book_data.rejected_merge_pairs = self.book_data.rejected_merge_pairs or {}
+                        local p_name = pair.primary:lower()
+                        local s_name = pair.secondary:lower()
+                        local key = p_name < s_name and (p_name .. "|" .. s_name) or (s_name .. "|" .. p_name)
+                        self.book_data.rejected_merge_pairs[key] = true
+                        
+                        -- Save cache to persist rejection
+                        if not self.cache_manager then
+                            self.cache_manager = require(plugin_path .. "xray_cachemanager"):new()
+                        end
+                        self.cache_manager:asyncSaveCache(self.ui.document.file, self.book_data)
+                        
+                        UIManager:show(InfoMessage:new{ text = self.loc:t("pair_rejected") or "Pair marked as not a duplicate.", timeout = 2 })
+                        processNextPair()
+                    end
+                },
+                {
+                    text = self.loc:t("stop") or "Stop",
+                    callback = function()
+                        self:log("XRayPlugin: User stopped duplicate walk after " .. tostring(merge_count) .. " merge(s)")
+                        UIManager:close(confirm_dialog)
+                        pair_idx = #pairs_found + 1
+                        processNextPair()
+                    end
+                }
+            }}
+        }
+        UIManager:show(confirm_dialog)
+    end
+
+    processNextPair()
+end
+
 function M:showAIFindDuplicatesFlow(list, list_name, entity_label)
     local InfoMessage = require("ui/widget/infomessage")
     local ButtonDialog = require("ui/widget/buttondialog")
+
+    self:log("XRayPlugin: AI duplicate scan started for " .. tostring(list_name))
 
     if not self.ai_helper or not self.ai_helper:hasApiKey() then
         UIManager:show(InfoMessage:new{
@@ -2052,6 +2280,7 @@ function M:showAIFindDuplicatesFlow(list, list_name, entity_label)
         UIManager:close(wait_msg)
 
         if not pairs_found then
+            self:log("XRayPlugin: AI duplicate scan failed for " .. tostring(list_name) .. ": " .. tostring(err_msg))
             UIManager:show(InfoMessage:new{
                 text = (self.loc:t("ai_error") or "AI Error: ") .. tostring(err_msg),
                 timeout = 4
@@ -2059,131 +2288,8 @@ function M:showAIFindDuplicatesFlow(list, list_name, entity_label)
             return
         end
 
-        if #pairs_found == 0 then
-            UIManager:show(InfoMessage:new{
-                text = self.loc:t("no_duplicates_found") or "No duplicates found.",
-                timeout = 3
-            })
-            return
-        end
-
-        -- Walk through pairs one at a time
-        local pair_idx = 1
-        local merge_count = 0
-
-        local function saveAndRefresh()
-            if merge_count == 0 then return end
-            if not self.cache_manager then
-                self.cache_manager = require(plugin_path .. "xray_cachemanager"):new()
-            end
-            if not self.book_data then
-                self.book_data = self.cache_manager:loadCache(self.ui.document.file) or {}
-            end
-            local cache = self.book_data
-            if list_name == "characters" then
-                cache.characters = list
-            elseif list_name == "locations" then
-                cache.locations = list
-            end
-            self.cache_manager:asyncSaveCache(self.ui.document.file, cache)
-            -- Clear normalized lookup caches
-            for _, it in ipairs(list) do
-                it._norm_name = nil
-                it._norm_aliases = nil
-            end
-        end
-
-        local function processNextPair()
-            if pair_idx > #pairs_found then
-                saveAndRefresh()
-                local msg = merge_count > 0
-                    and self.loc:t("ai_merged_n", merge_count)
-                    or  (self.loc:t("no_merges_performed") or "No merges performed.")
-                UIManager:show(InfoMessage:new{ text = msg, timeout = 3 })
-                if list_name == "characters" then self:showCharacters()
-                elseif list_name == "locations" then self:showLocations() end
-                return
-            end
-
-            local pair = pairs_found[pair_idx]
-            pair_idx = pair_idx + 1
-
-            -- Validate both entries still exist (earlier merge may have removed one)
-            local primary_item, secondary_item
-            for _, it in ipairs(list) do
-                if it.name and it.name:lower() == (pair.primary or ""):lower() then
-                    primary_item = it
-                end
-                if it.name and it.name:lower() == (pair.secondary or ""):lower() then
-                    secondary_item = it
-                end
-            end
-
-            if not primary_item or not secondary_item then
-                processNextPair()  -- skip silently
-                return
-            end
-
-            local confirm_text = string.format(
-                "%s\n\nKEEP:   %s\nREMOVE: %s\n\n%s: %s",
-                self.loc:t("ai_merge_confirm_title") or "AI Duplicate Detected",
-                pair.primary, pair.secondary,
-                self.loc:t("reason") or "Reason",
-                pair.reason or "Similar entries"
-            )
-
-            local confirm_dialog
-            confirm_dialog = ButtonDialog:new{
-                title = confirm_text,
-                buttons = {{
-                    {
-                        text = self.loc:t("merge_button") or "Merge",
-                        callback = function()
-                            UIManager:close(confirm_dialog)
-                            local p_desc = primary_item.description or primary_item.biography
-                            local s_desc = secondary_item.description or secondary_item.biography
-                            if p_desc and s_desc then
-                                local InfoMessage = require("ui/widget/infomessage")
-                                local wait_msg = InfoMessage:new{ text = self.loc:t("merging_smartly") or "Merging...", timeout = 120 }
-                                UIManager:show(wait_msg)
-                                UIManager:scheduleIn(0.1, function()
-                                    if self.destroyed then return end
-                                    if self.ai_helper then self.ai_helper:setTrapWidget(wait_msg) end
-                                    local ai_desc = self.ai_helper:mergeDescriptionsWithAI(p_desc, s_desc)
-                                    if self.ai_helper then self.ai_helper:resetTrapWidget() end
-                                    UIManager:close(wait_msg)
-                                    self:mergeEntries(list, pair.primary, pair.secondary, ai_desc)
-                                    merge_count = merge_count + 1
-                                    processNextPair()
-                                end)
-                            else
-                                self:mergeEntries(list, pair.primary, pair.secondary, nil)
-                                merge_count = merge_count + 1
-                                processNextPair()
-                            end
-                        end
-                    },
-                    {
-                        text = self.loc:t("skip") or "Skip",
-                        callback = function()
-                            UIManager:close(confirm_dialog)
-                            processNextPair()
-                        end
-                    },
-                    {
-                        text = self.loc:t("stop") or "Stop",
-                        callback = function()
-                            UIManager:close(confirm_dialog)
-                            pair_idx = #pairs_found + 1
-                            processNextPair()
-                        end
-                    }
-                }}
-            }
-            UIManager:show(confirm_dialog)
-        end
-
-        processNextPair()
+        self:log("XRayPlugin: AI duplicate scan found " .. tostring(#pairs_found) .. " pair(s) for " .. tostring(list_name))
+        self:walkDuplicatePairs(list, list_name, pairs_found)
     end)
 end
 
@@ -2643,7 +2749,30 @@ function M:showLocations()
         return 
     end
     local items = {
-        { text = "⋈ " .. (self.loc:t("merge_duplicates") or "Merge Duplicates..."), callback = function() self:showMergeFlow(self.locations, "locations") end, separator = true },
+        { text = "⋈ " .. (self.loc:t("merge_duplicates") or "Merge Duplicates..."), callback = function()
+            local ButtonDialog = require("ui/widget/buttondialog")
+            local merge_dialog
+            merge_dialog = ButtonDialog:new{
+                title = self.loc:t("merge_duplicates") or "Merge Duplicates",
+                buttons = {{
+                    {
+                        text = "✦ " .. (self.loc:t("ai_scan") or "AI Scan"),
+                        callback = function()
+                            UIManager:close(merge_dialog)
+                            self:showAIFindDuplicatesFlow(self.locations, "locations", self.loc:t("entity_label_locations") or "locations")
+                        end
+                    },
+                    {
+                        text = self.loc:t("manual_pick") or "Manual Pick",
+                        callback = function()
+                            UIManager:close(merge_dialog)
+                            self:showMergeFlow(self.locations, "locations")
+                        end
+                    }
+                }}
+            }
+            UIManager:show(merge_dialog)
+        end, separator = true },
     }
     for _, loc in ipairs(self.locations) do 
         if type(loc) == "table" then
@@ -2683,7 +2812,7 @@ function M:showLocations()
 
     UIManager:scheduleIn(0.3, function()
         if self.destroyed then return end
-        if self.pending_duplicate_review and self.pending_duplicate_review.locations then
+        if self.pending_duplicate_review and self.pending_duplicate_review.locations and #self.pending_duplicate_review.locations > 0 then
             local pairs = self.pending_duplicate_review.locations
             self.pending_duplicate_review.locations = nil
             local ConfirmBox = require("ui/widget/confirmbox")
@@ -2696,8 +2825,8 @@ function M:showLocations()
                 ok_text     = self.loc:t("review") or "Review",
                 cancel_text = self.loc:t("later")  or "Later",
                 ok_callback = function()
-                    self:showAIFindDuplicatesFlow(self.locations, "locations",
-                        self.loc:t("entity_label_locations") or "locations")
+                    self:log("XRayPlugin: User chose to review pending " .. tostring(#pairs) .. " duplicate(s) for locations")
+                    self:walkDuplicatePairs(self.locations, "locations", pairs)
                 end,
             })
         end
@@ -3018,8 +3147,7 @@ function M:showHistoricalFigureDetails(fig, opts)
     end
 
     self.active_details_dialog = ButtonDialog:new{
-        title = fig.name or "Details",
-        widget = vg,
+        _added_widgets = { vg },
         buttons = buttons,
     }
     UIManager:show(self.active_details_dialog)
@@ -3777,12 +3905,30 @@ function M:checkSeriesContext()
 
     self:log("XRayPlugin: Series: checkSeriesContext: checking book title=" .. tostring(title) .. ", author=" .. tostring(author))
 
+    local function saveSeriesChecked()
+        self:log("XRayPlugin: Series: Saving series check outcome (dismissed=true) to cache")
+        if not self.cache_manager then
+            self.cache_manager = require(plugin_path .. "xray_cachemanager"):new()
+        end
+        if not self.book_data then
+            self.book_data = self.cache_manager:loadCache(self.ui.document.file) or {}
+        end
+        self.book_data.series_context_dismissed = true
+        self.cache_manager:asyncSaveCache(self.ui.document.file, self.book_data)
+    end
+
     -- 1. Try metadata check first (without AI, passes nil for ai_helper)
     local series_info = self.series_manager:detectSeries(props, title, author, nil)
-    if series_info and series_info.name and series_info.index and series_info.index > 1 then
-        self:log("XRayPlugin: Series: Metadata check found series: " .. series_info.name .. ", index=" .. tostring(series_info.index))
-        self:showSeriesContextPrompt(series_info)
-        return
+    if series_info and series_info.name and series_info.index then
+        if series_info.index > 1 then
+            self:log("XRayPlugin: Series: Metadata check found series: " .. series_info.name .. ", index=" .. tostring(series_info.index))
+            self:showSeriesContextPrompt(series_info)
+            return
+        else
+            self:log("XRayPlugin: Series: Metadata check found series: " .. series_info.name .. ", index=" .. tostring(series_info.index) .. " (first book). Caching check outcome.")
+            saveSeriesChecked()
+            return
+        end
     end
 
     -- 2. Fallback to AI (performed asynchronously to prevent UI freeze)
@@ -3840,11 +3986,16 @@ function M:checkSeriesContext()
                     if index > 1 then
                         self:showSeriesContextPrompt(ai_series_info)
                     else
-                        self:log("XRayPlugin: Series: Book is first in series (index=" .. tostring(index) .. "), skipping prompt.")
+                        self:log("XRayPlugin: Series: Book is first in series (index=" .. tostring(index) .. "), skipping prompt. Caching check outcome.")
+                        saveSeriesChecked()
                     end
+                else
+                    self:log("XRayPlugin: Series: Async check detected series, but name is invalid. Caching check outcome.")
+                    saveSeriesChecked()
                 end
             else
-                self:log("XRayPlugin: Series: Async check determined book is not part of a series.")
+                self:log("XRayPlugin: Series: Async check determined book is not part of a series. Caching check outcome.")
+                saveSeriesChecked()
             end
         end
     end

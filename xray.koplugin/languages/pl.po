@@ -26,6 +26,9 @@ msgstr "Zidentyfikowano duplikat AI"
 msgid "ai_merged_n"
 msgstr "Pomyślnie scalono %d par(y)."
 
+msgid "ai_scan"
+msgstr "AI Scan"
+
 msgid "ai_scanning_duplicates"
 msgstr "AI szuka duplikatów..."
 
@@ -395,6 +398,9 @@ msgstr "Wyszukiwanie '%s'..."
 msgid "low_conf_match"
 msgstr "Częściowe dopasowanie – wyświetlam '%s' dla zapytania. Dotknij poniżej, aby pobrać dokładny termin."
 
+msgid "manual_pick"
+msgstr "Manual Pick"
+
 msgid "mention_dismiss_btn"
 msgstr "✕"
 
@@ -647,6 +653,9 @@ msgstr "Brak danych o osi czasu.\n\nNajpierw użyj 'Pobierz dane X-Ray'.\n\nAI p
 msgid "ok"
 msgstr "OK"
 
+msgid "pair_rejected"
+msgstr "Pair marked as not a duplicate."
+
 msgid "path"
 msgstr "plugins/xray.koplugin"
 
@@ -679,6 +688,9 @@ msgstr "Średni"
 
 msgid "reasoning_unset"
 msgstr "Nieustawione (domyślny)"
+
+msgid "reject_pair"
+msgstr "Reject"
 
 msgid "relookup_button"
 msgstr "Wyszukaj ponownie '%s'"

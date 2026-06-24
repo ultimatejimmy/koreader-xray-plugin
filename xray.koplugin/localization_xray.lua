@@ -392,12 +392,14 @@ function Localization:t(key, ...)
             no_merges_performed = "No merges were performed.",
             merge_button = "Merge",
             skip = "Skip",
+            reject_pair = "Reject",
             stop = "Stop",
             reason = "Reason",
             entity_label_characters = "characters",
             entity_label_locations = "locations",
             pending_duplicates_prompt = "AI found %d possible duplicate(s) from the last fetch. Review now?",
             review = "Review",
+            pair_rejected = "Pair marked as not a duplicate.",
         }
         translation = fallbacks[key] or key
     end
