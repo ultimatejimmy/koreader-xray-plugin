@@ -41,7 +41,7 @@ Stap 1. Kijk UITSLUITEND naar het blok "CHAPTER SAMPLES". Identificeer de verhal
 Stap 2. SLUIT alle niet-verhalende inleidingen en nawoorden UIT (bijv. Omslag, Titelpagina, Auteursrecht, Inhoudsopgave, Opdracht, Dankwoord, Ook van).
 Stap 3. Maak voor elk verhalend hoofdstuk, beginnend bij het allereerste, PRECIES ÉÉN gebeurtenisobject aan in de `timeline`-array.
 Stap 4. Het veld `chapter` MOET exact overeenkomen met de hoofdstuktitel in het voorbeeld. (Koppel ze strikt in opeenvolgende volgorde).
-Stap 5. Samenvat dit specifieke hoofdstuk in het veld `event` (MAXIMAAL {MAX_TIMELINE_EVENT} tekens). Gropeer hoofdstukken NIET.
+Stap 5. Samenvat dit specifieke hoofdstuk in het veld `event` {TIMELINE_DETAIL_GUIDANCE} (MAXIMAAL {MAX_TIMELINE_EVENT} tekens). Gropeer hoofdstukken NIET.
 Stap 6. GEEN SPOILERS: Stop exact bij de %d%%-grens. Neem geen gebeurtenissen op na deze voortgang.
 
 ALGORITME VOOR PERSONAGES & HISTORISCHE FIGUREN:
@@ -119,7 +119,7 @@ VEREIST JSON-FORMAAT:
   "timeline": [
     {
       "chapter": "Exacte hoofdstuktitel uit voorbeelden",
-      "event": "Belangrijke verhalende gebeurtenis uit dit hoofdstuk (Max {MAX_TIMELINE_EVENT} tekens)"
+      "event": "Narrative summary of this chapter. {TIMELINE_DETAIL_GUIDANCE} (Max {MAX_TIMELINE_EVENT} chars)"
     }
   ]
 }]],
@@ -328,3 +328,4 @@ VEREIST JSON-FORMAT:
         no_biography = "Geen biografie beschikbaar"
     }
 }
+

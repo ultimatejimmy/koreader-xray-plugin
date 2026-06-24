@@ -41,7 +41,7 @@ return {
 步骤 2：排除所有非叙事性的前言和后记（例如：封面、扉页、版权页、目录、献词、致谢等）。
 步骤 3：针对每个叙事性章节，从第一章开始，在 `timeline` 数组中创建一个对应的事件对象。
 步骤 4：`chapter` 字段必须与样本中的章节标题完全匹配。（按顺序严格映射）。
-步骤 5：在 `event` 字段中总结该特定章节（最多 {MAX_TIMELINE_EVENT} 个字符）。不要合并章节。
+步骤 5：在 `event` 字段中总结该特定章节{TIMELINE_DETAIL_GUIDANCE} （最多 {MAX_TIMELINE_EVENT} 个字符）。不要合并章节。
 步骤 6：严禁剧透：严格停止在 %d%% 进度处。不要包含超过此进度的事件。
 
 角色与历史人物算法：
@@ -118,7 +118,7 @@ return {
     "timeline": [
     {
       "chapter": "样本中的准确章节标题",
-      "event": "该章节的关键叙事事件（最多 {MAX_TIMELINE_EVENT} 个字符）"
+      "event": "Narrative summary of this chapter. {TIMELINE_DETAIL_GUIDANCE} (Max {MAX_TIMELINE_EVENT} chars)"
     }
   ]
 } ]],
@@ -326,3 +326,4 @@ If `is_valid` is false:
         no_biography = "暂无简介"
     }
 }
+

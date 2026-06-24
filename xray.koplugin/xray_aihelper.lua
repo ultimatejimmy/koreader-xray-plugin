@@ -1420,12 +1420,26 @@ function AIHelper:createPrompt(title, author, context, section_name, targeted_wo
         local num_hist  = math.min(15, math.max(3,  math.floor(8  * 100 / hist_len)))
         local term_len  = math.max(50, math.min(300, s.term_def_len or 100))
         local num_terms = 15
+
+        -- Guidance for timeline detail based on target length setting
+        local tl_guidance = "Write a concise single-sentence summary."
+        if tl_len <= 50 then
+            tl_guidance = "Write a brief one-phrase summary."
+        elseif tl_len <= 80 then
+            tl_guidance = "Write a concise single-sentence summary."
+        elseif tl_len <= 150 then
+            tl_guidance = "Write a detailed summary including context and key consequences."
+        else
+            tl_guidance = "Write a rich, full narrative description including character actions, key events, and their consequences."
+        end
+
         final_prompt = final_prompt
             :gsub("{MAX_CHAR_DESC}",    tostring(char_len))
             :gsub("{NUM_CHARS}",        tostring(num_chars))
             :gsub("{MAX_LOC_DESC}",     tostring(loc_len))
             :gsub("{NUM_LOCS}",         tostring(num_locs))
             :gsub("{MAX_TIMELINE_EVENT}",tostring(tl_len))
+            :gsub("{TIMELINE_DETAIL_GUIDANCE}", tl_guidance)
             :gsub("{MAX_HIST_BIO}",     tostring(hist_len))
             :gsub("{NUM_HIST}",         tostring(num_hist))
             :gsub("{MAX_TERM_DEF}",     tostring(term_len))

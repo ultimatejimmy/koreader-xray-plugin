@@ -70,7 +70,7 @@ Langkah 1. Lihat HANYA blok "CHAPTER SAMPLES". Identifikasi bab-bab naratif.
 Langkah 2. KECUALIKAN semua materi depan dan belakang non-naratif (misalnya, Sampul, Halaman Judul, Hak Cipta, Daftar Isi, Dedikasi, Ucapan Terima Kasih, Juga Oleh).
 Langkah 3. Untuk setiap bab naratif, dimulai dari yang pertama, buat TEPAT SATU objek acara di array `timeline`.
 Langkah 4. Bidang `chapter` HARUS sama persis dengan header bab dalam sampel. (Petakan secara ketat dalam urutan berurutan).
-Langkah 5. Ringkas bab spesifik tersebut di bidang `event` (MAKS {MAX_TIMELINE_EVENT} karakter). JANGAN kelompokkan bab.
+Langkah 5. Ringkas bab spesifik tersebut di bidang `event` {TIMELINE_DETAIL_GUIDANCE} (MAKS {MAX_TIMELINE_EVENT} karakter). JANGAN kelompokkan bab.
 Langkah 6. BEBAS SPOILER: Berhenti tepat di tanda %d%%. Jangan sertakan peristiwa setelah kemajuan ini.
 
 ALGORITMA UNTUK KARAKTER & TOKOH SEJARAH:
@@ -148,7 +148,7 @@ FORMAT JSON YANG DIPERLUKAN:
   "timeline": [
     {
       "chapter": "Judul Bab Tepat dari Sampel",
-      "event": "Peristiwa naratif utama dari bab ini (Maks {MAX_TIMELINE_EVENT} karakter)"
+      "event": "Narrative summary of this chapter. {TIMELINE_DETAIL_GUIDANCE} (Max {MAX_TIMELINE_EVENT} chars)"
     }
   ]
 }]],
@@ -327,3 +327,4 @@ FORMAT JSON YANG DIPERLUKAN:
         no_biography = "Tidak Ada Biografi yang Tersedia"
     }
 }
+

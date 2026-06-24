@@ -40,7 +40,7 @@ Adım 1. SADECE "CHAPTER SAMPLES" bloğuna bak. Anlatı bölümlerini belirle.
 Adım 2. Anlatı olmayan tüm ön madde ve arka maddeleri HARİÇ TUT (örn., Kapak, Başlık Sayfası, Telif Hakkı, İçindekiler, İthaf, Teşekkür, Ayrıca Yazan).
 Adım 3. Her anlatı bölümü için, en ilk bölümden başlayarak, `timeline` dizisinde TAM OLARAK BİR olay objesi oluştur.
 Adım 4. `chapter` alanı, örnekteki bölüm başlığıyla tam olarak eşleşmelidir. (Bunları kesinlikle sıralı düzende eşle).
-Adım 5. Bu özel bölümü `event` alanında özetle (MAKS {MAX_TIMELINE_EVENT} karakter). Bölümleri GRUPLANDIRMA.
+Adım 5. Bu özel bölümü `event` alanında özetle {TIMELINE_DETAIL_GUIDANCE} (MAKS {MAX_TIMELINE_EVENT} karakter). Bölümleri GRUPLANDIRMA.
 Adım 6. SPOILER YOK: Tam olarak %%%d noktasında dur. Bu ilerlemeden sonraki olayları dahil etme.
 
 KARAKTERLER VE TARİHİ KİŞİLER İÇİN ALGORİTMA:
@@ -118,7 +118,7 @@ GEREKLİ JSON FORMATI:
   "timeline": [
     {
       "chapter": "Örneklerdeki Tam Bölüm Başlığı",
-      "event": "Bu bölümdeki temel anlatı olayı (Maks {MAX_TIMELINE_EVENT} karakter)"
+      "event": "Narrative summary of this chapter. {TIMELINE_DETAIL_GUIDANCE} (Max {MAX_TIMELINE_EVENT} chars)"
     }
   ]
 } ]],
@@ -330,3 +330,4 @@ GEREKLİ JSON FORMATI:
         no_biography = "Biyografi Mevcut Değil"
     }
 }
+

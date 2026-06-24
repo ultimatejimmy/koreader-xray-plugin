@@ -41,7 +41,7 @@ Paso 1. Mira ÚNICAMENTE el bloque "CHAPTER SAMPLES". Identifica los capítulos 
 Paso 2. EXCLUYE todo el material inicial y final no narrativo (ej., Portada, Página de título, Derechos de autor, Índice, Dedicatoria, Agradecimientos, También de).
 Paso 3. Para cada capítulo narrativo, comenzando desde el primero, crea EXACTAMENTE UN objeto de evento en la matriz `timeline`.
 Paso 4. El campo `chapter` DEBE coincidir exactamente con el encabezado del capítulo en la muestra. (Mapéalos estrictamente en orden secuencial).
-Paso 5. Resume ese capítulo específico en el campo `event` (MÁX {MAX_TIMELINE_EVENT} caracteres). NO agrupes capítulos.
+Paso 5. Resume ese capítulo específico en el campo `event` {TIMELINE_DETAIL_GUIDANCE} (MÁX {MAX_TIMELINE_EVENT} caracteres). NO agrupes capítulos.
 Paso 6. SIN SPOILERS: Detente exactamente en la marca del %d%%. No incluyas eventos más allá de este progreso.
 
 ALGORITMO PARA PERSONAJES Y FIGURAS HISTÓRICAS:
@@ -118,7 +118,7 @@ FORMATO JSON REQUERIDO:
   "timeline": [
     {
       "chapter": "Título exacto del capítulo de las muestras",
-      "event": "Evento narrativo clave de este capítulo (Máx {MAX_TIMELINE_EVENT} caracteres)"
+      "event": "Narrative summary of this chapter. {TIMELINE_DETAIL_GUIDANCE} (Max {MAX_TIMELINE_EVENT} chars)"
     }
   ]
 } ]],
@@ -329,3 +329,4 @@ FORMATO JSON REQUERIDO:
         no_biography = "Biografía no disponible"
     }
 }
+

@@ -41,7 +41,7 @@ Pour éviter de sauter des chapitres ou d'halluciner des événements, vous DEVE
 Étape 2. EXCLUEZ tous les éléments non narratifs (par exemple, couverture, page de titre, copyright, table des matières, dédicace, remerciements).
 Étape 3. Pour chaque chapitre narratif, en commençant par le tout premier, créez EXACTEMENT UN objet d'événement dans le tableau `timeline`.
 Étape 4. Le champ `chapter` DOIT correspondre exactement à l'en-tête du chapitre dans l'échantillon. (Mappez-les strictement dans l'ordre séquentiel).
-Étape 5. Résumez ce chapitre spécifique dans le champ `event` (MAX {MAX_TIMELINE_EVENT} caractères). Ne groupez PAS les chapitres.
+Étape 5. Résumez ce chapitre spécifique dans le champ `event` {TIMELINE_DETAIL_GUIDANCE} (MAX {MAX_TIMELINE_EVENT} caractères). Ne groupez PAS les chapitres.
 Étape 6. PAS DE SPOILERS : Arrêtez-vous exactement à la marque de %d%%. N'incluez pas d'événements après cette progression.
 
 ALGORITHME POUR LES PERSONNAGES ET LES FIGURES HISTORIQUES :
@@ -118,7 +118,7 @@ FORMAT JSON REQUIS :
   "timeline": [
     {
       "chapter": "Titre exact du chapitre des échantillons",
-      "event": "Événement narratif clé de ce chapitre (Max {MAX_TIMELINE_EVENT} caractères)"
+      "event": "Narrative summary of this chapter. {TIMELINE_DETAIL_GUIDANCE} (Max {MAX_TIMELINE_EVENT} chars)"
     }
   ]
 } ]],
@@ -329,3 +329,4 @@ FORMAT JSON REQUIS :
         no_biography = "Pas de biographie disponible"
     }
 }
+

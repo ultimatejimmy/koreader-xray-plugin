@@ -73,7 +73,7 @@ Passaggio 1. Guarda SOLO il blocco "CAMPIONI CAPITOLO". Identificare i capitoli 
 Passaggio 2. ESCLUDERE tutto il frontespizio e il sottofondo non narrativo (ad esempio copertina, frontespizio, copyright, sommario, dedica, ringraziamenti, anche di).
 Passaggio 3. Per ogni capitolo narrativo, a partire dal primo, crea ESATTAMENTE UN oggetto evento nell'array `timeline`.
 Passo 4. Il campo "capitolo" DEVE corrispondere esattamente all'intestazione del capitolo nell'esempio. (Mappali rigorosamente in ordine sequenziale).
-Passaggio 5. Riassumi il capitolo specifico nel campo "evento" (caratteri MAX {MAX_TIMELINE_EVENT}). NON raggruppare i capitoli.
+Passaggio 5. Riassumi il capitolo specifico nel campo "evento" {TIMELINE_DETAIL_GUIDANCE} (caratteri MAX {MAX_TIMELINE_EVENT}). NON raggruppare i capitoli.
 Passaggio 6. NESSUN SPOILER: fermati esattamente al segno %d%%. Non includere eventi oltre questo progresso.
 
 ALGORITMO PER PERSONAGGI E FIGURE STORICHE:
@@ -151,7 +151,7 @@ FORMATO JSON RICHIESTO:
   "cronologia": [
     {
       "chapter": "Titolo esatto del capitolo dagli esempi",
-      "event": "Evento narrativo chiave di questo capitolo (massimo {MAX_TIMELINE_EVENT} caratteri)"
+      "event": "Narrative summary of this chapter. {TIMELINE_DETAIL_GUIDANCE} (Max {MAX_TIMELINE_EVENT} chars)"
     }
   ]
 }]],
@@ -340,3 +340,4 @@ FORMATO JSON RICHIESTO:
         unnamed_person = "Persona senza nome"
     }
 }
+

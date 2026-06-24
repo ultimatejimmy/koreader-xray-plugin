@@ -41,7 +41,7 @@ Krok 1. Spójrz WYŁĄCZNIE na blok "CHAPTER SAMPLES". Zidentyfikuj rozdziały n
 Krok 2. WYKLUCZ wszystkie nienarracyjne elementy początkowe i końcowe (np. okładkę, stronę tytułową, prawa autorskie, spis treści, dedykację, podziękowania, inne dzieła autora).
 Krok 3. Dla każdego rozdziału narracyjnego, zaczynając od samego pierwszego, utwórz DOKŁADNIE JEDEN obiekt zdarzenia w tablicy `timeline`.
 Krok 4. Pole `chapter` MUSI dokładnie odpowiadać nagłówkowi rozdziału w próbce. (Przyporządkuj je ściśle w kolejności sekwencyjnej).
-Krok 5. Podsumuj ten konkretny rozdział w polu `event` (MAKSYMALNIE {MAX_TIMELINE_EVENT} znaków). NIE grupuj rozdziałów.
+Krok 5. Podsumuj ten konkretny rozdział w polu `event` {TIMELINE_DETAIL_GUIDANCE} (MAKSYMALNIE {MAX_TIMELINE_EVENT} znaków). NIE grupuj rozdziałów.
 Krok 6. BEZ SPOILERÓW: Zatrzymaj się dokładnie na punkcie %d%%. Nie uwzględniaj wydarzeń wykraczających poza ten postęp.
 
 ALGORYTM DLA POSTACI I POSTACI HISTORYCZNYCH:
@@ -119,7 +119,7 @@ WYMAGANY FORMAT JSON:
   "timeline": [
     {
       "chapter": "Dokładny tytuł rozdziału z próbek",
-      "event": "Kluczowe wydarzenie narracyjne z tego rozdziału (Maksymalnie {MAX_TIMELINE_EVENT} znaków)"
+      "event": "Narrative summary of this chapter. {TIMELINE_DETAIL_GUIDANCE} (Max {MAX_TIMELINE_EVENT} chars)"
     }
   ]
 }]],
@@ -328,3 +328,4 @@ WYMAGANY FORMAT JSON:
         no_biography = "Brak dostępnej biografii"
     }
 }
+

@@ -233,6 +233,24 @@ function M:continueWithFetch(reading_percent, is_update, last_fetch_page, is_sil
         self.ai_helper = AIHelper
         self.ai_helper:init(self.path)
     end
+
+    -- Invalidate timeline if the current timeline length setting is greater than what was cached
+    if not self.cache_manager then self.cache_manager = require(plugin_path .. "xray_cachemanager"):new() end
+    local cached = self.book_data or self.cache_manager:loadCache(self.ui.document.file)
+    if cached and cached.timeline and #cached.timeline > 0 then
+        local s = self.ai_helper and self.ai_helper.settings or {}
+        local current_len = s.timeline_event_len or 80
+        local cached_len = cached.timeline_event_len or 80
+        if current_len > cached_len then
+            self:log("XRayPlugin: timeline_event_len increased from " .. tostring(cached_len) .. " to " .. tostring(current_len) .. ". Regenerating timeline.")
+            self.timeline = {}
+            cached.timeline = {}
+            if self.book_data then
+                self.book_data.timeline = {}
+            end
+        end
+    end
+
     local props = self.ui.document:getProps() or {}
     local title = sanitizeMetadata(props.title)
     local author = sanitizeMetadata(props.authors)
@@ -761,6 +779,9 @@ function M:finalizeXRayData(final_book_data, title, author, book_text, is_update
     updated_data.author_info = self.author_info or updated_data.author_info
     updated_data.last_fetch_page = current_page
     
+    local s = self.ai_helper and self.ai_helper.settings or {}
+    updated_data.timeline_event_len = s.timeline_event_len or 80
+
     self.book_data = updated_data
 
     if not self.cache_manager then self.cache_manager = require(plugin_path .. "xray_cachemanager"):new() end

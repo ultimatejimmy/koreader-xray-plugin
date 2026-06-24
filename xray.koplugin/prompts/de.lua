@@ -41,7 +41,7 @@ Schritt 1. Schauen Sie NUR in den Block "CHAPTER SAMPLES". Identifizieren Sie di
 Schritt 2. SCHLIESSEN Sie alle nicht-erzählenden Vorspann- und Nachspann-Elemente AUS (z. B. Cover, Titelseite, Copyright, Inhaltsverzeichnis, Widmung, Danksagung, Auch von).
 Schritt 3. Erstellen Sie für jedes erzählende Kapitel, beginnend mit dem allerersten, GENAU EIN Ereignisobjekt im Array `timeline`.
 Schritt 4. Das Feld `chapter` MUSS exakt mit der Kapitelüberschrift in der Stichprobe übereinstimmen. (Ordnen Sie diese strikt in sequentieller Reihenfolge zu).
-Schritt 5. Fassen Sie dieses spezifische Kapitel im Feld `event` zusammen (MAX. {MAX_TIMELINE_EVENT} Zeichen). Gruppieren Sie KEINE Kapitel.
+Schritt 5. Fassen Sie dieses spezifische Kapitel im Feld `event` zusammen {TIMELINE_DETAIL_GUIDANCE} (MAX. {MAX_TIMELINE_EVENT} Zeichen). Gruppieren Sie KEINE Kapitel.
 Schritt 6. KEINE SPOILER: Hören Sie genau bei der %d%%-Marke auf. Beziehen Sie keine Ereignisse nach diesem Fortschritt ein.
 
 ALGORITHMUS FÜR CHARAKTERE & HISTORISCHE PERSONEN:
@@ -118,7 +118,7 @@ ERFORDERLICHES JSON-FORMAT:
   "timeline": [
     {
       "chapter": "Exakter Kapiteltitel aus den Stichproben",
-      "event": "Wichtiges erzählerisches Ereignis aus diesem Kapitel (Max. {MAX_TIMELINE_EVENT} Zeichen)"
+      "event": "Narrative summary of this chapter. {TIMELINE_DETAIL_GUIDANCE} (Max {MAX_TIMELINE_EVENT} chars)"
     }
   ]
 } ]],
@@ -329,3 +329,4 @@ ERFORDERLICHES JSON-FORMAT:
         no_biography = "Keine Biografie verfügbar"
     }
 }
+
