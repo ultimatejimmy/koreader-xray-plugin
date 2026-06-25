@@ -392,6 +392,12 @@ msgstr "“关联条目”会在角色、地点和历史人物在彼此的描述
 msgid "log_empty"
 msgstr "日志为空。"
 
+msgid "log_loading"
+msgstr "正在加载日志..."
+
+msgid "log_tail_notice"
+msgstr "[... 已省略 %d 行更早的日志 ...]"
+
 msgid "logs_cleared"
 msgstr "日志已清除！"
 

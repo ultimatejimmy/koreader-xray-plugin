@@ -222,6 +222,8 @@ function Localization:t(key, ...)
             menu_clear_logs = "Clear Logs",
             menu_view_log = "View Log",
             log_empty = "Log is empty.",
+            log_tail_notice = "[... %d earlier line(s) omitted ...]",
+            log_loading = "Loading log...",
             logs_cleared = "Logs cleared!",
             spoiler_free_option = "Spoiler-free Mode (Up to %d%% of the book)",
             spoiler_free_about = "Spoiler-free mode limits AI extraction to the pages you have already read (up to your current page), preventing spoilers from future chapters.\n\nFull Book Mode analyzes the entire book, which may contain spoilers.",

@@ -390,7 +390,13 @@ msgid "linked_entries_setting_desc"
 msgstr "Bağlantılı Girdiler; karakterler, konumlar ve tarihi şahsiyetler birbirlerinin açıklamalarında geçtiklerinde onları otomatik olarak bağlar.\n\nBunu devre dışı bırakmak, detay diyaloglarından 'Bağlantılı Girdiler' düğmesini gizleyecektir."
 
 msgid "log_empty"
-msgstr "Log is empty."
+msgstr "Günlük boş."
+
+msgid "log_loading"
+msgstr "Günlük yükleniyor..."
+
+msgid "log_tail_notice"
+msgstr "[... %d önceki satır atlandı ...]"
 
 msgid "logs_cleared"
 msgstr "Günlükler temizlendi!"
@@ -561,7 +567,7 @@ msgid "menu_view_config"
 msgstr "Yapılandırmayı Görüntüle"
 
 msgid "menu_view_log"
-msgstr "X-Ray Log"
+msgstr "Günlüğü Görüntüle"
 
 msgid "menu_xray"
 msgstr "X-Ray"

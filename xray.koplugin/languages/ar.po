@@ -390,7 +390,13 @@ msgid "linked_entries_setting_desc"
 msgstr "تقوم الإدخالات المرتبطة تلقائيًا بربط الشخصيات والمواقع والشخصيات التاريخية عندما يتم ذكرها في أوصاف بعضها البعض.\n\nسيؤدي تعطيل هذا إلى إخفاء زر 'الإدخالات المرتبطة' من حوارات التفاصيل."
 
 msgid "log_empty"
-msgstr "Log is empty."
+msgstr "السجل فارغ."
+
+msgid "log_loading"
+msgstr "جارٍ تحميل السجل..."
+
+msgid "log_tail_notice"
+msgstr "[... تم حذف %d سطر سابق ...]"
 
 msgid "logs_cleared"
 msgstr "تم مسح السجلات!"
@@ -561,7 +567,7 @@ msgid "menu_view_config"
 msgstr "عرض جميع قيم التكوين"
 
 msgid "menu_view_log"
-msgstr "X-Ray Log"
+msgstr "عرض السجل"
 
 msgid "menu_xray"
 msgstr "X-Ray"

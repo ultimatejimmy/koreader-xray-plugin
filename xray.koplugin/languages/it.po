@@ -392,6 +392,12 @@ msgstr "Le voci collegate collegano automaticamente personaggi, luoghi e figure 
 msgid "log_empty"
 msgstr "Il registro è vuoto."
 
+msgid "log_loading"
+msgstr "Caricamento del registro..."
+
+msgid "log_tail_notice"
+msgstr "[... %d riga/e precedente/i omessa/e ...]"
+
 msgid "logs_cleared"
 msgstr "Registri cancellati!"
 

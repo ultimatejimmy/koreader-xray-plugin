@@ -392,6 +392,12 @@ msgstr "Linked Entries conecta automáticamente personajes, ubicaciones y figura
 msgid "log_empty"
 msgstr "El registro está vacío."
 
+msgid "log_loading"
+msgstr "Cargando registro..."
+
+msgid "log_tail_notice"
+msgstr "[... %d línea(s) anterior(es) omitida(s) ...]"
+
 msgid "logs_cleared"
 msgstr "¡Registros limpiados!"
 

@@ -390,7 +390,13 @@ msgid "linked_entries_setting_desc"
 msgstr "Linked Entries автоматично з’єднує персонажів, місця та історичних осіб, коли вони згадуються в описах одне одного.\n\nВимкнення цього приховає кнопку 'Linked Entries' у діалогових вікнах з деталями."
 
 msgid "log_empty"
-msgstr "Log is empty."
+msgstr "Лог-файл порожній."
+
+msgid "log_loading"
+msgstr "Завантаження лог-файлу..."
+
+msgid "log_tail_notice"
+msgstr "[... пропущено %d попередніх рядків ...]"
 
 msgid "logs_cleared"
 msgstr "Логи очищено!"
@@ -561,7 +567,7 @@ msgid "menu_view_config"
 msgstr "Переглянути всю конфігурацію"
 
 msgid "menu_view_log"
-msgstr "X-Ray Log"
+msgstr "Переглянути лог-файл"
 
 msgid "menu_xray"
 msgstr "X-Ray"

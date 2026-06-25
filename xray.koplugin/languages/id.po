@@ -390,7 +390,13 @@ msgid "linked_entries_setting_desc"
 msgstr "Entri Terkait secara otomatis menghubungkan karakter, lokasi, dan tokoh sejarah ketika mereka disebutkan dalam deskripsi satu sama lain.\n\nMenonaktifkan ini akan menyembunyikan tombol 'Entri Terkait' dari dialog detail."
 
 msgid "log_empty"
-msgstr "Log is empty."
+msgstr "Log kosong."
+
+msgid "log_loading"
+msgstr "Memuat log..."
+
+msgid "log_tail_notice"
+msgstr "[... %d baris sebelumnya diabaikan ...]"
 
 msgid "logs_cleared"
 msgstr "Log dihapus!"
@@ -561,7 +567,7 @@ msgid "menu_view_config"
 msgstr "Lihat Semua Nilai Konfigurasi"
 
 msgid "menu_view_log"
-msgstr "X-Ray Log"
+msgstr "Lihat Log"
 
 msgid "menu_xray"
 msgstr "X-Ray"

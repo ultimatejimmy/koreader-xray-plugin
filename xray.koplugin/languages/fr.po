@@ -392,6 +392,12 @@ msgstr "Les entrées liées connectent automatiquement les personnages, les lieu
 msgid "log_empty"
 msgstr "Le journal est vide."
 
+msgid "log_loading"
+msgstr "Chargement du journal..."
+
+msgid "log_tail_notice"
+msgstr "[... %d ligne(s) précédente(s) omise(s) ...]"
+
 msgid "logs_cleared"
 msgstr "Logs effacés !"
 

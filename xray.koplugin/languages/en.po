@@ -392,6 +392,12 @@ msgstr "Linked Entries automatically connects characters, locations, and histori
 msgid "log_empty"
 msgstr "Log is empty."
 
+msgid "log_loading"
+msgstr "Loading log..."
+
+msgid "log_tail_notice"
+msgstr "[... %d earlier line(s) omitted ...]"
+
 msgid "logs_cleared"
 msgstr "Logs cleared!"
 

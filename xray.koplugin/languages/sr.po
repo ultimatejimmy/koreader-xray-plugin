@@ -390,7 +390,13 @@ msgid "linked_entries_setting_desc"
 msgstr "Повезани уноси аутоматски повезују ликове, локације и историјске личности када се помињу у описима једни других.\n\nОнемогућавање овога ће сакрити дугме 'Повезани уноси' из дијалога са детаљима."
 
 msgid "log_empty"
-msgstr "Log is empty."
+msgstr "Дневник је празан."
+
+msgid "log_loading"
+msgstr "Учитавање дневника..."
+
+msgid "log_tail_notice"
+msgstr "[... изостављено је %d претходних редова ...]"
 
 msgid "logs_cleared"
 msgstr "Дневници очишћени!"
@@ -561,7 +567,7 @@ msgid "menu_view_config"
 msgstr "Прикажи све вредности конфигурације"
 
 msgid "menu_view_log"
-msgstr "X-Ray Log"
+msgstr "Прикажи дневник"
 
 msgid "menu_xray"
 msgstr "X-Ray"

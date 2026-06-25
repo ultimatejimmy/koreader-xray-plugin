@@ -392,6 +392,12 @@ msgstr "Verknüpfte Einträge verbindet automatisch Charaktere, Orte und histori
 msgid "log_empty"
 msgstr "Protokoll ist leer."
 
+msgid "log_loading"
+msgstr "Protokoll wird geladen..."
+
+msgid "log_tail_notice"
+msgstr "[... %d frühere Zeile(n) ausgelassen ...]"
+
 msgid "logs_cleared"
 msgstr "Logs gelöscht!"
 

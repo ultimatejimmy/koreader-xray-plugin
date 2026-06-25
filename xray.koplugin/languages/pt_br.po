@@ -392,6 +392,12 @@ msgstr "Entradas vinculadas conecta automaticamente personagens, locais e termos
 msgid "log_empty"
 msgstr "O log está vazio."
 
+msgid "log_loading"
+msgstr "Carregando log..."
+
+msgid "log_tail_notice"
+msgstr "[... %d linha(s) anterior(es) omitida(s) ...]"
+
 msgid "logs_cleared"
 msgstr "Logs limpos!"
 

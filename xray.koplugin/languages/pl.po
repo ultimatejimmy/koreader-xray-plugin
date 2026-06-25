@@ -390,7 +390,13 @@ msgid "linked_entries_setting_desc"
 msgstr "Powiązane wpisy automatycznie łączą postacie, miejsca i postacie historyczne, gdy są one wspomniane w swoich opisach.\n\nWyłączenie tej opcji ukryje przycisk 'Powiązane wpisy' w oknach szczegółów."
 
 msgid "log_empty"
-msgstr "Log is empty."
+msgstr "Dziennik jest pusty."
+
+msgid "log_loading"
+msgstr "Ładowanie dziennika..."
+
+msgid "log_tail_notice"
+msgstr "[... pominięto %d wcześniejszych linii ...]"
 
 msgid "logs_cleared"
 msgstr "Dzienniki wyczyszczone!"
@@ -561,7 +567,7 @@ msgid "menu_view_config"
 msgstr "Wyświetl wszystkie wartości konfiguracji"
 
 msgid "menu_view_log"
-msgstr "X-Ray Log"
+msgstr "Pokaż dziennik"
 
 msgid "menu_xray"
 msgstr "X-Ray"

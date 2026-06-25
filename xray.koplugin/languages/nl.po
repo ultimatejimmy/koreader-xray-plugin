@@ -390,7 +390,13 @@ msgid "linked_entries_setting_desc"
 msgstr "Gekoppelde vermeldingen verbindt automatisch personages, locaties en historische figuren wanneer ze in elkaars beschrijvingen worden genoemd.\n\nAls u dit uitschakelt, wordt de knop 'Gekoppelde vermeldingen' verborgen in de detailvensters."
 
 msgid "log_empty"
-msgstr "Log is empty."
+msgstr "Logboek is leeg."
+
+msgid "log_loading"
+msgstr "Logboek laden..."
+
+msgid "log_tail_notice"
+msgstr "[... %d eerdere regel(s) weggelaten ...]"
 
 msgid "logs_cleared"
 msgstr "Logs gewist!"
@@ -561,7 +567,7 @@ msgid "menu_view_config"
 msgstr "Bekijk alle configuratiewaarden"
 
 msgid "menu_view_log"
-msgstr "X-Ray Log"
+msgstr "Logboek bekijken"
 
 msgid "menu_xray"
 msgstr "X-Ray"
