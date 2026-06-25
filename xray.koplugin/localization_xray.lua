@@ -220,6 +220,8 @@ function Localization:t(key, ...)
             xray_mode_desc = "Adds an 'X-Ray' button to dictionary and selection menus for instant lookups.",
             no_data_prompt = "No X-Ray data found for this book. Would you like to fetch it from AI now?",
             menu_clear_logs = "Clear Logs",
+            menu_view_log = "View Log",
+            log_empty = "Log is empty.",
             logs_cleared = "Logs cleared!",
             spoiler_free_option = "Spoiler-free Mode (Up to %d%% of the book)",
             spoiler_free_about = "Spoiler-free mode limits AI extraction to the pages you have already read (up to your current page), preventing spoilers from future chapters.\n\nFull Book Mode analyzes the entire book, which may contain spoilers.",

@@ -2865,6 +2865,40 @@ function M:clearLogs()
     UIManager:show(InfoMessage:new{ text = self.loc:t("logs_cleared") or "Logs cleared!", timeout = 3 })
 end
 
+function M:viewLog()
+    local XRayLogger = require(plugin_path .. "xray_logger")
+    local log_path = XRayLogger.path .. "/xray.log"
+
+    local f = io.open(log_path, "r")
+    local log_text
+    if f then
+        log_text = f:read("*a")
+        f:close()
+    end
+
+    if not log_text or log_text == "" then
+        UIManager:show(InfoMessage:new{
+            text = self.loc:t("log_empty") or "Log is empty.",
+            timeout = 3,
+        })
+        return
+    end
+
+    local TextViewer = require("ui/widget/textviewer")
+    local viewer = TextViewer:new{
+        title = self.loc:t("menu_view_log") or "X-Ray Log",
+        text = log_text,
+        text_type = "code",
+    }
+    UIManager:show(viewer)
+
+    UIManager:nextTick(function()
+        if viewer.scroll_text_w then
+            viewer.scroll_text_w:scrollToBottom()
+        end
+    end)
+end
+
 function M:toggleXRayMode()
     local ButtonDialog = require("ui/widget/buttondialog")
     local info_dialog

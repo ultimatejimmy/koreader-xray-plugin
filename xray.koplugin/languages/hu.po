@@ -389,6 +389,9 @@ msgstr "Bekapcsolva"
 msgid "linked_entries_setting_desc"
 msgstr "A kapcsolódó bejegyzések funkció automatikusan összekapcsolja a szereplőket, helyszíneket és történelmi alakokat, ha említik őket egymás leírásában.\n\nE funkció kikapcsolása elrejti a 'Kapcsolódó bejegyzések' gombot a részletek párbeszédpanelén."
 
+msgid "log_empty"
+msgstr "Log is empty."
+
 msgid "logs_cleared"
 msgstr "Naplófájlok törölve!"
 
@@ -556,6 +559,9 @@ msgstr "X-Ray adatok frissítése"
 
 msgid "menu_view_config"
 msgstr "Összes konfigurációs érték megtekintése"
+
+msgid "menu_view_log"
+msgstr "X-Ray Log"
 
 msgid "menu_xray"
 msgstr "X-Ray"

@@ -934,6 +934,11 @@ function XRayPlugin:getSubMenuItems()
                 callback = function() self:clearLogs() end,
             },
             {
+                text = self.loc:t("menu_view_log") or "View Log",
+                keep_menu_open = true,
+                callback = function() self:viewLog() end,
+            },
+            {
                 text = self.loc:t("menu_beta_channel") or "Beta Channel Settings",
                 keep_menu_open = true,
                 callback = function() self:showBetaChannelSettings() end,

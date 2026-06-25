@@ -389,6 +389,9 @@ msgstr "Aktiviert"
 msgid "linked_entries_setting_desc"
 msgstr "Verknüpfte Einträge verbindet automatisch Charaktere, Orte und historische Personen, wenn sie in den Beschreibungen der jeweils anderen erwähnt werden.\n\nWenn Sie dies deaktivieren, wird die Schaltfläche 'Verknüpfte Einträge' in den Detaildialogen ausgeblendet."
 
+msgid "log_empty"
+msgstr "Protokoll ist leer."
+
 msgid "logs_cleared"
 msgstr "Logs gelöscht!"
 
@@ -556,6 +559,9 @@ msgstr "X-Ray Daten aktualisieren (Zusammenführen)"
 
 msgid "menu_view_config"
 msgstr "Alle Konfigurationswerte anzeigen"
+
+msgid "menu_view_log"
+msgstr "Protokoll anzeigen"
 
 msgid "menu_xray"
 msgstr "X-Ray"

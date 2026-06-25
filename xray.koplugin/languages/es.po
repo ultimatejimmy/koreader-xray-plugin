@@ -389,6 +389,9 @@ msgstr "Activado"
 msgid "linked_entries_setting_desc"
 msgstr "Linked Entries conecta automáticamente personajes, ubicaciones y figuras históricas cuando se mencionan en las descripciones de los demás.\n\nDesactivar esto ocultará el botón 'Linked Entries' de los diálogos de detalle."
 
+msgid "log_empty"
+msgstr "El registro está vacío."
+
 msgid "logs_cleared"
 msgstr "¡Registros limpiados!"
 
@@ -556,6 +559,9 @@ msgstr "Actualizar datos de X-Ray (Combinar)"
 
 msgid "menu_view_config"
 msgstr "Ver configuración"
+
+msgid "menu_view_log"
+msgstr "Ver registro"
 
 msgid "menu_xray"
 msgstr "X-Ray"

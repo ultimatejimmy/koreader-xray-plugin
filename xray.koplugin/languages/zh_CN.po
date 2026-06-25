@@ -389,6 +389,9 @@ msgstr "已启用"
 msgid "linked_entries_setting_desc"
 msgstr "“关联条目”会在角色、地点和历史人物在彼此的描述中被提到时自动建立连接。\n\n禁用此功能将隐藏详情对话框中的“关联条目”按钮。"
 
+msgid "log_empty"
+msgstr "日志为空。"
+
 msgid "logs_cleared"
 msgstr "日志已清除！"
 
@@ -556,6 +559,9 @@ msgstr "更新 X-Ray 数据 (合并)"
 
 msgid "menu_view_config"
 msgstr "查看所有配置"
+
+msgid "menu_view_log"
+msgstr "查看日志"
 
 msgid "menu_xray"
 msgstr "X-Ray"

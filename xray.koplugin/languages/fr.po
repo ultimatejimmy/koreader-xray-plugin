@@ -389,6 +389,9 @@ msgstr "Activé"
 msgid "linked_entries_setting_desc"
 msgstr "Les entrées liées connectent automatiquement les personnages, les lieux et les personnages historiques lorsqu'ils sont mentionnés dans leurs descriptions respectives.\n\nDésactiver ceci masquera le bouton « Entrées liées » des boîtes de dialogue de détails."
 
+msgid "log_empty"
+msgstr "Le journal est vide."
+
 msgid "logs_cleared"
 msgstr "Logs effacés !"
 
@@ -556,6 +559,9 @@ msgstr "Mettre à jour les données X-Ray (Fusion)"
 
 msgid "menu_view_config"
 msgstr "Voir toutes les valeurs de configuration"
+
+msgid "menu_view_log"
+msgstr "Voir le journal"
 
 msgid "menu_xray"
 msgstr "X-Ray"

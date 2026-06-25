@@ -389,6 +389,9 @@ msgstr "Включено"
 msgid "linked_entries_setting_desc"
 msgstr "Linked Entries автоматически связывает персонажей, места и исторических личностей, когда они упоминаются в описаниях друг друга.\n\nОтключение этого параметра скроет кнопку «Linked Entries» в диалоговых окнах с подробной информацией."
 
+msgid "log_empty"
+msgstr "Лог пуст."
+
 msgid "logs_cleared"
 msgstr "Логи очищены!"
 
@@ -556,6 +559,9 @@ msgstr "Обновить данные X-Ray (Слияние)"
 
 msgid "menu_view_config"
 msgstr "Просмотр всей конфигурации"
+
+msgid "menu_view_log"
+msgstr "Просмотр лога"
 
 msgid "menu_xray"
 msgstr "X-Ray"

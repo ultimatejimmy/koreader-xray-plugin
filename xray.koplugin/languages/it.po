@@ -389,6 +389,9 @@ msgstr "Abilitato"
 msgid "linked_entries_setting_desc"
 msgstr "Le voci collegate collegano automaticamente personaggi, luoghi e figure storiche quando sono menzionati nelle rispettive descrizioni.\n\nDisabilitando questa opzione si nasconderà il pulsante \"Voci collegate\" dalle finestre di dialogo dei dettagli."
 
+msgid "log_empty"
+msgstr "Il registro è vuoto."
+
 msgid "logs_cleared"
 msgstr "Registri cancellati!"
 
@@ -556,6 +559,9 @@ msgstr "Aggiorna i dati radiografici"
 
 msgid "menu_view_config"
 msgstr "Visualizza tutti i valori di configurazione"
+
+msgid "menu_view_log"
+msgstr "Visualizza registro"
 
 msgid "menu_xray"
 msgstr "Raggi X"
