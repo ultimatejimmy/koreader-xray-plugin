@@ -1148,6 +1148,8 @@ function XRayPlugin:showUnitStyleCard()
     local LineWidget = require("ui/widget/linewidget")
     local Widget = require("ui/widget/widget")
 
+    local xray_theme = require(plugin_path .. "xray_theme")
+
     local function sc(val)
         return Screen:scaleBySize(val)
     end
@@ -1194,10 +1196,11 @@ function XRayPlugin:showUnitStyleCard()
                 local dot_char = is_selected and "●" or "○"
                 
                 local frame = FrameContainer:new{
-                    bordersize = is_selected and 1 or 0,
-                    radius = sc(4),
-                    padding = sc(4),
-                    color = Blitbuffer.COLOR_GRAY_B,
+                    bordersize = is_selected and xray_theme.border_btn or sc(1),
+                    radius = xray_theme.radius_btn,
+                    padding = sc(6),
+                    color = is_selected and xray_theme.color_border or xray_theme.color_section_rule,
+                    background = xray_theme.color_bg,
                     HorizontalGroup:new{
                         align = "center",
                         TextWidget:new{ text = dot_char, face = Font:getFace("cfont", 16) },
@@ -1281,7 +1284,6 @@ function XRayPlugin:showUnitStyleCard()
             underline_widget,
         }
 
-        local TextBoxWidget = require("ui/widget/textboxwidget")
         local tooltip_text = "3.22 km"
 
         local fs = 20
@@ -1293,16 +1295,12 @@ function XRayPlugin:showUnitStyleCard()
         local pad_v = math.floor(fs * 0.55)
         local text_size = RenderText:sizeUtf8Text(0, 9999, tooltip_face, tooltip_text, false, false)
         local text_w = text_size.x
-        local text_h = text_size.y_top + text_size.y_bottom
         local tooltip_max_w = dialog_w - sc(64)
         local popup_w = math.min(tooltip_max_w, text_w + pad_h * 2)
-        local card_h = pad_v * 2 + text_h + 2
 
-        local tb = TextBoxWidget:new{
+        local tb = TextWidget:new{
             text = tooltip_text,
             face = tooltip_face,
-            width = popup_w - pad_h * 2,
-            alignment = "center",
         }
 
         local border_sz = sc(2)
@@ -1316,12 +1314,14 @@ function XRayPlugin:showUnitStyleCard()
             padding_left = pad_h,
             padding_right = pad_h,
             width = popup_w,
-            height = card_h,
             VerticalGroup:new{
                 align = "center",
                 tb
             }
         }
+
+        local card_size = preview_tooltip:getSize()
+        local card_h = card_size.h
 
         local arrow_w = sc(16)
         local arrow_h = sc(8)
@@ -1345,9 +1345,9 @@ function XRayPlugin:showUnitStyleCard()
 
         local preview_panel = FrameContainer:new{
             padding = sc(8),
-            radius = sc(6),
-            bordersize = 1,
-            color = Blitbuffer.COLOR_GRAY_B,
+            radius = xray_theme.radius_window,
+            bordersize = xray_theme.border_preview,
+            color = xray_theme.color_border,
             background = Blitbuffer.COLOR_WHITE,
             width = dialog_w - sc(32),
             VerticalGroup:new{
@@ -1367,7 +1367,7 @@ function XRayPlugin:showUnitStyleCard()
         local title_label = TextWidget:new{
             text = "STYLE PREVIEW",
             face = Font:getFace("infofont", 11),
-            fgcolor = Blitbuffer.Color8(120),
+            fgcolor = xray_theme.color_label_dim,
         }
 
         local style_row = option_row({
@@ -1395,30 +1395,31 @@ function XRayPlugin:showUnitStyleCard()
         }, tooltip_timeout, "unit_tooltip_timeout")
 
         local function span()
-            return VerticalSpan:new{ width = sc(8) }
+            return VerticalSpan:new{ width = xray_theme.gap }
         end
         local function divider()
-            return FrameContainer:new{
-                bordersize = 0,
-                padding = 0,
-                margin = 0,
-                background = Blitbuffer.COLOR_GRAY_B,
-                VerticalSpan:new{ width = sc(1) }
+            return LineWidget:new{
+                dimen = Geom:new{ w = dialog_w - sc(32), h = sc(1) },
+                background = xray_theme.color_section_rule,
             }
         end
 
         local function label(text)
             return TextWidget:new{
-                text = text,
-                face = Font:getFace("cfont", 15),
+                text = text:upper(),
+                face = Font:getFace("cfont", xray_theme.face_label_size),
+                fgcolor = xray_theme.color_label_dim,
                 alignment = "left",
             }
         end
 
         local close_btn = Button:new{
             text = "Close",
+            face = Font:getFace("cfont", 16),
             width = dialog_w - sc(32),
-            height = sc(32),
+            height = sc(36),
+            bordersize = xray_theme.border_btn,
+            radius = xray_theme.radius_btn,
             callback = function()
                 self._styling_offset = nil
                 UIManager:close(overlay, "ui")
@@ -1427,10 +1428,10 @@ function XRayPlugin:showUnitStyleCard()
 
         local card = FrameContainer:new{
             padding = sc(12),
-            radius = sc(10),
-            bordersize = 2,
-            color = Blitbuffer.COLOR_GRAY_D,
-            background = Blitbuffer.COLOR_WHITE,
+            radius = xray_theme.radius_window,
+            bordersize = xray_theme.border_window,
+            color = xray_theme.color_border,
+            background = xray_theme.color_bg,
             width = dialog_w,
             VerticalGroup:new{
                 align = "left",
