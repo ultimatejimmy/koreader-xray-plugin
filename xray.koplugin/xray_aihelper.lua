@@ -538,16 +538,27 @@ function AIHelper:makeRequestAsync(request_params, result_file)
                             end
                             if #ai_text > 0 then
                                 local inner_ok, inner = pcall(json_req.decode, ai_text)
-                                valid_json = inner_ok and inner ~= nil
-                                if not valid_json then
-                                    -- Try to find JSON boundaries for truncated responses
-                                    local first_brace = ai_text:find("{", 1, true)
-                                    if first_brace then
-                                        -- Part B: Try to repair before giving up
-                                        local repaired = self:fixTruncatedJSON(ai_text:sub(first_brace))
-                                        local repair_ok, repair_data = pcall(json_req.decode, repaired)
-                                        if repair_ok and repair_data then
-                                            self:log("AIHelper Child: fixTruncatedJSON succeeded for " .. req.provider)
+                                   valid_json = inner_ok and inner ~= nil
+                                   if not valid_json then
+                                        -- Try unescaped-quote repair first (Claude/Bedrock compatibility)
+                                        local quote_fixed = repairUnescapedQuotes(ai_text)
+                                        local qf_ok, qf_data = pcall(json_req.decode, quote_fixed)
+                                        if qf_ok and qf_data then
+                                            self:log("AIHelper Child: repairUnescapedQuotes succeeded for " .. req.provider)
+                                            ai_text = quote_fixed
+                                            inner_ok, inner = qf_ok, qf_data
+                                            valid_json = true
+                                        end
+                                   end
+                                   if not valid_json then
+                                        -- Try to find JSON boundaries for truncated responses
+                                        local first_brace = ai_text:find("{", 1, true)
+                                        if first_brace then
+                                            -- Part B: Try to repair before giving up
+                                            local repaired = self:fixTruncatedJSON(repairUnescapedQuotes(ai_text:sub(first_brace)))
+                                            local repair_ok, repair_data = pcall(json_req.decode, repaired)
+                                            if repair_ok and repair_data then
+                                                self:log("AIHelper Child: fixTruncatedJSON succeeded for " .. req.provider)
                                             local synthetic = json_req.encode({
                                                 candidates = {{
                                                     content = { parts = {{ text = repaired }} },
@@ -570,9 +581,20 @@ function AIHelper:makeRequestAsync(request_params, result_file)
                                 local inner_ok, inner = pcall(json_req.decode, content)
                                 valid_json = inner_ok and inner ~= nil
                                 if not valid_json then
+                                    -- Try unescaped-quote repair first (Claude/Bedrock compatibility)
+                                    local quote_fixed = repairUnescapedQuotes(content)
+                                    local qf_ok, qf_data = pcall(json_req.decode, quote_fixed)
+                                    if qf_ok and qf_data then
+                                        self:log("AIHelper Child: repairUnescapedQuotes succeeded for ChatGPT/" .. req.provider)
+                                        content = quote_fixed
+                                        inner_ok, inner = qf_ok, qf_data
+                                        valid_json = true
+                                    end
+                                end
+                                if not valid_json then
                                     local first_brace = content:find("{", 1, true)
                                     if first_brace then
-                                        local repaired = self:fixTruncatedJSON(content:sub(first_brace))
+                                        local repaired = self:fixTruncatedJSON(repairUnescapedQuotes(content:sub(first_brace)))
                                         local repair_ok, repair_data = pcall(json_req.decode, repaired)
                                         if repair_ok and repair_data then
                                             self:log("AIHelper Child: fixTruncatedJSON succeeded for ChatGPT/" .. req.provider)
@@ -601,9 +623,20 @@ function AIHelper:makeRequestAsync(request_params, result_file)
                                 local inner_ok, inner = pcall(json_req.decode, text_to_decode)
                                 valid_json = inner_ok and inner ~= nil
                                 if not valid_json then
+                                    -- Try unescaped-quote repair first (Claude/Bedrock compatibility)
+                                    local quote_fixed = repairUnescapedQuotes(text_to_decode)
+                                    local qf_ok, qf_data = pcall(json_req.decode, quote_fixed)
+                                    if qf_ok and qf_data then
+                                        self:log("AIHelper Child: repairUnescapedQuotes succeeded for Anthropic / " .. req.provider)
+                                        text_to_decode = quote_fixed
+                                        inner_ok, inner = qf_ok, qf_data
+                                        valid_json = true
+                                    end
+                                end
+                                if not valid_json then
                                     local first_brace = text_to_decode:find("{", 1, true)
                                     if first_brace then
-                                        local repaired = self:fixTruncatedJSON(text_to_decode:sub(first_brace))
+                                        local repaired = self:fixTruncatedJSON(repairUnescapedQuotes(text_to_decode:sub(first_brace)))
                                         local repair_ok, repair_data = pcall(json_req.decode, repaired)
                                         if repair_ok and repair_data then
                                             self:log("AIHelper Child: fixTruncatedJSON succeeded for Anthropic / " .. req.provider)
@@ -2083,6 +2116,56 @@ end
 -- Backward compatibility for internal calls
 local fixTruncatedJSON = function(s) return AIHelper:fixTruncatedJSON(s) end
 
+-- Repair unescaped double quotes inside JSON string values.
+-- AI models (especially Claude/Bedrock) sometimes return JSON with unescaped
+-- quotes in values, e.g.: "description": "存在"邪恶"序列"
+-- This causes json.decode to fail with "Expecting ',' delimiter".
+-- The algorithm walks the string character-by-character, tracking whether we
+-- are inside a JSON string. When a '"' is encountered inside a string, we peek
+-- at the next non-whitespace character: if it is a valid JSON delimiter
+-- (',', '}', ']', or end of input) the quote is a genuine string terminator; otherwise
+-- it is an unescaped interior quote and we escape it with '\'.
+local function repairUnescapedQuotes(s)
+    local result = {}
+    local i = 1
+    local len = #s
+    local in_string = false
+    while i <= len do
+        local c = s:sub(i, i)
+        if not in_string then
+            result[#result + 1] = c
+            if c == '"' then
+                in_string = true
+            end
+            i = i + 1
+        else
+            if c == '\\' and i + 1 <= len then
+                -- Escaped character — keep both chars as-is
+                result[#result + 1] = c
+                result[#result + 1] = s:sub(i + 1, i + 1)
+                i = i + 2
+            elseif c == '"' then
+                -- Peek past any whitespace to find the next meaningful char
+                local rest = s:sub(i + 1):match("^%s*(.*)")
+                local next_char = rest:sub(1, 1)
+                if next_char == '' or next_char == ',' or next_char == '}' or next_char == ']' then
+                    -- Genuine string terminator (including end of input)
+                    result[#result + 1] = c
+                    in_string = false
+                else
+                    -- Unescaped quote inside string value — escape it
+                    result[#result + 1] = '\\"'
+                end
+                i = i + 1
+            else
+                result[#result + 1] = c
+                i = i + 1
+            end
+        end
+    end
+    return table.concat(result)
+end
+
 function AIHelper:parseAIResponse(text)
     if not text or #text == 0 then return nil, "Empty response" end
     
@@ -2094,8 +2177,21 @@ function AIHelper:parseAIResponse(text)
         json_text = json_text:gsub("^```json%s*", ""):gsub("^```%w*%s*", ""):gsub("```%s*$", "")
     end
     
-    -- Method 2: Locate first { and last } if decode fails
+    -- Method 1.5: Fix unescaped quotes inside JSON string values
+    -- Try this before heavier repairs so that well-structured but quote-
+    -- polluted responses (common with Claude/Bedrock) succeed quickly.
     local success, data = pcall(json.decode, json_text)
+    if not success then
+        local quote_fixed = repairUnescapedQuotes(json_text)
+        local qf_ok, qf_data = pcall(json.decode, quote_fixed)
+        if qf_ok and qf_data then
+            self:log("AIHelper: repairUnescapedQuotes succeeded")
+            json_text = quote_fixed
+            success, data = qf_ok, qf_data
+        end
+    end
+
+    -- Method 2: Locate first { and last } if decode still fails
     if not success then
         self:log("AIHelper: JSON repair needed")
         local first = json_text:find("{", 1, true) or json_text:find("[", 1, true)
@@ -2106,7 +2202,8 @@ function AIHelper:parseAIResponse(text)
         if first then
              local last = (last_rel > 0) and (#json_text - last_rel + 1) or #json_text
              local extracted = json_text:sub(first, last)
-             local fixed = fixTruncatedJSON(extracted)
+             -- Also try unescaped-quote repair on the extracted fragment
+             local fixed = fixTruncatedJSON(repairUnescapedQuotes(extracted))
              
              success, data = pcall(json.decode, fixed)
              if not success and rapidjson_ok then
