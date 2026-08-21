@@ -72,6 +72,27 @@ function SeriesManager:indexFromFilename(path_or_name)
     return nil
 end
 
+--- "02 - Title.sdr" next to a renamed "Title.epub" (Readest) still carries the volume number.
+function SeriesManager:indexFromNearbyFilename(book_path)
+    if not book_path or not lfs then return nil end
+    local dir = book_path:match("^(.*)/[^/]+$")
+    local base = book_path:match("([^/]+)$") or ""
+    local current_stem = base:gsub("%.[^%.]+$", "")
+    if not dir or current_stem == "" then return nil end
+    local ok_dir, iter, dir_obj = pcall(lfs.dir, dir)
+    if not ok_dir or not iter then return nil end
+    for name in iter, dir_obj do
+        if type(name) == "string" and name:sub(-4) == ".sdr" then
+            local stem = sidecarStem(name)
+            if stem ~= current_stem and self:isSameVolume(current_stem, stem) then
+                local n = self:indexFromFilename(stem)
+                if n then return n end
+            end
+        end
+    end
+    return nil
+end
+
 --- Fold titles/authors for matching (French accents, punctuation, case).
 function SeriesManager:foldTitle(s)
     if type(s) ~= "string" then
@@ -98,6 +119,13 @@ function SeriesManager:foldTitle(s)
     s = s:gsub("[^%w]+", " ")
     s = s:gsub("^%s+", ""):gsub("%s+$", ""):gsub("%s+", " ")
     return s
+end
+
+--- Same volume under a different filename (Readest re-download, dropped "02 -", "Readaloud", etc.).
+function SeriesManager:isSameVolume(a, b)
+    if not a or not b or a == "" or b == "" then return false end
+    if a == b then return true end
+    return self:titlesMatch(a, b)
 end
 
 function SeriesManager:titlesMatch(a, b)
@@ -287,7 +315,8 @@ function SeriesManager:listLinkableBooks(book_path)
     local dir = book_path:match("^(.*)/[^/]+$")
     for _, c in ipairs(self:listNearbySidecars(book_path)) do
         local stem = sidecarStem(c.name)
-        if stem ~= current_stem then
+        if stem ~= current_stem and not self:isSameVolume(current_stem, stem)
+            and not self:isSameVolume(current_stem, c.title) then
             local epub_path
             if dir and lfs then
                 for _, ext in ipairs({ ".epub", ".azw3", ".pdf", ".mobi", ".fb2", ".kepub.epub" }) do
@@ -335,7 +364,7 @@ function SeriesManager:detectSeries(props, title, author, ai_helper, book_path)
         end
     end
     if not series_index then
-        series_index = self:indexFromFilename(book_path)
+        series_index = self:indexFromFilename(book_path) or self:indexFromNearbyFilename(book_path)
         if series_index then
             logger.info("XRayPlugin: Series: detectSeries: index from filename=" .. tostring(series_index))
         end

@@ -4349,6 +4349,18 @@ function M:addBookToSeriesLink(series_name)
                 self:showLinkPriorBooksPicker(series_name)
                 return
             end
+            local cur = book_path:match("([^/]+)$") or ""
+            cur = cur:gsub("%.[^%.]+$", "")
+            local picked = path:match("([^/]+)$") or path
+            picked = picked:gsub("%.[^%.]+$", "")
+            if self.series_manager:isSameVolume(cur, picked) then
+                UIManager:show(InfoMessage:new{
+                    text = self.loc:t("series_link_same_book") or "That file is the book already open (same title, different filename).",
+                    timeout = 5
+                })
+                self:showLinkPriorBooksPicker(series_name)
+                return
+            end
             local data = self.series_manager:loadBookSidecar(path)
             if not data then
                 UIManager:show(InfoMessage:new{
@@ -4369,10 +4381,17 @@ function M:addBookToSeriesLink(series_name)
 end
 
 function M:applyLinkedPriorBooks(series_name, books)
+    local book_path = self.ui.document.file
+    local current_stem = (book_path:match("([^/]+)$") or ""):gsub("%.[^%.]+$", "")
+    local current_title = (self.ui.document:getProps() or {}).title or current_stem
     local selected = {}
     for _, b in ipairs(books or {}) do
         if self._series_link_checked and self._series_link_checked[seriesLinkKey(b)] then
-            table.insert(selected, b)
+            if not self.series_manager:isSameVolume(current_title, b.title)
+                and not self.series_manager:isSameVolume(current_stem, b.title)
+                and not self.series_manager:isSameVolume(current_stem, b.name) then
+                table.insert(selected, b)
+            end
         end
     end
     if #selected == 0 then
@@ -4405,6 +4424,11 @@ function M:applyLinkedPriorBooks(series_name, books)
         return res
     end
     local current_index = #selected + 1
+    local hinted = self.series_manager:indexFromFilename(book_path)
+        or self.series_manager:indexFromNearbyFilename(book_path)
+    if hinted and hinted > current_index then
+        current_index = hinted
+    end
     self.series_manager:upsertBook(slug, current_index, {
         title = props.title,
         author = props.authors or props.author,

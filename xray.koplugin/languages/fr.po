@@ -1097,6 +1097,9 @@ msgstr "Ce livre n'a pas encore de cache X-Ray. Analysez-le d'abord, puis associ
 msgid "series_link_none_selected"
 msgstr "Sélectionnez au moins un tome précédent."
 
+msgid "series_link_same_book"
+msgstr "Ce fichier est le livre déjà ouvert (même titre, autre nom de fichier)."
+
 msgid "series_link_cleared"
 msgstr "Liens de série effacés pour ce livre."
 

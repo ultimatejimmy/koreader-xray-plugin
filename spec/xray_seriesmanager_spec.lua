@@ -180,7 +180,12 @@ describe("xray_seriesmanager", function()
     end)
 
     describe("nearby sidecar matching", function()
-        it("folds French titles for matching", function()
+        it("treats a Readest rename / dropped 02- prefix as the same volume", function()
+            assert.is_true(manager:isSameVolume(
+                "La Reine étranglée",
+                "02 - La Reine étranglée - Readaloud"))
+            assert.is_false(manager:isSameVolume("La Reine étranglée", "Le Roi de fer"))
+        end)
             assert.is_true(manager:titlesMatch("Le Roi de fer", "le roi de fer"))
             assert.is_true(manager:titlesMatch("La Reine étranglée", "02 - La Reine etranglee - Readaloud"))
             assert.is_false(manager:titlesMatch("le", "le roi de fer"))

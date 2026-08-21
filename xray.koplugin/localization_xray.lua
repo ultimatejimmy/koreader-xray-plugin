@@ -399,6 +399,7 @@ function Localization:t(key, ...)
             series_link_no_chooser = "File picker is not available on this device.",
             series_link_no_cache = "That book has no X-Ray cache yet. Analyze it first, then link it.",
             series_link_none_selected = "Select at least one prior book.",
+            series_link_same_book = "That file is the book already open (same title, different filename).",
             series_link_cleared = "Series links cleared for this book.",
             later = "Later",
             dont_ask_again = "Don't ask again",

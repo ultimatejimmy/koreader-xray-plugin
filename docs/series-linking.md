@@ -67,6 +67,7 @@ Readest (and similar tools) usually drop each EPUB into a library folder, not in
 - Keep volumes of the same series in **one folder** on the reader when you can (for example everything under `Books/`). The linker lists neighbors with an X-Ray cache.
 - If a volume landed somewhere else, **Add another book…** and pick its EPUB. It still must have been X-Rayed once (its `.sdr/xray_cache.lua` must exist).
 - You never need to regroup files on disk for linking to work. Moving EPUBs after KOReader has opened them can orphan sidecars and reading progress; prefer linking over renaming.
+- If Readest (or anything else) saves the **same book under a new filename**, the old `*.sdr` can remain next to it (`La Reine étranglée.epub` plus leftover `02 - La Reine étranglée - Readaloud.sdr`). X-Ray treats those as the same volume, not as two earlier books. You can delete the orphan `.sdr` if you no longer open that old filename.
 
 ## Requirements
 

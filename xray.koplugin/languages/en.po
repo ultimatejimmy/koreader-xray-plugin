@@ -800,6 +800,9 @@ msgstr "That book has no X-Ray cache yet. Analyze it first, then link it."
 msgid "series_link_none_selected"
 msgstr "Select at least one prior book."
 
+msgid "series_link_same_book"
+msgstr "That file is the book already open (same title, different filename)."
+
 msgid "series_link_cleared"
 msgstr "Series links cleared for this book."
 
