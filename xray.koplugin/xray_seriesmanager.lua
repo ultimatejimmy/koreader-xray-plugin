@@ -11,6 +11,12 @@ local DataStorage = require("datastorage")
 
 local SeriesManager = {}
 
+--- Sidecar folder name without ".sdr" (KOReader: `Title.sdr` next to `Title.epub`).
+local function sidecarStem(name)
+    if not name then return "" end
+    return name:gsub("%.sdr$", "")
+end
+
 function SeriesManager:new(o)
     o = o or {}
     setmetatable(o, self)
@@ -180,12 +186,6 @@ function SeriesManager:upsertBook(slug, index, book_entry, series_name)
     end
     cache_data.books[index] = book_entry
     return self:saveSeriesCache(slug, cache_data)
-end
-
---- Sidecar folder name without ".sdr" (KOReader: `Title.sdr` next to `Title.epub`).
-local function sidecarStem(name)
-    if not name then return "" end
-    return name:gsub("%.sdr$", "")
 end
 
 --- Among nearby book sidecars, pick the one that is this prior volume.
