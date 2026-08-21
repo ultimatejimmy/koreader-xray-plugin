@@ -1020,31 +1020,27 @@ function M:finalizeXRayData(final_book_data, title, author, book_text, is_update
     if self.series_manager and (updated_data.series_slug or (self.ui and self.ui.document)) then
         pcall(function()
             local props = self.ui and self.ui.document and self.ui.document:getProps() or {}
-            local series_info = self.series_manager:detectSeries(props, title, author, nil)
+            local series_info = self.series_manager:detectSeries(props, title, author, nil, self.ui and self.ui.document and self.ui.document.file)
             local slug = updated_data.series_slug or (series_info and series_info.slug)
             local index = series_info and series_info.index
             if slug and index then
-                local cache_data = self.series_manager:loadSeriesCache(slug)
-                if cache_data and cache_data.books then
-                    local function filterCurrentOnly(tbl)
-                        local res = {}
-                        for _, item in ipairs(tbl or {}) do
-                            if item.source ~= "series_prior" then
-                                table.insert(res, item)
-                            end
+                local function filterCurrentOnly(tbl)
+                    local res = {}
+                    for _, item in ipairs(tbl or {}) do
+                        if item.source ~= "series_prior" then
+                            table.insert(res, item)
                         end
-                        return res
                     end
-                    cache_data.books[index] = {
-                        title = title,
-                        author = author,
-                        characters = filterCurrentOnly(self.characters),
-                        locations = filterCurrentOnly(self.locations),
-                        terms = filterCurrentOnly(self.terms),
-                        timeline = filterCurrentOnly(self.timeline),
-                    }
-                    self.series_manager:saveSeriesCache(slug, cache_data)
+                    return res
                 end
+                self.series_manager:upsertBook(slug, index, {
+                    title = title,
+                    author = author,
+                    characters = filterCurrentOnly(self.characters),
+                    locations = filterCurrentOnly(self.locations),
+                    terms = filterCurrentOnly(self.terms),
+                    timeline = filterCurrentOnly(self.timeline),
+                }, series_info and series_info.name)
             end
         end)
     end
@@ -1838,7 +1834,7 @@ function M:fetchSeriesContext(is_silent, init_wait_dialog, cancel_ref)
     self:log("XRayPlugin: Series: fetchSeriesContext starting for: title=" .. tostring(title) .. ", author=" .. tostring(author))
 
     if init_wait_dialog and self.ai_helper then self.ai_helper:setTrapWidget(init_wait_dialog) end
-    local series_info = self.series_manager:detectSeries(props, title, author, self.ai_helper)
+    local series_info = self.series_manager:detectSeries(props, title, author, self.ai_helper, self.ui.document.file)
     if init_wait_dialog and self.ai_helper then self.ai_helper:resetTrapWidget() end
     if cancel_ref and cancel_ref.cancelled then
         self:log("XRayPlugin: Series: fetchSeriesContext cancelled after detectSeries")
@@ -1846,7 +1842,29 @@ function M:fetchSeriesContext(is_silent, init_wait_dialog, cancel_ref)
         return
     end
 
-    if not series_info or not series_info.name or not series_info.index or series_info.index <= 1 then
+    if not series_info or not series_info.name then
+        self:log("XRayPlugin: Series: No series detected or current book is the first one in the series. series_info=" .. (series_info and ("name=" .. tostring(series_info.name) .. ", index=" .. tostring(series_info.index)) or "nil"))
+        closeInitWait()
+        if not is_silent then
+            UIManager:show(InfoMessage:new{
+                text = self.loc:t("series_no_prior_detected") or "No prior books detected for this series.",
+                timeout = 5
+            })
+        end
+        return
+    end
+    if not series_info.index then
+        self:log("XRayPlugin: Series: Series name known but volume index is unknown")
+        closeInitWait()
+        if not is_silent then
+            UIManager:show(InfoMessage:new{
+                text = self.loc:t("series_index_unknown") or "This book is in a series, but the volume number is unknown.\nUse Series Context → Link prior books… to pick the previous volumes.",
+                timeout = 8
+            })
+        end
+        return
+    end
+    if series_info.index <= 1 then
         self:log("XRayPlugin: Series: No series detected or current book is the first one in the series. series_info=" .. (series_info and ("name=" .. tostring(series_info.name) .. ", index=" .. tostring(series_info.index)) or "nil"))
         closeInitWait()
         if not is_silent then
@@ -1887,14 +1905,26 @@ function M:fetchSeriesContext(is_silent, init_wait_dialog, cancel_ref)
     end
 
     local missing_books = {}
+    local current_path = self.ui and self.ui.document and self.ui.document.file
     for _, book in ipairs(prior_books) do
         local idx = book.index
-        if not cache_data.books[idx] then
-            self:log("XRayPlugin: Series: Cache MISS for book index " .. tostring(idx) .. ": " .. tostring(book.title))
-            table.insert(missing_books, book)
-        else
+        if cache_data.books[idx] then
             self:log("XRayPlugin: Series: Cache HIT for book index " .. tostring(idx) .. ": " .. tostring(book.title))
+        else
+            local local_entry = self.series_manager:findLocalPriorBook(
+                current_path, book.title, book.author or author)
+            if local_entry then
+                cache_data.books[idx] = local_entry
+                self:log("XRayPlugin: Series: Local sidecar HIT for book index " .. tostring(idx)
+                    .. ": " .. tostring(local_entry.title or book.title))
+            else
+                self:log("XRayPlugin: Series: Cache MISS for book index " .. tostring(idx) .. ": " .. tostring(book.title))
+                table.insert(missing_books, book)
+            end
         end
+    end
+    if current_path then
+        self.series_manager:saveSeriesCache(slug, cache_data)
     end
 
     if #missing_books == 0 then

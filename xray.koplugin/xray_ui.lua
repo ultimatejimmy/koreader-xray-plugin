@@ -670,6 +670,7 @@ end
 function M:isXRayUIActive()
     return self._menu_creating or self.xray_menu or self.char_menu or self.loc_menu or self.timeline_menu 
         or self.hf_menu or self.terms_menu or self.ldlg or self.active_related_menu or self.length_presets_menu
+        or self.series_link_menu
 end
 
 function M:newMenu(var_name, args)
@@ -839,14 +840,16 @@ function M:closeAllMenus()
     local menus = {
         self.mentions_menu, self.char_menu, self.loc_menu,
         self.timeline_menu, self.hf_menu, self.xray_menu,
-        self.terms_menu, self.active_details_dialog, self.return_banner
+        self.terms_menu, self.active_details_dialog, self.return_banner,
+        self.series_link_menu
     }
-    for i = 1, 9 do
+    for i = 1, #menus do
         if menus[i] then pcall(function() UIManager:close(menus[i]) end) end
     end
     self.mentions_menu = nil; self.char_menu = nil; self.loc_menu = nil
     self.timeline_menu = nil; self.hf_menu = nil; self.xray_menu = nil
     self.terms_menu = nil; self.active_details_dialog = nil; self.return_banner = nil
+    self.series_link_menu = nil
     
     local function executeClear()
         -- 2. Dismiss native KOReader top menu stack
@@ -4199,6 +4202,285 @@ function M:toggleSeriesContextEnabled()
     UIManager:setDirty(nil, "ui")
 end
 
+local function seriesLinkKey(book)
+    return (book and (book.epub_path or book.name)) or ""
+end
+
+function M:showLinkPriorBooksFlow()
+    if not self.ui or not self.ui.document then
+        UIManager:show(InfoMessage:new{
+            text = self.loc:t("series_link_no_document") or "Open a book first.",
+            timeout = 4
+        })
+        return
+    end
+    if not self.series_manager then
+        self.series_manager = require(plugin_path .. "xray_seriesmanager"):new()
+    end
+    local props = self.ui.document:getProps() or {}
+    local default_name = props.series or props.Series or ""
+    if type(default_name) == "table" then default_name = table.concat(default_name, " ") end
+    default_name = tostring(default_name):gsub("%s*#%d+%s*$", "")
+
+    local InputDialog = require("ui/widget/inputdialog")
+    local dialog
+    dialog = InputDialog:new{
+        title = self.loc:t("series_link_name_title") or "Series name",
+        input = default_name,
+        input_hint = self.loc:t("series_link_name_hint") or "e.g. Les Rois Maudits",
+        buttons = {{
+            { text = self.loc:t("cancel") or "Cancel", callback = function() UIManager:close(dialog) end },
+            { text = self.loc:t("next") or "Next", is_enter_default = true, callback = function()
+                local name = dialog:getInputText()
+                UIManager:close(dialog)
+                name = name and name:match("^%s*(.-)%s*$") or ""
+                if name == "" then
+                    UIManager:show(InfoMessage:new{
+                        text = self.loc:t("series_link_name_required") or "Enter a series name.",
+                        timeout = 4
+                    })
+                    return
+                end
+                self._series_link_checked = nil
+                self._series_link_extra = nil
+                self:showLinkPriorBooksPicker(name)
+            end },
+        }}
+    }
+    UIManager:show(dialog)
+    dialog:onShowKeyboard()
+end
+
+function M:showLinkPriorBooksPicker(series_name)
+    if self.series_link_menu then
+        UIManager:close(self.series_link_menu)
+        self.series_link_menu = nil
+    end
+    local book_path = self.ui.document.file
+    local books = self.series_manager:listLinkableBooks(book_path)
+    for _, extra in ipairs(self._series_link_extra or {}) do
+        local seen = false
+        for _, b in ipairs(books) do
+            if seriesLinkKey(b) == seriesLinkKey(extra) then seen = true; break end
+        end
+        if not seen then table.insert(books, extra) end
+    end
+
+    local props = self.ui.document:getProps() or {}
+    local author = props.authors or props.author or ""
+    if not self._series_link_checked then
+        self._series_link_checked = {}
+        for _, b in ipairs(books) do
+            if self.series_manager:authorsMatch(author, b.author) then
+                self._series_link_checked[seriesLinkKey(b)] = true
+            end
+        end
+    end
+
+    local items = {
+        {
+            text = (self.loc:t("series_link_picker_header") or "Prior books in this folder") .. " — " .. series_name,
+            enabled = false,
+        }
+    }
+    if #books == 0 then
+        table.insert(items, {
+            text = self.loc:t("series_link_none_nearby") or "No other X-Ray caches in this folder.",
+            enabled = false,
+        })
+    end
+    for _, b in ipairs(books) do
+        local key = seriesLinkKey(b)
+        local title = b.title or key
+        local counts = string.format(" (%d / %d / %d)", b.char_count or 0, b.loc_count or 0, b.timeline_count or 0)
+        local mark = (self._series_link_checked and self._series_link_checked[key]) and "[X] " or "[ ] "
+        table.insert(items, {
+            text = mark .. title .. counts,
+            keep_menu_open = true,
+            callback = function()
+                self._series_link_checked[key] = not self._series_link_checked[key]
+                self:showLinkPriorBooksPicker(series_name)
+            end,
+        })
+    end
+    table.insert(items, {
+        text = self.loc:t("series_link_add_other") or "Add another book…",
+        keep_menu_open = true,
+        callback = function() self:addBookToSeriesLink(series_name) end,
+    })
+    table.insert(items, {
+        text = self.loc:t("series_link_import") or "Import selected",
+        callback = function() self:applyLinkedPriorBooks(series_name, books) end,
+    })
+
+    self.series_link_menu = self:newMenu("series_link_menu", {
+        title = self.loc:t("menu_link_prior_books") or "Link prior books",
+        item_table = items,
+        is_borderless = true,
+        width = Screen:getWidth(),
+        height = Screen:getHeight(),
+    })
+    UIManager:show(self.series_link_menu)
+end
+
+function M:addBookToSeriesLink(series_name)
+    local ok_pc, PathChooser = pcall(require, "ui/widget/pathchooser")
+    if not ok_pc or not PathChooser then
+        UIManager:show(InfoMessage:new{
+            text = self.loc:t("series_link_no_chooser") or "File picker is not available on this device.",
+            timeout = 4
+        })
+        return
+    end
+    local book_path = self.ui.document.file
+    local dir = book_path:match("^(.*)/[^/]+$") or book_path
+    UIManager:show(PathChooser:new{
+        title = self.loc:t("series_link_choose_file") or "Choose a prior book",
+        path = dir,
+        select_directory = false,
+        file_filter = function(filename)
+            filename = tostring(filename or ""):lower()
+            return filename:match("%.epub$") or filename:match("%.azw3$")
+                or filename:match("%.pdf$") or filename:match("%.mobi$")
+                or filename:match("%.fb2$")
+        end,
+        onConfirm = function(path)
+            if not path or path == book_path then
+                self:showLinkPriorBooksPicker(series_name)
+                return
+            end
+            local data = self.series_manager:loadBookSidecar(path)
+            if not data then
+                UIManager:show(InfoMessage:new{
+                    text = self.loc:t("series_link_no_cache") or "That book has no X-Ray cache yet. Analyze it first, then link it.",
+                    timeout = 6
+                })
+                self:showLinkPriorBooksPicker(series_name)
+                return
+            end
+            self._series_link_extra = self._series_link_extra or {}
+            local desc = self.series_manager:describeLinkable(path, data)
+            table.insert(self._series_link_extra, desc)
+            self._series_link_checked = self._series_link_checked or {}
+            self._series_link_checked[seriesLinkKey(desc)] = true
+            self:showLinkPriorBooksPicker(series_name)
+        end,
+    })
+end
+
+function M:applyLinkedPriorBooks(series_name, books)
+    local selected = {}
+    for _, b in ipairs(books or {}) do
+        if self._series_link_checked and self._series_link_checked[seriesLinkKey(b)] then
+            table.insert(selected, b)
+        end
+    end
+    if #selected == 0 then
+        UIManager:show(InfoMessage:new{
+            text = self.loc:t("series_link_none_selected") or "Select at least one prior book.",
+            timeout = 4
+        })
+        return
+    end
+    table.sort(selected, function(a, b)
+        local ia, ib = a.file_index or 9999, b.file_index or 9999
+        if ia ~= ib then return ia < ib end
+        return (a.title or "") < (b.title or "")
+    end)
+
+    local slug = self.series_manager:resolveSlug(series_name)
+    for i, b in ipairs(selected) do
+        local entry = self.series_manager:bookEntryFromSidecar(b.data, b.title)
+        self.series_manager:upsertBook(slug, i, entry, series_name)
+    end
+
+    local props = self.ui.document:getProps() or {}
+    local function filterCurrentOnly(tbl)
+        local res = {}
+        for _, item in ipairs(tbl or {}) do
+            if item and item.source ~= "series_prior" then
+                table.insert(res, item)
+            end
+        end
+        return res
+    end
+    local current_index = #selected + 1
+    self.series_manager:upsertBook(slug, current_index, {
+        title = props.title,
+        author = props.authors or props.author,
+        characters = filterCurrentOnly(self.characters),
+        locations = filterCurrentOnly(self.locations),
+        terms = filterCurrentOnly(self.terms),
+        timeline = filterCurrentOnly(self.timeline),
+    }, series_name)
+
+    if self.series_link_menu then
+        UIManager:close(self.series_link_menu)
+        self.series_link_menu = nil
+    end
+    self._series_link_checked = nil
+    self._series_link_extra = nil
+
+    if not self.cache_manager then
+        self.cache_manager = require(plugin_path .. "xray_cachemanager"):new()
+    end
+    if not self.book_data then
+        self.book_data = self.cache_manager:loadCache(self.ui.document.file) or {}
+    end
+    self.book_data.series_context_dismissed = false
+    self.book_data.series_slug = slug
+    self.book_data.series_linked = true
+
+    local cache_data = self.series_manager:loadSeriesCache(slug) or { books = {} }
+    self:mergeSeriesContext(cache_data, {
+        name = series_name,
+        index = current_index,
+        slug = slug,
+    })
+    UIManager:show(InfoMessage:new{
+        text = self.loc:t("series_context_loaded", #selected) or ("Series context loaded (" .. tostring(#selected) .. " prior books)."),
+        timeout = 5
+    })
+end
+
+function M:clearSeriesLinks()
+    local function stripPrior(tbl)
+        local res = {}
+        for _, item in ipairs(tbl or {}) do
+            if item and item.source ~= "series_prior" then
+                table.insert(res, item)
+            end
+        end
+        return res
+    end
+    self.characters = stripPrior(self.characters)
+    self.locations = stripPrior(self.locations)
+    self.terms = stripPrior(self.terms)
+    self.timeline = stripPrior(self.timeline)
+    self.series_context_loaded = false
+    if not self.cache_manager then
+        self.cache_manager = require(plugin_path .. "xray_cachemanager"):new()
+    end
+    if self.ui and self.ui.document then
+        if not self.book_data then
+            self.book_data = self.cache_manager:loadCache(self.ui.document.file) or {}
+        end
+        self.book_data.series_context_loaded = false
+        self.book_data.series_context_dismissed = false
+        self.book_data.series_slug = nil
+        self.book_data.series_linked = nil
+        self.book_data.characters = self.characters
+        self.book_data.locations = self.locations
+        self.book_data.terms = self.terms
+        self.book_data.timeline = self.timeline
+        self.cache_manager:asyncSaveCache(self.ui.document.file, self.book_data)
+    end
+    UIManager:show(InfoMessage:new{
+        text = self.loc:t("series_link_cleared") or "Series links cleared for this book.",
+        timeout = 4
+    })
+end
+
 function M:manualFetchSeriesContext()
     local ButtonDialog = require("ui/widget/buttondialog")
     local cancel_ref = { cancelled = false }
@@ -4369,15 +4651,18 @@ function M:checkSeriesContext()
     end
 
     -- 1. Try metadata check first (without AI, passes nil for ai_helper)
-    local series_info = self.series_manager:detectSeries(props, title, author, nil)
-    if series_info and series_info.name and series_info.index then
-        if series_info.index > 1 then
+    local series_info = self.series_manager:detectSeries(props, title, author, nil, self.ui.document.file)
+    if series_info and series_info.name then
+        if series_info.index and series_info.index > 1 then
             self:log("XRayPlugin: Series: Metadata check found series: " .. series_info.name .. ", index=" .. tostring(series_info.index))
             self:showSeriesContextPrompt(series_info)
             return
-        else
+        elseif series_info.index == 1 then
             self:log("XRayPlugin: Series: Metadata check found series: " .. series_info.name .. ", index=" .. tostring(series_info.index) .. " (first book). Caching check outcome.")
             saveSeriesChecked()
+            return
+        else
+            self:log("XRayPlugin: Series: Metadata check found series: " .. series_info.name .. " but volume index is unknown. Skipping auto-prompt (not dismissed).")
             return
         end
     end

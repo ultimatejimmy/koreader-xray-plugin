@@ -40,6 +40,7 @@ For full setup instructions and a deep dive into features, check out the **[GitH
 - **[Spoiler Protection](https://github.com/ultimatejimmy/koreader-xray-plugin/wiki/6.-Spoiler-Protection)**: How we keep the story safe.
 - **[Fetching Data](https://github.com/ultimatejimmy/koreader-xray-plugin/wiki/7.-Fetching)**: Background fetching, manual fetching, and targeted lookups.
 - **[Advanced Configuration & Maintenance](https://github.com/ultimatejimmy/koreader-xray-plugin/wiki/Advanced-Usage)**: Custom endpoints, config files, formats, logs, and maintenance tools.
+- **[Linking books in a series](docs/series-linking.md)** (this fork): how manual **Link prior books…** copies earlier volumes into the current book without moving files (Readest, flat `Books/` folders, mismatched Calibre series names).
 
 ## Support me
 

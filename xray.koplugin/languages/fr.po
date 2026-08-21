@@ -723,9 +723,14 @@ msgstr "Récupérer plus de termes"
 
 # en-hash: f0d29ae92c638538610d26014bda7269
 msgid "menu_fetch_series_context"
-msgstr "Récupérer / Rafraîchir Series Context"
+msgstr "Récupérer / Rafraîchir le contexte de série"
 
-# en-hash: 7cf395303ce3665a9834721d4b748e4b
+msgid "menu_link_prior_books"
+msgstr "Associer les tomes précédents…"
+
+msgid "menu_clear_series_links"
+msgstr "Dissocier les tomes"
+
 msgid "menu_frequency"
 msgstr "Fréquence"
 
@@ -1053,7 +1058,48 @@ msgstr "Auto-prompt désactivé pour ce livre. Vous pouvez récupérer manuellem
 msgid "series_no_prior_detected"
 msgstr "Aucun livre précédent détecté pour cette série."
 
-# en-hash: 4492f89a70cb73291167d53d07868ebc
+msgid "series_index_unknown"
+msgstr "Ce livre fait partie d'une série, mais le numéro de tome est inconnu.\nUtilisez Contexte de série → Associer les tomes précédents… pour choisir les volumes déjà analysés."
+
+msgid "series_link_name_title"
+msgstr "Nom de la série"
+
+msgid "series_link_name_hint"
+msgstr "ex. Les Rois Maudits"
+
+msgid "series_link_name_required"
+msgstr "Entrez un nom de série."
+
+msgid "series_link_no_document"
+msgstr "Ouvrez d'abord un livre."
+
+msgid "series_link_picker_header"
+msgstr "Tomes précédents dans ce dossier"
+
+msgid "series_link_none_nearby"
+msgstr "Aucun autre cache X-Ray dans ce dossier."
+
+msgid "series_link_add_other"
+msgstr "Ajouter un autre livre…"
+
+msgid "series_link_import"
+msgstr "Importer la sélection"
+
+msgid "series_link_choose_file"
+msgstr "Choisir un tome précédent"
+
+msgid "series_link_no_chooser"
+msgstr "Le sélecteur de fichier n'est pas disponible sur cet appareil."
+
+msgid "series_link_no_cache"
+msgstr "Ce livre n'a pas encore de cache X-Ray. Analysez-le d'abord, puis associez-le."
+
+msgid "series_link_none_selected"
+msgstr "Sélectionnez au moins un tome précédent."
+
+msgid "series_link_cleared"
+msgstr "Liens de série effacés pour ce livre."
+
 msgid "series_prior_books_header"
 msgstr "── Livres précédents ──"
 

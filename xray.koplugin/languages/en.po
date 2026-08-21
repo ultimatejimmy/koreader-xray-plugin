@@ -509,6 +509,12 @@ msgstr "Fetch More Terms"
 msgid "menu_fetch_series_context"
 msgstr "Fetch / Refresh Series Context"
 
+msgid "menu_link_prior_books"
+msgstr "Link prior books…"
+
+msgid "menu_clear_series_links"
+msgstr "Clear series links"
+
 msgid "menu_frequency"
 msgstr "Frequency"
 
@@ -754,6 +760,48 @@ msgstr "Auto-prompt disabled for this book. You can manually fetch recap from X-
 
 msgid "series_no_prior_detected"
 msgstr "No prior books detected for this series."
+
+msgid "series_index_unknown"
+msgstr "This book is in a series, but the volume number is unknown.\nUse Series Context → Link prior books… to pick the previous volumes."
+
+msgid "series_link_name_title"
+msgstr "Series name"
+
+msgid "series_link_name_hint"
+msgstr "e.g. Les Rois Maudits"
+
+msgid "series_link_name_required"
+msgstr "Enter a series name."
+
+msgid "series_link_no_document"
+msgstr "Open a book first."
+
+msgid "series_link_picker_header"
+msgstr "Prior books in this folder"
+
+msgid "series_link_none_nearby"
+msgstr "No other X-Ray caches in this folder."
+
+msgid "series_link_add_other"
+msgstr "Add another book…"
+
+msgid "series_link_import"
+msgstr "Import selected"
+
+msgid "series_link_choose_file"
+msgstr "Choose a prior book"
+
+msgid "series_link_no_chooser"
+msgstr "File picker is not available on this device."
+
+msgid "series_link_no_cache"
+msgstr "That book has no X-Ray cache yet. Analyze it first, then link it."
+
+msgid "series_link_none_selected"
+msgstr "Select at least one prior book."
+
+msgid "series_link_cleared"
+msgstr "Series links cleared for this book."
 
 msgid "series_prior_books_header"
 msgstr "── Prior Books ──"

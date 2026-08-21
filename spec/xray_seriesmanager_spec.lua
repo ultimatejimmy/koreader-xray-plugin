@@ -164,6 +164,86 @@ describe("xray_seriesmanager", function()
             local loaded = manager:loadSeriesCache("nonexistent_slug")
             assert.is_nil(loaded)
         end)
+
+        it("creates a series cache on first upsertBook", function()
+            local ok = manager:upsertBook(test_slug, 1, {
+                title = "Le Roi de fer",
+                characters = { { name = "Philippe le Bel" } },
+            }, "Les Rois Maudits")
+            assert.is_true(ok)
+            local loaded = manager:loadSeriesCache(test_slug)
+            assert.is_not_nil(loaded)
+            assert.are.equal("Les Rois Maudits", loaded.series_name)
+            assert.are.equal("Le Roi de fer", loaded.books[1].title)
+            assert.are.equal("Philippe le Bel", loaded.books[1].characters[1].name)
+        end)
+    end)
+
+    describe("nearby sidecar matching", function()
+        it("folds French titles for matching", function()
+            assert.is_true(manager:titlesMatch("Le Roi de fer", "le roi de fer"))
+            assert.is_true(manager:titlesMatch("La Reine étranglée", "02 - La Reine etranglee - Readaloud"))
+            assert.is_false(manager:titlesMatch("le", "le roi de fer"))
+        end)
+
+        it("picks a sibling sidecar by folder name when cache has no title field", function()
+            local candidates = {
+                { name = "Le Roi de fer.sdr", title = nil, author = "Maurice Druon\nLivraphone", data = { characters = { { name = "A" } } } },
+                { name = "02 - La Reine étranglée - Readaloud.sdr", title = nil, author = "Maurice Druon", data = { characters = { { name = "B" } } } },
+            }
+            local picked = manager:selectNearbyPrior(
+                "Le Roi de fer", "Maurice Druon",
+                "02 - La Reine étranglée - Readaloud.sdr", candidates)
+            assert.is_not_nil(picked)
+            assert.are.equal("Le Roi de fer.sdr", picked.name)
+        end)
+
+        it("falls back to a unique same-author sibling", function()
+            local candidates = {
+                { name = "Le Roi de fer.sdr", title = nil, author = "Maurice Druon", data = {} },
+                { name = "El buscapleitos.sdr", title = "El buscapleitos", author = "Jan Needle", data = {} },
+            }
+            local picked = manager:selectNearbyPrior(
+                "Les Rois Maudits (Book 1)", "Maurice Druon",
+                "02 - La Reine étranglée - Readaloud.sdr", candidates)
+            assert.is_not_nil(picked)
+            assert.are.equal("Le Roi de fer.sdr", picked.name)
+        end)
+    end)
+
+    describe("volume index and canonical slug", function()
+        it("does not invent index=1 when series metadata has no volume number", function()
+            local info = manager:detectSeries({ series = "Rois Maudits" })
+            assert.is_not_nil(info)
+            assert.are.equal("Rois Maudits", info.name)
+            assert.is_nil(info.index)
+        end)
+
+        it("reads volume index from a numbered filename", function()
+            local info = manager:detectSeries(
+                { series = "Rois Maudits" },
+                "La Reine étranglée",
+                "Maurice Druon",
+                nil,
+                "/sdcard/Books/02 - La Reine étranglée - Readaloud.epub"
+            )
+            assert.are.equal(2, info.index)
+        end)
+
+        it("parses calibre 1.0 series_index as 1", function()
+            assert.are.equal(1, manager:parseIndex("1.0"))
+            assert.are.equal(2, manager:parseIndex(2))
+            assert.is_nil(manager:parseIndex(nil))
+        end)
+
+        it("maps Les Rois Maudits and Rois Maudits to the same slug", function()
+            assert.are.equal("rois_maudits", manager:canonicalSlug("Les Rois Maudits"))
+            assert.are.equal("rois_maudits", manager:canonicalSlug("Rois Maudits"))
+            local a = manager:detectSeries({ series = "Les Rois Maudits", series_index = 1 })
+            local b = manager:detectSeries({ series = "Rois Maudits", series_index = 2 })
+            assert.are.equal(a.slug, b.slug)
+            assert.are.equal("rois_maudits", a.slug)
+        end)
     end)
 
     describe("mergeSeriesContext", function()
