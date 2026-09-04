@@ -228,7 +228,7 @@ function CacheManager:asyncSaveCache(book_path, data, on_done_cb)
 
                         -- Yield control back to UIManager loop periodically
                         write_count = write_count + 1
-                        if write_count >= 20 then
+                        if write_count >= 100 then
                             write_count = 0
                             coroutine.yield()
                         end
@@ -274,7 +274,7 @@ function CacheManager:asyncSaveCache(book_path, data, on_done_cb)
                 if on_done_cb then on_done_cb(true) end
             else
                 if not save_entry.cancelled then
-                    UIManager:scheduleIn(0.02, resumeCoroutine)
+                    UIManager:scheduleIn(0.05, resumeCoroutine)
                 else
                     pcall(function() f:close() end)
                     cleanupSave()
@@ -283,7 +283,7 @@ function CacheManager:asyncSaveCache(book_path, data, on_done_cb)
             end
         end
 
-        UIManager:scheduleIn(0.02, resumeCoroutine)
+        UIManager:scheduleIn(0.05, resumeCoroutine)
         logger.info("CacheManager: Started cooperative async save to:", cache_file)
         return true
     end

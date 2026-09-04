@@ -541,6 +541,7 @@ function ImageManager:resolveImagePage(ui, image_entry)
             flat_toc = flat_toc,
             spine_page_map = spine_page_map,
             spine_contents = {},
+            _spine_keys = {},
             image_to_spine = {},
         }
         self._epub_spine_cache[book_path] = meta
@@ -565,6 +566,13 @@ function ImageManager:resolveImagePage(ui, image_entry)
                     if sp then
                         content = sp:read("*a") or ""
                         sp:close()
+                        -- FIFO eviction: keep at most 20 spine files in RAM
+                        meta._spine_keys = meta._spine_keys or {}
+                        if #meta._spine_keys >= 20 then
+                            local oldest = table.remove(meta._spine_keys, 1)
+                            if oldest then meta.spine_contents[oldest] = nil end
+                        end
+                        table.insert(meta._spine_keys, s_href)
                         meta.spine_contents[s_href] = content
                     end
                 end
@@ -765,21 +773,28 @@ function ImageManager:scanEpubImages(book_path, total_pages, ui)
     -- 5. Find which spine XHTML file references each image
     local image_to_spine_idx = {}
     local image_to_pos_ratio = {}
-    for s_idx, s_href in ipairs(spine_items) do
-        local s_lower = s_href:lower()
-        if s_lower:match("%.xhtml$") or s_lower:match("%.html$") or s_lower:match("%.htm$") or s_lower:match("%.xml$") then
-            local cmd = string.format("unzip -p '%s' '%s'", escaped_book, s_href:gsub("'", "'\\''"))
-            local sp_pipe = io.popen(cmd)
-            if sp_pipe then
-                local content = sp_pipe:read("*a") or ""
-                sp_pipe:close()
-                for _, img_f in ipairs(image_files) do
-                    local base_img = img_f.name:match("([^/]+)$") or img_f.name
-                    if not image_to_spine_idx[img_f.name] then
-                        local pos = content:find(base_img, 1, true) or content:find(img_f.name, 1, true)
-                        if pos then
-                            image_to_spine_idx[img_f.name] = s_idx
-                            image_to_pos_ratio[img_f.name] = pos / math.max(1, #content)
+    local remaining_unmatched = #image_files
+
+    if remaining_unmatched > 0 then
+        for s_idx, s_href in ipairs(spine_items) do
+            if remaining_unmatched <= 0 then break end
+            local s_lower = s_href:lower()
+            if s_lower:match("%.xhtml$") or s_lower:match("%.html$") or s_lower:match("%.htm$") or s_lower:match("%.xml$") then
+                local cmd = string.format("unzip -p '%s' '%s'", escaped_book, s_href:gsub("'", "'\\''"))
+                local sp_pipe = io.popen(cmd)
+                if sp_pipe then
+                    local content = sp_pipe:read("*a") or ""
+                    sp_pipe:close()
+                    for _, img_f in ipairs(image_files) do
+                        local base_img = img_f.name:match("([^/]+)$") or img_f.name
+                        if not image_to_spine_idx[img_f.name] then
+                            local pos = content:find(base_img, 1, true) or content:find(img_f.name, 1, true)
+                            if pos then
+                                image_to_spine_idx[img_f.name] = s_idx
+                                image_to_pos_ratio[img_f.name] = pos / math.max(1, #content)
+                                remaining_unmatched = remaining_unmatched - 1
+                                if remaining_unmatched <= 0 then break end
+                            end
                         end
                     end
                 end
@@ -890,6 +905,11 @@ function ImageManager:generateTitleFromFilename(fname)
         return first:upper() .. rest:lower()
     end)
     return clean
+end
+
+-- Clear all cached spine structures and temporary content
+function ImageManager:clearSpineCache()
+    self._epub_spine_cache = {}
 end
 
 return ImageManager

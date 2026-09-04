@@ -278,6 +278,17 @@ function XRayPlugin:destroy()
     if self.clearUnitUnderlines then
         pcall(function() self:clearUnitUnderlines() end)
     end
+    if self.clearTileCaches then
+        pcall(function() self:clearTileCaches() end)
+    end
+    if self.image_manager and self.image_manager.clearSpineCache then
+        pcall(function() self.image_manager:clearSpineCache() end)
+    end
+    self._cached_toc = nil
+    pcall(function()
+        local ok_xl, xl = pcall(require, plugin_path .. "xray_logger")
+        if ok_xl and xl and xl.flush then xl:flush() end
+    end)
     
     if WidgetContainer.destroy then
         WidgetContainer.destroy(self)
@@ -373,13 +384,31 @@ function XRayPlugin:log(msg)
     XRayLogger:log(msg)
 end
 
+function XRayPlugin:_getFlatToc()
+    if self._cached_toc then
+        return self._cached_toc
+    end
+    if not self.ui or not self.ui.document or not self.ui.document.getToc then
+        return nil
+    end
+    local ok, raw_toc = pcall(function() return self.ui.document:getToc() end)
+    if ok and raw_toc then
+        local utils = require(plugin_path .. "xray_utils")
+        self._cached_toc = utils:flattenTOC(raw_toc)
+    end
+    return self._cached_toc
+end
+
 function XRayPlugin:onReaderReady()
+    self._cached_toc = nil
     self:autoLoadCache()
     -- Reset per-session chapter fetch tracking
     self.last_auto_chapter = nil
     self.last_bg_fetch_page = nil
     self.chapters_fetched = {}
     self.bg_fetch_pending = false
+
+    local settings = self.ai_helper and self.ai_helper.settings or {}
 
     -- Initial unit scanner run
     UIManager:scheduleIn(1.5, function()
@@ -388,7 +417,6 @@ function XRayPlugin:onReaderReady()
         if self.mountTapHandler then self:mountTapHandler() end
         
 
-        local settings = self.ai_helper and self.ai_helper.settings or {}
         local has_key = self.ai_helper and type(self.ai_helper.hasApiKey) == "function" and self.ai_helper:hasApiKey()
         if not has_key and settings.welcome_wizard_dont_ask ~= true then
             self:showWelcomeCard()
@@ -411,23 +439,33 @@ function XRayPlugin:onReaderReady()
     -- Initialize language based on logic (auto, book, or manual)
     self:applyLanguageLogic()
     
-    -- Suggest switching to book language if appropriate
-    UIManager:scheduleIn(5, function()
-        if self.destroyed or not self.ui or not self.ui.document then return end
-        self:checkBookLanguageMatch()
-    end)
+    -- Suggest switching to book language if appropriate (gated)
+    local settings_lang = settings.language or "auto"
+    if settings_lang ~= "book" then
+        UIManager:scheduleIn(5, function()
+            if self.destroyed or not self.ui or not self.ui.document then return end
+            self:checkBookLanguageMatch()
+        end)
+    end
     
-    -- Weekly silent update check
-    UIManager:scheduleIn(10, function()
-        if self.destroyed or not self.ui or not self.ui.document then return end
-        self:checkWeeklyUpdate()
-    end)
+    -- Weekly silent update check (gated by time elapsed)
+    local last_check = settings.last_update_check or 0
+    local now = os.time()
+    local week_seconds = 7 * 24 * 60 * 60
+    if (now - last_check) > week_seconds then
+        UIManager:scheduleIn(10, function()
+            if self.destroyed or not self.ui or not self.ui.document then return end
+            self:checkWeeklyUpdate()
+        end)
+    end
 
-    -- Check series context prompt after ~15 seconds
-    UIManager:scheduleIn(15, function()
-        if self.destroyed or not self.ui or not self.ui.document then return end
-        self:checkSeriesContext()
-    end)
+    -- Check series context prompt after ~15 seconds (gated by feature flag)
+    if settings.series_context_enabled == true then
+        UIManager:scheduleIn(15, function()
+            if self.destroyed or not self.ui or not self.ui.document then return end
+            self:checkSeriesContext()
+        end)
+    end
 
     -- Enforce X-Ray as the first item in the Tools menu for all KOReader versions
     UIManager:scheduleIn(1, function()
@@ -492,8 +530,7 @@ function XRayPlugin:onPageUpdate(pageno)
             if not self.timeline or #self.timeline == 0 then
                 self:log("XRayPlugin: Cache is empty. Triggering immediate initial fetch in Ultra mode.")
                 local chapter_title = nil
-                local utils = require(plugin_path .. "xray_utils")
-                local toc = utils:flattenTOC(self.ui.document:getToc())
+                local toc = self:_getFlatToc()
                 if toc and #toc > 0 then
                     local max_p = -1
                     for _, entry in ipairs(toc) do
@@ -537,8 +574,7 @@ function XRayPlugin:onPageUpdate(pageno)
 
         -- Resolve current chapter title from TOC if available
         local chapter_title = nil
-        local utils = require(plugin_path .. "xray_utils")
-        local toc = utils:flattenTOC(self.ui.document:getToc())
+        local toc = self:_getFlatToc()
         if toc and #toc > 0 then
             local max_p = -1
             for _, entry in ipairs(toc) do
@@ -563,8 +599,7 @@ function XRayPlugin:onPageUpdate(pageno)
 
     -- 2. Standard chapter-based mode checks (requires TOC)
     -- Resolve current chapter title from TOC
-    local utils = require(plugin_path .. "xray_utils")
-    local toc = utils:flattenTOC(self.ui.document:getToc())
+    local toc = self:_getFlatToc()
     if not toc or #toc == 0 then
         return
     end
