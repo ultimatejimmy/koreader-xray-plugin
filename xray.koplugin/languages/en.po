@@ -149,6 +149,9 @@ msgstr "Cancel"
 msgid "character_not_found"
 msgstr "No character found matching '%s'"
 
+msgid "clear"
+msgstr "clear"
+
 msgid "close"
 msgstr "Close"
 
@@ -723,7 +726,7 @@ msgid "merge_confirm"
 msgstr "Merge %s into %s? The secondary entry will be deleted and its aliases absorbed."
 
 msgid "merge_duplicates"
-msgstr "Merge Duplicates"
+msgstr "⋈ Merge Duplicates..."
 
 msgid "merge_failed"
 msgstr "Merge failed."
@@ -780,7 +783,7 @@ msgid "no_author_data_fetch"
 msgstr "No author biography available. Fetch now?"
 
 msgid "no_character_data"
-msgstr "No character data yet.\n\nPlease use 'Fetch X-Ray Data' first."
+msgstr "No characters found."
 
 msgid "no_data_prompt"
 msgstr "No X-Ray data found for this book. Would you like to fetch it from AI now?"
@@ -790,6 +793,9 @@ msgstr "No duplicates found."
 
 msgid "no_historical_data"
 msgstr "No historical figure data yet.\n\nPlease use 'Fetch X-Ray Data' first.\n\nAI will detect real historical\nfigures mentioned in the book."
+
+msgid "no_items"
+msgstr "no_items"
 
 msgid "no_location_data"
 msgstr "No location data yet. Please use 'Fetch X-Ray Data' first."
@@ -868,6 +874,9 @@ msgstr "Review"
 
 msgid "save"
 msgstr "Save"
+
+msgid "search"
+msgstr "search"
 
 msgid "search_button"
 msgstr "Search"

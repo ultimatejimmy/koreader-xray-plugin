@@ -302,10 +302,18 @@ end
 
 function M:updateMentionsMenuInPlace(entity)
     if not self.mentions_menu then return end
-    local items = self:buildMentionsMenuItems(entity)
-    local name = entity.name or "???"
-    local title = (self.loc:t("mentions_title") or "Mentions: %s"):format(name)
-    if self.mentions_menu.switchItemTable then pcall(function() self.mentions_menu:switchItemTable(title, items) end) end
+    if self.mentions_menu.raw_items ~= nil then
+        self.mentions_menu.entity = entity
+        self.mentions_menu.raw_items = entity.mentions or {}
+        self.mentions_menu:prepareItems()
+        self.mentions_menu:buildUI()
+        UIManager:setDirty(self.mentions_menu, "ui")
+    elseif self.mentions_menu.switchItemTable then
+        local items = self:buildMentionsMenuItems(entity)
+        local name = entity.name or "???"
+        local title = (self.loc:t("mentions_title") or "Mentions: %s"):format(name)
+        pcall(function() self.mentions_menu:switchItemTable(title, items) end)
+    end
 end
 
 function M:showMentionsMenu(entity)
@@ -316,19 +324,17 @@ function M:showMentionsMenu(entity)
         pcall(function() UIManager:close(self.mentions_menu) end)
         self.mentions_menu = nil
     end
-    local title_tmpl = self.loc:t("mentions_title")
-    if title_tmpl == "mentions_title" then title_tmpl = "Mentions: %s" end
-    
-    self.mentions_menu = Menu:new{
-        title = title_tmpl:format(entity.name or "???"),
-        item_table = self:buildMentionsMenuItems(entity),
-        is_borderless = true,
-        width = Screen:getWidth(),
-        height = Screen:getHeight(),
-        _xray_highlight = true,
+
+    local EntityListOverlay = require(plugin_path .. "xray_entity_list")
+    self.mentions_menu = EntityListOverlay:new{
+        mode = "mentions",
+        entity = entity,
+        raw_items = entity.mentions or {},
+        plugin = self,
+        modal = true,
+        covers_fullscreen = true,
         on_close_callback = function() self.mentions_menu = nil end,
     }
-    self.mentions_menu._xray_highlight = true
     UIManager:show(self.mentions_menu)
 end
 

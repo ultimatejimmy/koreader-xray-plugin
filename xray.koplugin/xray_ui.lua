@@ -223,15 +223,17 @@ function XRayBottomPopup:_rebuild()
 
     local function make_btn(label, cb, is_focused)
         return Button:new{
-            text       = label,
-            face       = face_btn,
-            padding_h  = btn_padding_h,
-            padding_v  = btn_padding_v,
-            margin     = math.max(16, gap * 4),
-            radius     = 4,
-            bordersize = is_focused and 3 or 2,
-            background = is_focused and Blitbuffer.Color8(230) or nil,
-            callback   = cb,
+            text            = label,
+            text_font_face  = "cfont",
+            text_font_size  = math.max(14, fs - 2),
+            text_font_bold  = true,
+            padding_h       = btn_padding_h,
+            padding_v       = btn_padding_v,
+            margin          = 0,
+            radius          = 4,
+            bordersize      = 2,
+            background      = nil,
+            callback        = cb,
         }
     end
 
@@ -402,18 +404,32 @@ function XRayBottomPopup:_rebuild()
         for _, btn in ipairs(active_btns) do
             row_h = math.max(row_h, btn:getSize().h)
         end
-        local btn_components = { align = "center" }
-        local btn_w = math.floor(inner_w / #active_btns)
-        for _, btn in ipairs(active_btns) do
-            table.insert(btn_components, LeftContainer:new{
-                dimen = Geom:new{ w = btn_w, h = row_h },
-                btn,
-            })
+        if #active_btns == 1 then
+            btn_row = LeftContainer:new{
+                dimen = Geom:new{ w = inner_w, h = row_h },
+                active_btns[1],
+            }
+        elseif #active_btns == 2 then
+            btn_row = HorizontalGroup:new{
+                align = "center",
+                active_btns[1],
+                HorizontalSpan:new{ width = math.max(16, gap * 3) },
+                active_btns[2],
+            }
+        else
+            local btn_components = { align = "center" }
+            for i, btn in ipairs(active_btns) do
+                if i > 1 then
+                    table.insert(btn_components, HorizontalSpan:new{ width = math.max(12, gap * 2) })
+                end
+                table.insert(btn_components, btn)
+            end
+            btn_row = HorizontalGroup:new(btn_components)
         end
-        btn_row = HorizontalGroup:new(btn_components)
     end
 
     if btn_row then
+        table.insert(vg_components, VerticalSpan:new{ width = math.max(18, gap * 4) })
         table.insert(vg_components, btn_row)
     end
 
@@ -574,6 +590,7 @@ local function showBottomPopup(plugin, entity)
         pad = G_reader_settings:readSetting("xray_popup_margin") or pad
     end
     local popup = XRayBottomPopup:new{
+        modal       = true,
         entity      = normalized,
         plugin      = plugin,
         font_size   = fs,
@@ -803,6 +820,13 @@ local function _patchButtonDialog()
 
         local orig_btndlg_init = ButtonDialog.init
         function ButtonDialog:init()
+            if self._added_widgets then
+                for _, w in ipairs(self._added_widgets) do
+                    if w and w.not_focusable == nil then
+                        w.not_focusable = true
+                    end
+                end
+            end
             if orig_btndlg_init then
                 orig_btndlg_init(self)
             end
@@ -854,12 +878,29 @@ local function _patchButtonDialog()
             -- 6. Set initial default coordinates; immediately highlight ONLY on non-touch devices
             if self.layout and #self.layout > 0 and #self.layout[1] > 0 then
                 local def_x, def_y = 1, 1
+                local found_enter_default = false
                 for y, row in ipairs(self.layout) do
                     for x, btn in ipairs(row) do
                         if btn and btn.is_enter_default then
                             def_x, def_y = x, y
+                            found_enter_default = true
                             break
                         end
+                    end
+                    if found_enter_default then break end
+                end
+                if not found_enter_default then
+                    -- Find first valid button in layout that can receive action
+                    local found_btn = false
+                    for y, row in ipairs(self.layout) do
+                        for x, btn in ipairs(row) do
+                            if btn and (btn.callback or btn.onTapSelectButton or btn.text) then
+                                def_x, def_y = x, y
+                                found_btn = true
+                                break
+                            end
+                        end
+                        if found_btn then break end
                     end
                 end
                 self.selected = { x = def_x, y = def_y }
@@ -889,7 +930,25 @@ local function _patchButtonDialog()
 
         local orig_btndlg_onPress = ButtonDialog.onPress
         function ButtonDialog:onPress()
-            local item = (self.getFocusItem and self:getFocusItem()) or (self.layout and self.selected and self.layout[self.selected.y] and self.layout[self.selected.y][self.selected.x]) or (self.layout and self.layout[1] and self.layout[1][1])
+            local item = (self.getFocusItem and self:getFocusItem())
+            if not item or not (item.onTapSelectButton or item.callback) then
+                if self.layout and self.selected and self.layout[self.selected.y] then
+                    item = self.layout[self.selected.y][self.selected.x]
+                end
+            end
+            if not item or not (item.onTapSelectButton or item.callback) then
+                if self.layout then
+                    for _, row in ipairs(self.layout) do
+                        for _, btn in ipairs(row) do
+                            if btn and (btn.onTapSelectButton or btn.callback) then
+                                item = btn
+                                break
+                            end
+                        end
+                        if item then break end
+                    end
+                end
+            end
             if item then
                 if item.onTapSelectButton then
                     return item:onTapSelectButton()
@@ -899,7 +958,8 @@ local function _patchButtonDialog()
                 end
             end
             if orig_btndlg_onPress then
-                return orig_btndlg_onPress(self)
+                local ok, res = pcall(orig_btndlg_onPress, self)
+                if ok then return res end
             end
             return true
         end
@@ -1197,82 +1257,19 @@ end
 
 function M:showCharacters()
     self.characters = self.characters or {}
-    local items = {}
-    if #self.characters > 0 then
-        table.insert(items, { text = "⌕ " .. self.loc:t("search_character"), callback = function() self:showCharacterSearch() end })
-        table.insert(items, { text = "⋈ " .. (self.loc:t("merge_duplicates") or "Merge Duplicates..."), callback = function()
-            local ButtonDialog = require("ui/widget/buttondialog")
-            local merge_dialog
-            merge_dialog = ButtonDialog:new{
-                title = self.loc:t("merge_duplicates") or "Merge Duplicates",
-                buttons = {
-                    {
-                        {
-                            text = "✦ " .. (self.loc:t("ai_scan") or "AI Scan"),
-                            callback = function()
-                                UIManager:close(merge_dialog)
-                                self:showAIFindDuplicatesFlow(self.characters, "characters", self.loc:t("entity_label_characters") or "characters")
-                            end
-                        },
-                        {
-                            text = self.loc:t("manual_pick") or "Manual Pick",
-                            callback = function()
-                                UIManager:close(merge_dialog)
-                                self:showMergeFlow(self.characters, "characters")
-                            end
-                        }
-                    },
-                    {
-                        {
-                            text = self.loc:t("cancel") or "Cancel",
-                            callback = function() UIManager:close(merge_dialog) end
-                        }
-                    }
-                }
-            }
-            UIManager:show(merge_dialog)
-        end })
-    end
-    table.insert(items, { text = "✚ " .. (self.loc:t("menu_fetch_more_chars") or "Fetch More Characters"), keep_menu_open = true, callback = function() self:fetchMoreCharacters() end, separator = #self.characters > 0 })
-    for _, char in ipairs(self.characters) do
-        local name = char.name or "Unknown"
-        if char.source == "series_prior" then
-            name = name .. " " .. (self.loc:t("series_prior_label") or "[Prior]")
-        end
-        local text = "• " .. name
-        -- Aliases are no longer listed in the main character list to reduce clutter,
-        -- as they are still visible in the individual character infobox.
-        local char_desc = self:resolveDescriptionForPage(char)
-        if char_desc and #char_desc > 0 and char_desc ~= "---" then
-            local safe_desc, is_truncated = _getTruncatedText(char_desc, 80)
-            text = text .. "\n  " .. safe_desc .. (is_truncated and "..." or "")
-        end
-        table.insert(items, { 
-            text = text, 
-            keep_menu_open = true,
-            separator = true,
-            callback = function() self:showCharacterDetails(char, { source = "menu" }) end 
-        })
-    end
 
-    -- Close any existing character menu before showing the updated one
     if self.char_menu then
         UIManager:close(self.char_menu)
         self.char_menu = nil
     end
 
-    self.char_menu = self:newMenu("char_menu", {
-        title = self.loc:t("menu_characters") .. " (" .. #self.characters .. ")",
-        item_table = items,
-        is_borderless = true,
-        width = Screen:getWidth(),
-        height = Screen:getHeight(),
-        on_close_callback = function() 
-            if self.is_cancelled then return end
-            self:showFullXRayMenu() 
-        end,
-    })
-    UIManager:show(self.char_menu)
+    local EntityListOverlay = require(plugin_path .. "xray_entity_list")
+    self.char_menu = EntityListOverlay:new{
+        plugin = self,
+        mode = "characters",
+        raw_items = self.characters,
+    }
+    UIManager:show(self.char_menu, "ui")
 
     UIManager:scheduleIn(0.3, function()
         if self.destroyed or not self.ui or not self.ui.document then return end
@@ -1592,6 +1589,7 @@ function M:showCharacterDetails(character, opts)
     end
 
     local vg = VerticalGroup:new(vg_components)
+    vg.not_focusable = true
 
     local linked_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.linked_entries_enabled ~= false
     local related = linked_enabled and self:findRelatedEntities(resolved_desc or "", character.name) or {}
@@ -1618,6 +1616,7 @@ function M:showCharacterDetails(character, opts)
                 },
                 {
                     text = self.loc:t("close") or "Close",
+                    is_enter_default = true,
                     callback = function()
                         if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
                         self.active_details_dialog = nil
@@ -1641,6 +1640,7 @@ function M:showCharacterDetails(character, opts)
                     },
                     {
                         text = self.loc:t("close") or "Close",
+                        is_enter_default = true,
                         callback = function()
                             if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
                             self.active_details_dialog = nil
@@ -1653,6 +1653,7 @@ function M:showCharacterDetails(character, opts)
                 {
                     {
                         text = self.loc:t("close") or "Close",
+                        is_enter_default = true,
                         callback = function()
                             if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
                             self.active_details_dialog = nil
@@ -1682,6 +1683,7 @@ function M:showCharacterDetails(character, opts)
                         full_text = full_text .. "\n\n[" .. (self.loc:t("label_reasoning") or "AI Reasoning") .. "]\n" .. character.ai_reasoning
                     end
                     local viewer = TextViewer:new{
+                        modal = true,
                         title = character.name,
                         text = full_text,
                     }
@@ -1692,6 +1694,7 @@ function M:showCharacterDetails(character, opts)
     end
 
     self.active_details_dialog = ButtonDialog:new{
+        modal = true,
         _added_widgets = { vg },
         buttons = buttons,
     }
@@ -1775,6 +1778,7 @@ function M:showLocationDetails(loc_item, opts)
     end
 
     local vg = VerticalGroup:new(vg_components)
+    vg.not_focusable = true
 
     local linked_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.linked_entries_enabled ~= false
     local related = linked_enabled and self:findRelatedEntities(desc, loc_item.name) or {}
@@ -1801,6 +1805,7 @@ function M:showLocationDetails(loc_item, opts)
                 },
                 {
                     text = self.loc:t("close") or "Close",
+                    is_enter_default = true,
                     callback = function()
                         if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
                         self.active_details_dialog = nil
@@ -1824,6 +1829,7 @@ function M:showLocationDetails(loc_item, opts)
                     },
                     {
                         text = self.loc:t("close") or "Close",
+                        is_enter_default = true,
                         callback = function()
                             if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
                             self.active_details_dialog = nil
@@ -1836,6 +1842,7 @@ function M:showLocationDetails(loc_item, opts)
                 {
                     {
                         text = self.loc:t("close") or "Close",
+                        is_enter_default = true,
                         callback = function()
                             if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
                             self.active_details_dialog = nil
@@ -1855,6 +1862,7 @@ function M:showLocationDetails(loc_item, opts)
                     local TextViewer = require("ui/widget/textviewer")
                     local full_text = loc_item.name .. "\n\n" .. desc
                     local viewer = TextViewer:new{
+                        modal = true,
                         title = loc_item.name,
                         text = full_text,
                     }
@@ -1865,6 +1873,7 @@ function M:showLocationDetails(loc_item, opts)
     end
 
     self.active_details_dialog = ButtonDialog:new{
+        modal = true,
         _added_widgets = { vg },
         buttons = buttons,
     }
@@ -1999,6 +2008,7 @@ function M:showTermDetails(term, opts)
     end
 
     local vg = VerticalGroup:new(vg_components)
+    vg.not_focusable = true
 
     local linked_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.linked_entries_enabled ~= false
     local related = linked_enabled and self:findRelatedEntities(term.definition or "", term.name) or {}
@@ -2039,6 +2049,7 @@ function M:showTermDetails(term, opts)
                 },
                 {
                     text = self.loc:t("close") or "Close",
+                    is_enter_default = true,
                     callback = function()
                         if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
                         self.active_details_dialog = nil
@@ -2067,6 +2078,7 @@ function M:showTermDetails(term, opts)
             table.insert(buttons, {
                 {
                     text = self.loc:t("close") or "Close",
+                    is_enter_default = true,
                     callback = function()
                         if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
                         self.active_details_dialog = nil
@@ -2086,6 +2098,7 @@ function M:showTermDetails(term, opts)
                         },
                         {
                             text = self.loc:t("close") or "Close",
+                            is_enter_default = true,
                             callback = function()
                                 if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
                                 self.active_details_dialog = nil
@@ -2098,6 +2111,7 @@ function M:showTermDetails(term, opts)
                     {
                         {
                             text = self.loc:t("close") or "Close",
+                            is_enter_default = true,
                             callback = function()
                                 if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
                                 self.active_details_dialog = nil
@@ -2125,6 +2139,7 @@ function M:showTermDetails(term, opts)
                     end
                     full_text = full_text .. "\n" .. resolved_definition
                     local viewer = TextViewer:new{
+                        modal = true,
                         title = term.name,
                         text = full_text,
                     }
@@ -2135,6 +2150,7 @@ function M:showTermDetails(term, opts)
     end
 
     self.active_details_dialog = ButtonDialog:new{
+        modal = true,
         _added_widgets = { vg },
         buttons = buttons,
     }
@@ -2143,48 +2159,19 @@ end
 
 function M:showTerms()
     self.terms = self.terms or {}
-    local items = {}
-    if #self.terms > 0 then
-        table.insert(items, { text = "⌕ " .. (self.loc:t("search_term") or "Search Terms"), callback = function() self:showTermSearch() end })
-    end
-    table.insert(items, { text = "✚ " .. (self.loc:t("menu_fetch_more_terms") or "Fetch More Terms"), callback = function() self:fetchMoreTerms() end, separator = #self.terms > 0 })
-    for _, term in ipairs(self.terms) do 
-        if type(term) == "table" then
-            local captured_term = term
-            local name = term.name or "???"
-            if term.source == "series_prior" then
-                name = name .. " " .. (self.loc:t("series_prior_label") or "[Prior]")
-            end
-            local subtext = nil
-            if term.definition then
-                local trunc_text, is_trunc = _getTruncatedText(term.definition, 80)
-                subtext = trunc_text .. (is_trunc and "..." or "")
-            end
 
-            table.insert(items, {
-                text = "• " .. name,
-                subtext = subtext,
-                keep_menu_open = true,
-                separator = true,
-                callback = function()
-                    self:showTermDetails(captured_term, { source = "menu" })
-                end
-            })
-        end
+    if self.terms_menu then
+        UIManager:close(self.terms_menu)
+        self.terms_menu = nil
     end
-    
-    self.terms_menu = self:newMenu("terms_menu", {
-        title = (self.loc:t("menu_terms") or "Glossary") .. " (" .. #self.terms .. ")",
-        item_table = items,
-        is_borderless = true,
-        width = Screen:getWidth(),
-        height = Screen:getHeight(),
-        on_close_callback = function() 
-            if self.is_cancelled then return end
-            self:showFullXRayMenu() 
-        end,
-    })
-    UIManager:show(self.terms_menu)
+
+    local EntityListOverlay = require(plugin_path .. "xray_entity_list")
+    self.terms_menu = EntityListOverlay:new{
+        plugin = self,
+        mode = "terms",
+        raw_items = self.terms,
+    }
+    UIManager:show(self.terms_menu, "ui")
 end
 
 function M:findTermByName(word)
@@ -3014,6 +3001,7 @@ function M:showAuthorInfo()
     }
 
     self.active_details_dialog = ButtonDialog:new{
+        modal = true,
         _added_widgets = { vg },
         buttons = buttons,
     }
@@ -3021,79 +3009,25 @@ function M:showAuthorInfo()
 end
 
 function M:showLocations()
-    if not self.locations or #self.locations == 0 then 
+    self.locations = self.locations or {}
+    if #self.locations == 0 then 
+        local InfoMessage = require("ui/widget/infomessage")
         UIManager:show(InfoMessage:new{ text = self.loc:t("no_location_data"), timeout = 3 })
         return 
     end
-    local items = {
-        { text = "⋈ " .. (self.loc:t("merge_duplicates") or "Merge Duplicates..."), callback = function()
-            local ButtonDialog = require("ui/widget/buttondialog")
-            local merge_dialog
-            merge_dialog = ButtonDialog:new{
-                title = self.loc:t("merge_duplicates") or "Merge Duplicates",
-                buttons = {
-                    {
-                        {
-                            text = "✦ " .. (self.loc:t("ai_scan") or "AI Scan"),
-                            callback = function()
-                                UIManager:close(merge_dialog)
-                                self:showAIFindDuplicatesFlow(self.locations, "locations", self.loc:t("entity_label_locations") or "locations")
-                            end
-                        },
-                        {
-                            text = self.loc:t("manual_pick") or "Manual Pick",
-                            callback = function()
-                                UIManager:close(merge_dialog)
-                                self:showMergeFlow(self.locations, "locations")
-                            end
-                        }
-                    },
-                    {
-                        {
-                            text = self.loc:t("cancel") or "Cancel",
-                            callback = function() UIManager:close(merge_dialog) end
-                        }
-                    }
-                }
-            }
-            UIManager:show(merge_dialog)
-        end, separator = true },
+
+    if self.loc_menu then
+        UIManager:close(self.loc_menu)
+        self.loc_menu = nil
+    end
+
+    local EntityListOverlay = require(plugin_path .. "xray_entity_list")
+    self.loc_menu = EntityListOverlay:new{
+        plugin = self,
+        mode = "locations",
+        raw_items = self.locations,
     }
-    for _, loc in ipairs(self.locations) do 
-        if type(loc) == "table" then
-            local captured_loc = loc
-            local name = loc.name or "???"
-            if loc.source == "series_prior" then
-                name = name .. " " .. (self.loc:t("series_prior_label") or "[Prior]")
-            end
-            table.insert(items, {
-                text = name,
-                keep_menu_open = true,
-                separator = true,
-                callback = function()
-                    self:showLocationDetails(captured_loc, { source = "menu" })
-                end
-            })
-        end
-    end
-    
-    if #items == 0 then
-        UIManager:show(InfoMessage:new{ text = self.loc:t("no_location_data"), timeout = 3 })
-        return
-    end
-    
-    self.loc_menu = self:newMenu("loc_menu", {
-        title = self.loc:t("menu_locations"),
-        item_table = items,
-        is_borderless = true,
-        width = Screen:getWidth(),
-        height = Screen:getHeight(),
-        on_close_callback = function() 
-            if self.is_cancelled then return end
-            self:showFullXRayMenu() 
-        end,
-    })
-    UIManager:show(self.loc_menu)
+    UIManager:show(self.loc_menu, "ui")
 
     UIManager:scheduleIn(0.3, function()
         if self.destroyed or not self.ui or not self.ui.document then return end
@@ -3736,77 +3670,28 @@ function M:toggleXRayMode()
 end
 
 function M:showTimeline()
-    if not self.timeline or #self.timeline == 0 then UIManager:show(InfoMessage:new{ text = self.loc:t("no_timeline_data"), timeout = 3 }); return end
+    if not self.timeline or #self.timeline == 0 then
+        local InfoMessage = require("ui/widget/infomessage")
+        UIManager:show(InfoMessage:new{ text = self.loc:t("no_timeline_data"), timeout = 3 })
+        return
+    end
     local utils = require(plugin_path .. "xray_utils")
     local toc = utils:flattenTOC(self.ui.document:getToc())
     self:assignTimelinePages(self.timeline, toc, true)
     self:sortTimelineByTOC(self.timeline)
-    
-    local has_prior = false
-    for _, ev in ipairs(self.timeline) do
-        if ev.source == "series_prior" then
-            has_prior = true
-            break
-        end
-    end
-
-    if self.series_prior_timeline_collapsed == nil then
-        self.series_prior_timeline_collapsed = true
-    end
-
-    local items = {}
-    if has_prior then
-        local arrow = self.series_prior_timeline_collapsed and "► " or "▼ "
-        local header_text = arrow .. (self.loc:t("series_prior_books_header") or "── Prior Books ──")
-        table.insert(items, {
-            text = header_text,
-            keep_menu_open = true,
-            callback = function()
-                self.series_prior_timeline_collapsed = not self.series_prior_timeline_collapsed
-                self:showTimeline()
-            end
-        })
-    end
-
-    for _, ev in ipairs(self.timeline) do
-        if ev.source == "series_prior" then
-            if not self.series_prior_timeline_collapsed then
-                table.insert(items, {
-                    text = ev.chapter or "",
-                    keep_menu_open = true,
-                    callback = function()
-                        self:showTimelineEventDetails(ev, { source = "menu" })
-                    end
-                })
-            end
-        else
-            table.insert(items, {
-                text = (ev.chapter or "") .. ": " .. (ev.event or ""),
-                keep_menu_open = true,
-                callback = function()
-                    self:showTimelineEventDetails(ev, { source = "menu" })
-                end
-            })
-        end
-    end
 
     if self.timeline_menu then
         UIManager:close(self.timeline_menu)
         self.timeline_menu = nil
     end
 
-    self.timeline_menu = self:newMenu("timeline_menu", { 
-        title = self.loc:t("menu_timeline"), 
-        item_table = items, 
-        is_borderless = true, 
-        width = Screen:getWidth(), 
-        height = Screen:getHeight(),
-        on_close_callback = function() 
-            if self.is_cancelled then return end
-            self:showFullXRayMenu() 
-        end,
-    })
-    UIManager:show(self.timeline_menu)
+    local EntityListOverlay = require(plugin_path .. "xray_entity_list")
+    self.timeline_menu = EntityListOverlay:new{
+        plugin = self,
+        mode = "timeline",
+        raw_items = self.timeline,
+    }
+    UIManager:show(self.timeline_menu, "ui")
 end
 
 function M:showTimelineEventDetails(ev, opts)
@@ -3896,6 +3781,7 @@ function M:showTimelineEventDetails(ev, opts)
     local related = linked_enabled and self:findRelatedEntities(event_text, ev.chapter) or {}
 
     local vg = VerticalGroup:new(vg_components)
+    vg.not_focusable = true
 
     -- Buttons
     local buttons = {}
@@ -3910,6 +3796,7 @@ function M:showTimelineEventDetails(ev, opts)
                 },
                 {
                     text     = self.loc:t("close") or "Close",
+                    is_enter_default = true,
                     callback = function()
                         if self.active_details_dialog then
                             UIManager:close(self.active_details_dialog)
@@ -3924,6 +3811,7 @@ function M:showTimelineEventDetails(ev, opts)
             {
                 {
                     text     = self.loc:t("close") or "Close",
+                    is_enter_default = true,
                     callback = function()
                         if self.active_details_dialog then
                             UIManager:close(self.active_details_dialog)
@@ -3943,6 +3831,7 @@ function M:showTimelineEventDetails(ev, opts)
                 callback       = function()
                     local TextViewer = require("ui/widget/textviewer")
                     local viewer = TextViewer:new{
+                        modal     = true,
                         title     = ev.chapter or "",
                         text      = event_text,
                         text_type = "book_info",
@@ -3954,6 +3843,7 @@ function M:showTimelineEventDetails(ev, opts)
     end
 
     self.active_details_dialog = ButtonDialog:new{
+        modal          = true,
         _added_widgets = { vg },
         buttons        = buttons,
     }
@@ -4035,6 +3925,7 @@ function M:showHistoricalFigureDetails(fig, opts)
     end
 
     local vg = VerticalGroup:new(vg_components)
+    vg.not_focusable = true
 
     local linked_enabled = self.ai_helper and self.ai_helper.settings and self.ai_helper.settings.linked_entries_enabled ~= false
     local related = linked_enabled and self:findRelatedEntities(bio, fig.name) or {}
@@ -4061,6 +3952,7 @@ function M:showHistoricalFigureDetails(fig, opts)
                 },
                 {
                     text = self.loc:t("close") or "Close",
+                    is_enter_default = true,
                     callback = function()
                         if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
                         self.active_details_dialog = nil
@@ -4084,6 +3976,7 @@ function M:showHistoricalFigureDetails(fig, opts)
                     },
                     {
                         text = self.loc:t("close") or "Close",
+                        is_enter_default = true,
                         callback = function()
                             if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
                             self.active_details_dialog = nil
@@ -4096,6 +3989,7 @@ function M:showHistoricalFigureDetails(fig, opts)
                 {
                     {
                         text = self.loc:t("close") or "Close",
+                        is_enter_default = true,
                         callback = function()
                             if self.active_details_dialog then UIManager:close(self.active_details_dialog) end
                             self.active_details_dialog = nil
@@ -4115,6 +4009,7 @@ function M:showHistoricalFigureDetails(fig, opts)
                     local TextViewer = require("ui/widget/textviewer")
                     local full_text = fig.name .. "\n\n" .. bio
                     local viewer = TextViewer:new{
+                        modal = true,
                         title = fig.name,
                         text = full_text,
                     }
@@ -4125,6 +4020,7 @@ function M:showHistoricalFigureDetails(fig, opts)
     end
 
     self.active_details_dialog = ButtonDialog:new{
+        modal = true,
         _added_widgets = { vg },
         buttons = buttons,
     }
@@ -4133,33 +4029,23 @@ end
 
 function M:showHistoricalFigures()
     if not self.historical_figures or #self.historical_figures == 0 then 
+        local InfoMessage = require("ui/widget/infomessage")
         UIManager:show(InfoMessage:new{ text = self.loc:t("no_historical_data"), timeout = 3 })
         return 
     end
-    local items = {}
-    for _, fig in ipairs(self.historical_figures) do
-        table.insert(items, {
-            text = (fig.name or "???"),
-            keep_menu_open = true,
-            separator = true,
-            callback = function()
-                self:showHistoricalFigureDetails(fig, { source = "menu" })
-            end,
-        })
+
+    if self.hf_menu then
+        UIManager:close(self.hf_menu)
+        self.hf_menu = nil
     end
 
-    self.hf_menu = self:newMenu("hf_menu", {
-        title = self.loc:t("menu_historical_figures"), 
-        item_table = items, 
-        is_borderless = true, 
-        width = Screen:getWidth(), 
-        height = Screen:getHeight(),
-        on_close_callback = function() 
-            if self.is_cancelled then return end
-            self:showFullXRayMenu() 
-        end,
-    })
-    UIManager:show(self.hf_menu)
+    local EntityListOverlay = require(plugin_path .. "xray_entity_list")
+    self.hf_menu = EntityListOverlay:new{
+        plugin = self,
+        mode = "historical_figures",
+        raw_items = self.historical_figures,
+    }
+    UIManager:show(self.hf_menu, "ui")
 end
 
 function M:showQuickXRayMenu()
@@ -6452,6 +6338,10 @@ function M:showImages(opts)
         end
     end
 
+    if self.xray_menu then
+        UIManager:close(self.xray_menu)
+        self.xray_menu = nil
+    end
     if self.image_gallery_overlay then
         local ov = self.image_gallery_overlay
         self.image_gallery_overlay = nil
@@ -6475,6 +6365,7 @@ function M:renameImageDialog(image_entry, on_success)
     local InputDialog = require("ui/widget/inputdialog")
     local rename_dialog
     rename_dialog = InputDialog:new{
+        modal = true,
         title = self.loc:t("img_rename_title") or "Rename Image Label",
         input = image_entry.title or "",
         buttons = {
@@ -7033,6 +6924,7 @@ function M:showImageActions(image_entry)
     for k in pairs(extra_back_keys)  do CLOSE_KEYS[k] = true end
 
     overlay = InputContainer:new{
+        modal = true,
         dimen = Geom:new{ w = sw, h = sh },
         stop_events_propagation = true,
         CenterContainer:new{
@@ -7101,6 +6993,7 @@ function M:openImageViewer(image_entry)
         local msg = string.format(self.loc:t("img_spoiler_confirm") or "This image appears on page %d (past your current reading progress). Reveal image?", tonumber(image_entry.page) or 0)
         local confirm
         confirm = ConfirmBox:new{
+            modal = true,
             text = msg,
             ok_text = self.loc:t("img_reveal") or "Reveal",
             cancel_text = self.loc:t("cancel"),

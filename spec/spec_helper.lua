@@ -140,7 +140,7 @@ package.loaded["ui/renderimage"] = {
     scaleBlitBuffer = function() return nil end,
 }
 package.loaded["ui/widget/verticalgroup"] = {
-    new = function(a, b) return { type = "VerticalGroup", args = b or a } end
+    new = function(a, b) return { type = "VerticalGroup", args = b or a, getSize = function() return { w = 400, h = 40 } end } end
 }
 package.loaded["ui/widget/verticalspan"] = {
     new = function(a, b) return { type = "VerticalSpan", args = b or a, getSize = function() return { w = 0, h = (b or a or {}).width or 0 } end } end

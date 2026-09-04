@@ -151,4 +151,22 @@ describe("xray_mentions", function()
             assert.are.equal("\xE2\x9C\x95", args.buttons[1][3].text)
         end)
     end)
+
+    describe("showMentionsMenu", function()
+        it("should show an EntityListOverlay with mode mentions and modal true", function()
+            local entity = { name = "Eric Wardle", mentions = { { page = 9, chapter = "Prologue", snippet = "Ambulance is two minutes away" } } }
+            plugin:showMentionsMenu(entity)
+            local last = _G.ui_tracker.last_shown
+            assert.is_not_nil(last)
+            assert.is_true(last.modal == true)
+            assert.are.equal("mentions", last.mode)
+            assert.are.equal("Eric Wardle", last.entity.name)
+            assert.are.equal(1, #last.raw_items)
+            assert.is_not_nil(plugin.mentions_menu)
+
+            -- Close should nil mentions_menu
+            last:close()
+            assert.is_nil(plugin.mentions_menu)
+        end)
+    end)
 end)

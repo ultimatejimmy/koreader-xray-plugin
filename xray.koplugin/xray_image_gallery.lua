@@ -357,6 +357,8 @@ local function createButton(opts)
 end
 
 local ImageGallery = InputContainer:extend{
+    covers_fullscreen = true,
+    modal = true,
     plugin = nil,
     current_page = 1,
     focused_index = nil,
@@ -370,6 +372,8 @@ local ImageGallery = InputContainer:extend{
 }
 
 function ImageGallery:init()
+    self.modal = true
+    self.covers_fullscreen = true
     self.sw = Screen:getWidth()
     self.sh = Screen:getHeight()
     local is_touch = false
@@ -1818,7 +1822,8 @@ function ImageGallery:renderMosaicCard(img, cell_w, is_focused_or_idx, opt_idx)
         local g = card_container.gallery or self
         local f_h = (g and g.footer_h) or sc(48)
         local footer_top = (g and g.sh and (g.sh - f_h)) or (self.sh - f_h)
-        if ges and ges.pos and ges.pos.y and ges.pos.y >= footer_top then
+        local gesture = (ges and ges.pos and ges) or (arg and arg.pos and arg) or (type(ges) == "table" and ges) or (type(arg) == "table" and arg) or {}
+        if gesture.pos and gesture.pos.y and gesture.pos.y >= footer_top then
             return false
         end
         if g and g.is_touch_device and g.focus_zone then
@@ -1826,14 +1831,17 @@ function ImageGallery:renderMosaicCard(img, cell_w, is_focused_or_idx, opt_idx)
             g.focused_index = nil
             UIManager:setDirty(g, "ui")
         end
-        if ges and ges.pos and card_container.dimen then
-            local right_edge = card_container.dimen.x + card_container.dimen.w
-            local bottom_edge = math.min(card_container.dimen.y + card_container.dimen.h, footer_top)
-            local btn_hit_w = sc(44)
-            local btn_hit_h = sc(44)
-            if ges.pos.x >= (right_edge - btn_hit_w) and ges.pos.y >= (bottom_edge - btn_hit_h) then
-                p:showImageActions(img)
-                return true
+        local d = card_container.dimen
+        if gesture.pos and d and d.x and d.y and d.w and d.h then
+            local right_edge = d.x + d.w
+            local bottom_edge = math.min(d.y + d.h, footer_top)
+            local btn_hit_w = sc(48)
+            local btn_hit_h = sc(48)
+            if gesture.pos.x >= (right_edge - btn_hit_w) and gesture.pos.y >= (bottom_edge - btn_hit_h) then
+                if p and p.showImageActions then
+                    p:showImageActions(img)
+                    return true
+                end
             end
         end
         if p and p.openImageViewer then
@@ -2049,7 +2057,8 @@ function ImageGallery:renderGridCard(img, cell_w, is_focused_or_idx, opt_idx)
         local g = card_item.gallery or self
         local f_h = (g and g.footer_h) or sc(48)
         local footer_top = (g and g.sh and (g.sh - f_h)) or (self.sh - f_h)
-        if ges and ges.pos and ges.pos.y and ges.pos.y >= footer_top then
+        local gesture = (ges and ges.pos and ges) or (arg and arg.pos and arg) or (type(ges) == "table" and ges) or (type(arg) == "table" and arg) or {}
+        if gesture.pos and gesture.pos.y and gesture.pos.y >= footer_top then
             return false
         end
         if g and g.is_touch_device and g.focus_zone then
@@ -2057,14 +2066,17 @@ function ImageGallery:renderGridCard(img, cell_w, is_focused_or_idx, opt_idx)
             g.focused_index = nil
             UIManager:setDirty(g, "ui")
         end
-        if ges and ges.pos and card_item.dimen then
-            local right_edge = card_item.dimen.x + card_item.dimen.w
-            local bottom_edge = math.min(card_item.dimen.y + card_item.dimen.h, footer_top)
-            local btn_hit_w = sc(44)
-            local btn_hit_h = sc(44)
-            if ges.pos.x >= (right_edge - btn_hit_w) and ges.pos.y >= (bottom_edge - btn_hit_h) then
-                p:showImageActions(img)
-                return true
+        local d = card_item.dimen
+        if gesture.pos and d and d.x and d.y and d.w and d.h then
+            local right_edge = d.x + d.w
+            local bottom_edge = math.min(d.y + d.h, footer_top)
+            local btn_hit_w = sc(48)
+            local btn_hit_h = sc(48)
+            if gesture.pos.x >= (right_edge - btn_hit_w) and gesture.pos.y >= (bottom_edge - btn_hit_h) then
+                if p and p.showImageActions then
+                    p:showImageActions(img)
+                    return true
+                end
             end
         end
         if p and p.openImageViewer then
@@ -2249,7 +2261,8 @@ function ImageGallery:renderListRow(img, content_w, is_focused_or_idx, opt_idx)
         local g = row_item.gallery or self
         local f_h = (g and g.footer_h) or sc(48)
         local footer_top = (g and g.sh and (g.sh - f_h)) or (self.sh - f_h)
-        if ges and ges.pos and ges.pos.y and ges.pos.y >= footer_top then
+        local gesture = (ges and ges.pos and ges) or (arg and arg.pos and arg) or (type(ges) == "table" and ges) or (type(arg) == "table" and arg) or {}
+        if gesture.pos and gesture.pos.y and gesture.pos.y >= footer_top then
             return false
         end
         if g and g.is_touch_device and g.focus_zone then
@@ -2257,12 +2270,15 @@ function ImageGallery:renderListRow(img, content_w, is_focused_or_idx, opt_idx)
             g.focused_index = nil
             UIManager:setDirty(g, "ui")
         end
-        if ges and ges.pos and row_item.dimen then
-            local right_edge = row_item.dimen.x + row_item.dimen.w
+        local d = row_item.dimen
+        if gesture.pos and d and d.x and d.w then
+            local right_edge = d.x + d.w
             local btn_hit_w = sc(54)
-            if ges.pos.x >= (right_edge - btn_hit_w) then
-                p:showImageActions(img)
-                return true
+            if gesture.pos.x >= (right_edge - btn_hit_w) then
+                if p and p.showImageActions then
+                    p:showImageActions(img)
+                    return true
+                end
             end
         end
         if p and p.openImageViewer then

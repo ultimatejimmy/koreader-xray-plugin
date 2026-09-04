@@ -197,6 +197,10 @@ msgstr "取消"
 msgid "character_not_found"
 msgstr "未找到匹配“%s”的角色"
 
+# en-hash: 01bc6f8efa4202821e95f4fdf6298b30
+msgid "clear"
+msgstr "清除"
+
 # en-hash: d3d2e617335f08df83599665eef8a418
 msgid "close"
 msgstr "关闭"
@@ -961,9 +965,9 @@ msgstr "合并"
 msgid "merge_confirm"
 msgstr "确定将 %s 合并至 %s 吗？次要条目将被删除，其别名将被吸收。"
 
-# en-hash: f05bbbb62dd4920db1277184e3fd98ce
+# en-hash: 288650687add5951b526ac950ce45b03
 msgid "merge_duplicates"
-msgstr "合并重复项..."
+msgstr "⋈ 合并重复项..."
 
 # en-hash: 1a0eb2431b20a745a419931f2f637210
 msgid "merge_failed"
@@ -1037,9 +1041,9 @@ msgstr "未设置 AI API 密钥！\n\n请在以下路径输入密钥：\n菜单 
 msgid "no_author_data_fetch"
 msgstr "暂无作者信息。\n\n是否要通过 AI 获取？"
 
-# en-hash: 6cbd3b9b2bb981930fa8f38f26ca5f61
+# en-hash: 18b36cd276b2c5afa9f9cdf198876b20
 msgid "no_character_data"
-msgstr "暂无角色数据。\n\n请先使用“获取 X-Ray 数据”。"
+msgstr "未找到角色。"
 
 # en-hash: 80a4905228688f8ad8ec996803f60ffb
 msgid "no_data_prompt"
@@ -1052,6 +1056,10 @@ msgstr "未发现重复项。"
 # en-hash: 064105ef9b1bca475059078013cc4a4b
 msgid "no_historical_data"
 msgstr "暂无历史人物数据。\n\n请先使用“获取 X-Ray 数据”。\n\nAI 将自动检测书中提及的真实历史人物。"
+
+# en-hash: 4c58fb13d107106e3765e3f635e64517
+msgid "no_items"
+msgstr "无项目"
 
 # en-hash: 4d0e58f2c49ca238a05d2a92486d3d70
 msgid "no_location_data"
@@ -1075,7 +1083,7 @@ msgstr "未检测到此书的系列信息。"
 
 # en-hash: 29503d301d509e5cfea9e97daffa9e79
 msgid "no_terms_data"
-msgstr "尚无术语数据。请先使用“Fetch X-Ray Data”。"
+msgstr "暂无词条数据。请先使用“Fetch X-Ray Data”。"
 
 # en-hash: 0c8a85db22b4a3eadf95fe1a55f00c63
 msgid "no_timeline_data"
@@ -1156,6 +1164,10 @@ msgstr "查看"
 # en-hash: c9cc8cce247e49bae79f15173ce97354
 msgid "save"
 msgstr "保存"
+
+# en-hash: 06a943c59f33a34bb5924aaf72cd2995
+msgid "search"
+msgstr "搜索"
 
 # en-hash: 13348442cc6a27032d2b4aa28b75a5d3
 msgid "search_button"

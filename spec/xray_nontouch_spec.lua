@@ -485,6 +485,38 @@ describe("X-Ray Non-Touch & Keyboard Support", function()
 
             Device.isTouchDevice = orig_isTouch
         end)
+
+        it("safely handles ButtonDialog with _added_widgets and activates valid button without crash", function()
+            local ButtonDialog = require("ui/widget/buttondialog")
+            local close_called = false
+            local dummy_vg = { text = "Content text", not_focusable = nil }
+            local dlg = {
+                _added_widgets = { dummy_vg },
+                buttons = {{{
+                    text = "Close",
+                    callback = function() close_called = true end,
+                }}},
+                layout = {
+                    {
+                        {
+                            text = "Close",
+                            callback = function() close_called = true end,
+                        }
+                    }
+                },
+                key_events = {},
+            }
+            if ButtonDialog.init then
+                ButtonDialog.init(dlg)
+                assert.is_true(dummy_vg.not_focusable)
+                assert.are.equal(1, dlg.selected.x)
+                assert.are.equal(1, dlg.selected.y)
+                if ButtonDialog.onPress then
+                    ButtonDialog.onPress(dlg)
+                    assert.is_true(close_called)
+                end
+            end
+        end)
     end)
 
     describe("Dual Touch / Keyboard Focus Suppression", function()

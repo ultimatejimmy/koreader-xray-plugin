@@ -1,0 +1,1377 @@
+-- xray_entity_list.lua — Full-screen modern entity & timeline list overlay for KOReader X-Ray
+-- Implements Storefront-style compact cards, Feather icon header toolbar, pagination, and sorting.
+
+local UIManager       = require("ui/uimanager")
+local InputContainer  = require("ui/widget/container/inputcontainer")
+local FrameContainer  = require("ui/widget/container/framecontainer")
+local CenterContainer = require("ui/widget/container/centercontainer")
+local LeftContainer   = require("ui/widget/container/leftcontainer")
+local RightContainer  = require("ui/widget/container/rightcontainer")
+local OverlapGroup    = require("ui/widget/overlapgroup")
+local BottomContainer = require("ui/widget/container/bottomcontainer")
+local VerticalGroup   = require("ui/widget/verticalgroup")
+local HorizontalGroup = require("ui/widget/horizontalgroup")
+local VerticalSpan    = require("ui/widget/verticalspan")
+local HorizontalSpan  = require("ui/widget/horizontalspan")
+local LineWidget      = require("ui/widget/linewidget")
+local TextWidget      = require("ui/widget/textwidget")
+local TextBoxWidget   = require("ui/widget/textboxwidget")
+local ImageWidget     = require("ui/widget/imagewidget")
+local Font            = require("ui/font")
+local Geom            = require("ui/geometry")
+local GestureRange    = require("ui/gesturerange")
+local Blitbuffer      = require("ffi/blitbuffer")
+local Device          = require("device")
+local Screen          = Device.screen
+local ok_ffiu, ffiutil= pcall(require, "ffi/util")
+local ok_ds, DataStorage = pcall(require, "datastorage")
+
+local plugin_path = ((...) or ""):match("(.-)[^%.]+$") or ""
+local theme = require(plugin_path .. "xray_theme")
+
+local function sc(val)
+    return (Screen and Screen.scaleBySize and Screen:scaleBySize(val)) or val
+end
+
+local _asset_path_cache = {}
+local function getAssetPath(filename)
+    if _asset_path_cache[filename] then
+        return _asset_path_cache[filename]
+    end
+    local info = debug.getinfo(1, "S")
+    local file_dir = (info and info.source and info.source:match("^@?(.*[/\\])")) or ""
+    local data_dir = (ok_ds and DataStorage and DataStorage.getDataDir and DataStorage:getDataDir()) or ""
+    local settings_dir = (ok_ds and DataStorage and DataStorage.getSettingsDir and DataStorage:getSettingsDir()) or ""
+
+    local candidates = {
+        file_dir .. "assets/" .. filename,
+        file_dir .. "../assets/" .. filename,
+        "plugins/xray.koplugin/assets/" .. filename,
+        "./plugins/xray.koplugin/assets/" .. filename,
+        data_dir .. "/plugins/xray.koplugin/assets/" .. filename,
+        settings_dir .. "/plugins/xray.koplugin/assets/" .. filename,
+    }
+    for _, path in ipairs(candidates) do
+        local f = io.open(path, "r")
+        if f then
+            f:close()
+            if ok_ffiu and ffiutil and ffiutil.realpath then
+                local rp = ffiutil.realpath(path)
+                if rp then path = rp end
+            end
+            _asset_path_cache[filename] = path
+            return path
+        end
+    end
+    return "plugins/xray.koplugin/assets/" .. filename
+end
+
+local function makeTapItem(frame, callback)
+    local item = InputContainer:new{ frame }
+    item.frame = frame
+    function item:getSize()
+        return (frame and frame.getSize and frame:getSize()) or { w = frame.width or 0, h = frame.height or 0 }
+    end
+    function item:paintTo(bb, x, y)
+        local fsize = (frame and frame.getSize and frame:getSize()) or { w = frame.width or 0, h = frame.height or 0 }
+        self.dimen = Geom:new{ x = x, y = y, w = fsize.w or 0, h = fsize.h or 0 }
+        if self.onBeforePaint then
+            self:onBeforePaint()
+        end
+        frame:paintTo(bb, x, y)
+    end
+    item.ges_events = {
+        Tap = {
+            GestureRange:new{
+                ges = "tap",
+                range = function()
+                    return item.dimen or Geom:new{ x = -1, y = -1, w = 1, h = 1 }
+                end
+            }
+        }
+    }
+    item.onTap = function()
+        if callback then
+            pcall(callback)
+        end
+        return true
+    end
+    return item
+end
+
+local function createIconButton(opts)
+    opts = opts or {}
+    local icon_size = opts.size or sc(24)
+    local btn_w = opts.width or sc(48)
+    local btn_h = opts.height or sc(48)
+    local is_focused = opts.is_focused == true
+    local icon_widget = ImageWidget:new{
+        file = getAssetPath(opts.icon),
+        width = icon_size,
+        height = icon_size,
+        scale_factor = 0,
+        is_icon = true,
+        alpha = true,
+    }
+    local frame = FrameContainer:new{
+        width = btn_w,
+        height = btn_h,
+        padding = 0,
+        bordersize = is_focused and (theme.border_focus or sc(2)) or (opts.bordersize or 0),
+        color = is_focused and (theme.color_focus_border or Blitbuffer.COLOR_BLACK) or (opts.color or Blitbuffer.COLOR_DARK_GRAY),
+        background = is_focused and (theme.color_focus_bg or Blitbuffer.Color8(215)) or (opts.background or Blitbuffer.COLOR_WHITE),
+        radius = opts.radius or sc(6),
+        CenterContainer:new{
+            dimen = Geom:new{ w = btn_w, h = btn_h },
+            icon_widget,
+        }
+    }
+    local item = makeTapItem(frame, opts.callback)
+    item.allow_flash = opts.allow_flash ~= false
+    return item
+end
+
+local EntityListOverlay = InputContainer:extend{
+    covers_fullscreen = true,
+    modal = true,
+    sw = nil,
+    sh = nil,
+    plugin = nil,
+    entity = nil,
+    mode = "characters", -- "characters", "terms", "locations", "historical_figures", "timeline", "mentions"
+    raw_items = nil,
+    items = nil,
+    current_page = 1,
+    total_pages = 1,
+    sort_mode = "frequency", -- "frequency", "appearance", "alphabetical"
+    search_query = nil,
+    focus_zone = nil, -- "header", "cards", "footer"
+    header_focus_idx = 1,
+    focused_index = 1,
+    footer_focus_idx = 1,
+    is_touch_device = true,
+    prior_collapsed = true,
+}
+
+function EntityListOverlay:init()
+    self.modal = true
+    self.covers_fullscreen = true
+    self.sw = Screen:getWidth()
+    self.sh = Screen:getHeight()
+    self.dimen = Geom:new{ x = 0, y = 0, w = self.sw, h = self.sh }
+    self.stop_events_propagation = true
+
+    local ok_dev, Dev = pcall(require, "device")
+    if rawget(self, "is_touch_device") == nil then
+        if ok_dev and Dev then
+            if type(Dev.isTouchDevice) == "function" then
+                local ok2, res = pcall(Dev.isTouchDevice, Dev)
+                if ok2 and res ~= nil then self.is_touch_device = (res == true) end
+            elseif Dev.isTouchDevice ~= nil then
+                self.is_touch_device = (Dev.isTouchDevice == true)
+            end
+        end
+    end
+
+    self.focus_zone = nil
+    self.focused_index = nil
+
+    self.ges_events = {
+        Tap = {
+            GestureRange:new{
+                ges = "tap",
+                range = function() return self.dimen end,
+            },
+        },
+        Swipe = {
+            GestureRange:new{
+                ges = "swipe",
+                range = function() return self.dimen end,
+            },
+        },
+    }
+
+    if self.plugin and self.plugin.series_prior_timeline_collapsed ~= nil then
+        self.prior_collapsed = self.plugin.series_prior_timeline_collapsed
+    end
+
+    self:prepareItems()
+    self:buildUI()
+end
+
+function EntityListOverlay:prepareItems()
+    local raw = self.raw_items or {}
+    local filtered = {}
+
+    -- Apply search query if present
+    if self.search_query and self.search_query ~= "" then
+        local q = self.search_query:lower()
+        for _, it in ipairs(raw) do
+            local name = (it.name or it.chapter or ""):lower()
+            local desc = (it.description or it.definition or it.biography or it.event or it.snippet or ""):lower()
+            if name:find(q, 1, true) or desc:find(q, 1, true) then
+                table.insert(filtered, it)
+            end
+        end
+    else
+        for _, it in ipairs(raw) do
+            table.insert(filtered, it)
+        end
+    end
+
+    -- Sorting (timeline and mentions have their own sequence, others use sort modes)
+    if self.mode == "mentions" then
+        table.sort(filtered, function(a, b)
+            return (tonumber(a.page) or 0) < (tonumber(b.page) or 0)
+        end)
+    elseif self.mode ~= "timeline" then
+        if self.sort_mode == "alphabetical" then
+            table.sort(filtered, function(a, b)
+                local na = (a.name or ""):lower()
+                local nb = (b.name or ""):lower()
+                return na < nb
+            end)
+        elseif self.sort_mode == "appearance" then
+            table.sort(filtered, function(a, b)
+                local pa = tonumber(a.first_page or a.page) or 999999
+                local pb = tonumber(b.first_page or b.page) or 999999
+                if pa == pb then
+                    return (a.sort_order or 99999) < (b.sort_order or 99999)
+                end
+                return pa < pb
+            end)
+        else
+            -- Default: Frequency of mentions
+            table.sort(filtered, function(a, b)
+                local sa = tonumber(a._sort_score) or (a.sort_order and (10000 - a.sort_order)) or 0
+                local sb = tonumber(b._sort_score) or (b.sort_order and (10000 - b.sort_order)) or 0
+                if sa == sb then
+                    local ma = (a.mentions and #a.mentions) or 0
+                    local mb = (b.mentions and #b.mentions) or 0
+                    if ma == mb then
+                        return (a.name or ""):lower() < (b.name or ""):lower()
+                    end
+                    return ma > mb
+                end
+                return sa > sb
+            end)
+        end
+    end
+
+    self.items = filtered
+end
+
+function EntityListOverlay:onTap(arg, ges)
+    if self.is_touch_device and self.focus_zone then
+        self.focus_zone = nil
+        self.focused_index = nil
+        self:buildUI()
+        UIManager:setDirty(self, "ui")
+    end
+    return true
+end
+
+function EntityListOverlay:onSwipe(arg, ges)
+    if ges.direction == "west" or ges.direction == "left" then
+        return self:onNextPage()
+    elseif ges.direction == "east" or ges.direction == "right" then
+        return self:onPrevPage()
+    end
+end
+
+function EntityListOverlay:onNextPage()
+    if self.current_page < self.total_pages then
+        self.current_page = self.current_page + 1
+        self.focused_index = 1
+        self:buildUI()
+        UIManager:setDirty(self, "ui")
+    end
+    return true
+end
+
+function EntityListOverlay:onPrevPage()
+    if self.current_page > 1 then
+        self.current_page = self.current_page - 1
+        self.focused_index = 1
+        self:buildUI()
+        UIManager:setDirty(self, "ui")
+    end
+    return true
+end
+
+function EntityListOverlay:onFirstPage()
+    if self.current_page > 1 then
+        self.current_page = 1
+        self.focused_index = 1
+        self:buildUI()
+        UIManager:setDirty(self, "ui")
+    end
+    return true
+end
+
+function EntityListOverlay:onLastPage()
+    if self.current_page < self.total_pages then
+        self.current_page = self.total_pages
+        self.focused_index = 1
+        self:buildUI()
+        UIManager:setDirty(self, "ui")
+    end
+    return true
+end
+
+function EntityListOverlay:onJumpPage()
+    if self.total_pages <= 1 then return true end
+    local SpinWidget = require("ui/widget/spinwidget")
+    UIManager:show(SpinWidget:new{
+        modal = true,
+        title_text = "Go to page",
+        value = self.current_page,
+        value_min = 1,
+        value_max = self.total_pages,
+        ok_text = "Go",
+        callback = function(spin)
+            if spin and spin.value and spin.value ~= self.current_page then
+                self.current_page = spin.value
+                self.focused_index = 1
+                self:buildUI()
+                UIManager:setDirty(self, "ui")
+            end
+        end,
+    })
+    return true
+end
+
+function EntityListOverlay:onFocusDown()
+    if not self.focus_zone then
+        self.focus_zone = "cards"
+        self.focused_index = 1
+    elseif self.focus_zone == "header" then
+        self.focus_zone = "cards"
+        self.focused_index = 1
+    elseif self.focus_zone == "cards" then
+        local count = (self.current_page_items and #self.current_page_items) or 0
+        if (self.focused_index or 1) < count then
+            self.focused_index = (self.focused_index or 1) + 1
+        else
+            self.focus_zone = "footer"
+            self.footer_focus_idx = 2
+        end
+    elseif self.focus_zone == "footer" then
+        self.focus_zone = "header"
+        self.header_focus_idx = 1
+    end
+    self:buildUI()
+    UIManager:setDirty(self, "ui")
+    return true
+end
+
+function EntityListOverlay:onFocusUp()
+    local count = (self.current_page_items and #self.current_page_items) or 1
+    if not self.focus_zone then
+        self.focus_zone = "cards"
+        self.focused_index = math.max(1, count)
+    elseif self.focus_zone == "footer" then
+        self.focus_zone = "cards"
+        self.focused_index = math.max(1, count)
+    elseif self.focus_zone == "cards" then
+        if (self.focused_index or 1) > 1 then
+            self.focused_index = (self.focused_index or 1) - 1
+        else
+            self.focus_zone = "header"
+            self.header_focus_idx = 1
+        end
+    elseif self.focus_zone == "header" then
+        self.focus_zone = "footer"
+        self.footer_focus_idx = 2
+    end
+    self:buildUI()
+    UIManager:setDirty(self, "ui")
+    return true
+end
+
+function EntityListOverlay:onFocusLeft()
+    if not self.focus_zone then
+        self.focus_zone = "cards"
+        self.focused_index = 1
+        self:buildUI()
+        UIManager:setDirty(self, "ui")
+        return true
+    end
+    if self.focus_zone == "header" then
+        local count = (self.current_header_actions and #self.current_header_actions) or 1
+        self.header_focus_idx = (self.header_focus_idx > 1) and (self.header_focus_idx - 1) or count
+        self:buildUI()
+        UIManager:setDirty(self, "ui")
+        return true
+    elseif self.focus_zone == "footer" then
+        self.footer_focus_idx = (self.footer_focus_idx > 1) and (self.footer_focus_idx - 1) or 3
+        self:buildUI()
+        UIManager:setDirty(self, "ui")
+        return true
+    elseif self.focus_zone == "cards" then
+        return self:onPrevPage()
+    end
+    return false
+end
+
+function EntityListOverlay:onFocusRight()
+    if not self.focus_zone then
+        self.focus_zone = "cards"
+        self.focused_index = 1
+        self:buildUI()
+        UIManager:setDirty(self, "ui")
+        return true
+    end
+    if self.focus_zone == "header" then
+        local count = (self.current_header_actions and #self.current_header_actions) or 1
+        self.header_focus_idx = (self.header_focus_idx < count) and (self.header_focus_idx + 1) or 1
+        self:buildUI()
+        UIManager:setDirty(self, "ui")
+        return true
+    elseif self.focus_zone == "footer" then
+        self.footer_focus_idx = (self.footer_focus_idx < 3) and (self.footer_focus_idx + 1) or 1
+        self:buildUI()
+        UIManager:setDirty(self, "ui")
+        return true
+    elseif self.focus_zone == "cards" then
+        return self:onNextPage()
+    end
+    return false
+end
+
+function EntityListOverlay:onOpenFocused()
+    if not self.focus_zone then
+        self.focus_zone = "cards"
+        self.focused_index = 1
+        self:buildUI()
+        UIManager:setDirty(self, "ui")
+        return true
+    end
+    if self.focus_zone == "cards" then
+        local item = self.current_page_items and self.current_page_items[self.focused_index or 1]
+        if item then
+            if item.is_prior_header then
+                self.prior_collapsed = not self.prior_collapsed
+                if self.plugin then
+                    self.plugin.series_prior_timeline_collapsed = self.prior_collapsed
+                end
+                self.current_page = 1
+                self:buildUI()
+                UIManager:setDirty(self, "ui")
+            else
+                self:onItemSelect(item)
+            end
+        end
+        return true
+    elseif self.focus_zone == "header" then
+        local action = self.current_header_actions and self.current_header_actions[self.header_focus_idx or 1]
+        if action and action.callback then
+            action.callback()
+        end
+        return true
+    elseif self.focus_zone == "footer" then
+        if self.footer_focus_idx == 1 then
+            return self:onPrevPage()
+        elseif self.footer_focus_idx == 2 then
+            return self:onJumpPage()
+        elseif self.footer_focus_idx == 3 then
+            return self:onNextPage()
+        end
+        return true
+    end
+    return false
+end
+
+function EntityListOverlay:onKeyPress(key)
+    local key_name = key and (key.key or key.name or key) or ""
+    return self:handleEvent({ type = "Key", key = key_name })
+end
+
+function EntityListOverlay:onKeyDown(key)
+    return self:onKeyPress(key)
+end
+
+function EntityListOverlay:handleEvent(ev)
+    if ev.type == "Key" or ev.type == "KeyPress" or ev.type == "KeyDown" then
+        local key = ev.key or ev.name or ev.sym or ""
+
+        local ok_dev, Device = pcall(require, "device")
+        local extra_enter_keys = {}
+        local extra_back_keys = {}
+        if ok_dev and Device and Device.input and Device.input.group then
+            if Device.input.group.Enter then extra_enter_keys[Device.input.group.Enter] = true end
+            if Device.input.group.Select then extra_enter_keys[Device.input.group.Select] = true end
+            if Device.input.group.Back then extra_back_keys[Device.input.group.Back] = true end
+        end
+
+        local UP_KEYS    = { Up=true, k=true, K=true }
+        local DOWN_KEYS  = { Down=true, j=true, J=true }
+        local LEFT_KEYS  = { Left=true, h=true, H=true }
+        local RIGHT_KEYS = { Right=true, l=true, L=true }
+        local PAGE_PREV  = { PrevPage=true, PageUp=true, p=true, P=true, ["["]=true }
+        local PAGE_NEXT  = { NextPage=true, PageDown=true, n=true, N=true, ["]"]=true }
+        local ENTER_KEYS = { Return=true, Enter=true, KP_Enter=true, Select=true, Space=true, Press=true }
+        local CLOSE_KEYS = { Escape=true, Back=true, q=true, Q=true }
+        for k in pairs(extra_enter_keys) do ENTER_KEYS[k] = true end
+        for k in pairs(extra_back_keys)  do CLOSE_KEYS[k] = true end
+
+        if UP_KEYS[key] then
+            return self:onFocusUp()
+        elseif DOWN_KEYS[key] then
+            return self:onFocusDown()
+        elseif LEFT_KEYS[key] then
+            return self:onFocusLeft()
+        elseif RIGHT_KEYS[key] then
+            return self:onFocusRight()
+        elseif ENTER_KEYS[key] then
+            return self:onOpenFocused()
+        elseif CLOSE_KEYS[key] then
+            return self:close()
+        elseif PAGE_PREV[key] then
+            return self:onPrevPage()
+        elseif PAGE_NEXT[key] then
+            return self:onNextPage()
+        elseif key == "Home" then
+            return self:onFirstPage()
+        elseif key == "End" then
+            return self:onLastPage()
+        elseif key == "s" or key == "S" then
+            return self:showSortDialog()
+        elseif key == "f" or key == "F" or key == "/" then
+            return self:showSearchDialog()
+        elseif (key == "m" or key == "M") and (self.mode == "characters" or self.mode == "locations") then
+            return self:showMergeDialog()
+        elseif (key == "+" or key == "=" or key == "a" or key == "A") and (self.mode == "characters" or self.mode == "terms") then
+            if self.mode == "characters" and self.plugin then self.plugin:fetchMoreCharacters(); return true
+            elseif self.mode == "terms" and self.plugin then self.plugin:fetchMoreTerms(); return true end
+        else
+            local num = tonumber(key)
+            if num and num >= 1 and num <= 9 then
+                local it = self.current_page_items and self.current_page_items[num]
+                if it then
+                    self.focus_zone = "cards"
+                    self.focused_index = num
+                    if it.is_prior_header then
+                        self.prior_collapsed = not self.prior_collapsed
+                        if self.plugin then self.plugin.series_prior_timeline_collapsed = self.prior_collapsed end
+                        self.current_page = 1
+                        self:buildUI()
+                        UIManager:setDirty(self, "ui")
+                    else
+                        self:onItemSelect(it)
+                    end
+                    return true
+                end
+            end
+        end
+    end
+    return InputContainer.handleEvent(self, ev)
+end
+
+function EntityListOverlay:close()
+    if self.plugin then
+        if self.mode == "characters" then self.plugin.char_menu = nil
+        elseif self.mode == "terms" then self.plugin.terms_menu = nil
+        elseif self.mode == "locations" then self.plugin.loc_menu = nil
+        elseif self.mode == "historical_figures" then self.plugin.hf_menu = nil
+        elseif self.mode == "timeline" then self.plugin.timeline_menu = nil
+        elseif self.mode == "mentions" then self.plugin.mentions_menu = nil
+        end
+    end
+    UIManager:close(self, "ui")
+    if self.on_close_callback then
+        self.on_close_callback()
+    end
+end
+
+function EntityListOverlay:showMergeDialog()
+    local p = self.plugin
+    if not p then return end
+    local ButtonDialog = require("ui/widget/buttondialog")
+    local loc = p.loc
+    local items_to_merge = (self.mode == "characters") and p.characters or p.locations or {}
+    local entity_type = self.mode
+    local entity_label = (self.mode == "characters") and ((loc and loc:t("entity_label_characters")) or "characters") or ((loc and loc:t("entity_label_locations")) or "locations")
+
+    local merge_dialog
+    merge_dialog = ButtonDialog:new{
+        modal = true,
+        title = (loc and loc:t("merge_duplicates")) or "Merge Duplicates",
+        buttons = {
+            {
+                {
+                    text = "✦ " .. ((loc and loc:t("ai_scan")) or "AI Scan"),
+                    callback = function()
+                        UIManager:close(merge_dialog)
+                        p:showAIFindDuplicatesFlow(items_to_merge, entity_type, entity_label)
+                    end,
+                },
+                {
+                    text = (loc and loc:t("manual_pick")) or "Manual Pick",
+                    callback = function()
+                        UIManager:close(merge_dialog)
+                        p:showMergeFlow(items_to_merge, entity_type)
+                    end,
+                },
+            },
+            {
+                {
+                    text = (loc and loc:t("cancel")) or "Cancel",
+                    callback = function() UIManager:close(merge_dialog) end,
+                }
+            }
+        }
+    }
+    UIManager:show(merge_dialog)
+end
+
+function EntityListOverlay:showSortDialog()
+    local ButtonDialog = require("ui/widget/buttondialog")
+    local sort_dialog
+    local p = self.plugin
+    local loc = p and p.loc
+
+    local function _tr(key, default)
+        if not loc or not loc.t then return default end
+        local res = loc:t(key)
+        if not res or res == key or res:find("^sort_") then return default end
+        return res
+    end
+
+    local current_sort = self.sort_mode
+    local check_freq = (current_sort == "frequency") and "● " or "○ "
+    local check_app  = (current_sort == "appearance") and "● " or "○ "
+    local check_az   = (current_sort == "alphabetical") and "● " or "○ "
+
+    sort_dialog = ButtonDialog:new{
+        modal = true,
+        title = _tr("sort_by", "Sort By"),
+        buttons = {
+            {
+                {
+                    text = check_freq .. _tr("sort_frequency", "Frequency of Mentions (Default)"),
+                    callback = function()
+                        UIManager:close(sort_dialog)
+                        self.sort_mode = "frequency"
+                        self.current_page = 1
+                        self:prepareItems()
+                        self:buildUI()
+                        UIManager:setDirty(self, "ui")
+                    end,
+                },
+            },
+            {
+                {
+                    text = check_app .. _tr("sort_appearance", "Order of Appearance"),
+                    callback = function()
+                        UIManager:close(sort_dialog)
+                        self.sort_mode = "appearance"
+                        self.current_page = 1
+                        self:prepareItems()
+                        self:buildUI()
+                        UIManager:setDirty(self, "ui")
+                    end,
+                },
+            },
+            {
+                {
+                    text = check_az .. _tr("sort_alphabetical", "Alphabetical (A–Z)"),
+                    callback = function()
+                        UIManager:close(sort_dialog)
+                        self.sort_mode = "alphabetical"
+                        self.current_page = 1
+                        self:prepareItems()
+                        self:buildUI()
+                        UIManager:setDirty(self, "ui")
+                    end,
+                },
+            },
+            {
+                {
+                    text = (loc and loc:t("cancel")) or "Cancel",
+                    callback = function() UIManager:close(sort_dialog) end,
+                }
+            }
+        }
+    }
+    UIManager:show(sort_dialog)
+end
+
+function EntityListOverlay:showSearchDialog()
+    local InputDialog = require("ui/widget/inputdialog")
+    local p = self.plugin
+    local loc = p and p.loc
+    local input_dlg
+    input_dlg = InputDialog:new{
+        modal = true,
+        title = (loc and loc:t("search")) or "Search",
+        input = self.search_query or "",
+        input_hint = (loc and loc:t("search_hint")) or "Filter items...",
+        buttons = {
+            {
+                {
+                    text = (loc and loc:t("clear")) or "Clear",
+                    callback = function()
+                        UIManager:close(input_dlg)
+                        self.search_query = nil
+                        self.current_page = 1
+                        self:prepareItems()
+                        self:buildUI()
+                        UIManager:setDirty(self, "ui")
+                    end,
+                },
+                {
+                    text = (loc and loc:t("cancel")) or "Cancel",
+                    callback = function() UIManager:close(input_dlg) end,
+                },
+                {
+                    text = (loc and loc:t("search")) or "Search",
+                    is_enter_default = true,
+                    callback = function()
+                        local val = input_dlg:getInputText()
+                        UIManager:close(input_dlg)
+                        self.search_query = (val and val:match("^%s*(.-)%s*$") ~= "") and val:match("^%s*(.-)%s*$") or nil
+                        self.current_page = 1
+                        self:prepareItems()
+                        self:buildUI()
+                        UIManager:setDirty(self, "ui")
+                    end,
+                }
+            }
+        }
+    }
+    UIManager:show(input_dlg)
+end
+
+function EntityListOverlay:renderRow(item, content_w, row_h, is_focused, idx)
+    local p = self.plugin
+    local loc = p and p.loc
+    local is_timeline = (self.mode == "timeline")
+    local is_mentions = (self.mode == "mentions")
+    local pad_h = sc(16)
+    local inner_w = content_w - (pad_h * 2)
+
+    -- 1. Primary line (Bold Name/Title, mimicking the Dialog title)
+    local title_str = ""
+    local is_prior = (item.source == "series_prior")
+    if is_timeline then
+        title_str = item.chapter or "Event"
+        if item.page and tonumber(item.page) then
+            title_str = title_str .. " (p. " .. tostring(item.page) .. ")"
+        end
+    elseif is_mentions then
+        title_str = "p. " .. tostring(item.page or "")
+        if item.chapter and item.chapter ~= "" then
+            title_str = title_str .. " — " .. item.chapter
+        end
+    else
+        title_str = item.name or "???"
+        if is_prior then
+            local prior_lbl = (loc and loc:t("series_prior_label")) or "[Prior]"
+            title_str = title_str .. " " .. prior_lbl
+        end
+    end
+
+    local title_widget = TextWidget:new{
+        text = title_str,
+        face = Font:getFace("cfont", 17),
+        bold = true,
+        fgcolor = Blitbuffer.COLOR_BLACK,
+        max_width = inner_w,
+    }
+
+    -- 2. Description (Dark, readable single-line text)
+    local desc_str = ""
+    if is_timeline then
+        desc_str = item.event or ""
+    elseif is_mentions then
+        desc_str = item.snippet or ""
+    elseif self.mode == "terms" then
+        desc_str = item.definition or item.description or ""
+    else
+        if p and p.resolveDescriptionForPage then
+            desc_str = p:resolveDescriptionForPage(item) or ""
+        else
+            desc_str = item.description or item.biography or ""
+        end
+    end
+    desc_str = desc_str:gsub("%s+", " "):match("^%s*(.-)%s*$") or ""
+    if #desc_str > 185 then
+        desc_str = desc_str:sub(1, 180) .. "..."
+    end
+
+    local desc_widget = nil
+    if desc_str ~= "" and desc_str ~= "---" then
+        desc_widget = TextWidget:new{
+            text = desc_str,
+            face = Font:getFace("cfont", 13),
+            fgcolor = Blitbuffer.Color8(40),
+            max_width = inner_w,
+        }
+    end
+
+    local text_items = {
+        VerticalSpan:new{ width = sc(3) },
+        title_widget,
+    }
+    if desc_widget then
+        table.insert(text_items, VerticalSpan:new{ width = sc(3) })
+        table.insert(text_items, desc_widget)
+    end
+    table.insert(text_items, VerticalSpan:new{ width = sc(3) })
+
+    local main_vg = VerticalGroup:new(text_items)
+    main_vg.align = "left"
+
+    local is_card_focused = is_focused and (self.focus_zone == "cards")
+    local main_vg_h = (main_vg.getSize and main_vg:getSize().h) or math.max(sc(24), row_h - sc(14))
+    local row_frame = FrameContainer:new{
+        padding = 0,
+        bordersize = is_card_focused and sc(2) or 0,
+        color = Blitbuffer.COLOR_BLACK,
+        background = is_card_focused and Blitbuffer.Color8(210) or Blitbuffer.COLOR_WHITE,
+        radius = is_card_focused and sc(4) or 0,
+        width = content_w,
+        height = row_h,
+        CenterContainer:new{
+            dimen = Geom:new{ w = content_w, h = row_h },
+            LeftContainer:new{
+                dimen = Geom:new{ w = inner_w, h = main_vg_h },
+                main_vg,
+            },
+        }
+    }
+
+    local row_item = InputContainer:new{
+        dimen = Geom:new{ w = content_w, h = row_h },
+        row_frame,
+    }
+    row_item.overlay = self
+
+    function row_item:getSize()
+        return self.dimen
+    end
+
+    function row_item:paintTo(bb, x, y)
+        self.dimen = Geom:new{ x = x, y = y, w = content_w, h = row_h }
+        local ov = self.overlay
+        local focused = (ov and ov.focus_zone == "cards" and ov.focused_index == idx)
+        row_frame.bordersize = focused and sc(2) or 0
+        row_frame.color = Blitbuffer.COLOR_BLACK
+        row_frame.background = focused and Blitbuffer.Color8(210) or Blitbuffer.COLOR_WHITE
+        row_frame.radius = focused and sc(4) or 0
+        if self[1] then self[1]:paintTo(bb, x, y) end
+    end
+
+    row_item.ges_events = {
+        Tap = {
+            GestureRange:new{
+                ges = "tap",
+                range = function() return row_item.dimen end,
+            }
+        }
+    }
+
+    row_item.onTap = function()
+        local ov = self
+        ov.focus_zone = nil
+        ov.focused_index = nil
+        if ov.onItemSelect then
+            ov:onItemSelect(item)
+        end
+        return true
+    end
+
+    return row_item
+end
+
+function EntityListOverlay:onItemSelect(item)
+    local p = self.plugin
+    if not p then return end
+    if self.mode == "characters" then
+        p:showCharacterDetails(item, { source = "menu" })
+    elseif self.mode == "terms" then
+        p:showTermDetails(item, { source = "menu" })
+    elseif self.mode == "locations" then
+        p:showLocationDetails(item, { source = "menu" })
+    elseif self.mode == "historical_figures" then
+        p:showHistoricalFigureDetails(item, { source = "menu" })
+    elseif self.mode == "timeline" then
+        p:showTimelineEventDetails(item, { source = "menu" })
+    elseif self.mode == "mentions" then
+        local return_pg = p.return_page_origin or (p.getCurrentPage and p:getCurrentPage()) or (p._getCurrentPage and p._getCurrentPage(p))
+        p.return_page_origin = return_pg
+        p.pending_return_banner = {
+            return_page = return_pg,
+            entity = self.entity,
+            mentions = self.raw_items or {}
+        }
+        self:close()
+        p:closeAllMenus()
+        local Event = require("ui/event")
+        UIManager:nextTick(function()
+            p.ui:handleEvent(Event:new("GotoPage", item.page))
+        end)
+    end
+end
+
+function EntityListOverlay:buildUI()
+    local sw = self.sw
+    local sh = self.sh
+    local p = self.plugin
+    local loc = p and p.loc
+
+    -- ── 1. Top Header Bar (Storefront style touch buttons) ────────────────────
+    local btn_size = sc(22)
+    local btn_w = sc(42)
+    local btn_h = sc(42)
+    local btn_gap = sc(4)
+
+    local title_text_str = "Characters"
+    if self.mode == "terms" then
+        title_text_str = (loc and loc:t("menu_terms")) or "Glossary"
+    elseif self.mode == "locations" then
+        title_text_str = (loc and loc:t("menu_locations")) or "Locations"
+    elseif self.mode == "historical_figures" then
+        title_text_str = (loc and loc:t("menu_historical_figures")) or "Historical Figures"
+    elseif self.mode == "timeline" then
+        title_text_str = (loc and loc:t("menu_timeline")) or "Timeline"
+    elseif self.mode == "mentions" then
+        local ent_name = (self.entity and self.entity.name) or "Entity"
+        local title_tmpl = (loc and loc:t("mentions_title")) or "Mentions: %s"
+        if title_tmpl == "mentions_title" then title_tmpl = "Mentions: %s" end
+        title_text_str = title_tmpl:format(ent_name)
+    else
+        title_text_str = (loc and loc:t("menu_characters")) or "Characters"
+    end
+
+    local is_scanning = (self.mode == "mentions") and p and p.active_mention_scan and p.active_mention_scan.entity_name == (self.entity and self.entity.name)
+    local total_count = #(self.raw_items or {})
+    local header_title
+    if is_scanning then
+        header_title = title_text_str .. " (Scanning... " .. tostring(p.active_mention_scan.chapter_idx or 0) .. "/" .. tostring(p.active_mention_scan.total_chapters or 0) .. ")"
+    else
+        header_title = title_text_str .. " (" .. tostring(total_count) .. ")"
+    end
+    self.title = header_title
+
+    -- Header actions (Feather icon buttons, touch targets)
+    self.current_header_actions = {}
+    local action_btns = {}
+
+    local function addHeaderAction(id, icon, callback)
+        table.insert(self.current_header_actions, { id = id, callback = callback })
+        local btn_idx = #self.current_header_actions
+        local is_focused = (self.focus_zone == "header" and self.header_focus_idx == btn_idx)
+        if btn_idx > 1 then
+            table.insert(action_btns, HorizontalSpan:new{ width = btn_gap })
+        end
+        table.insert(action_btns, createIconButton{
+            icon = icon,
+            size = btn_size,
+            width = btn_w,
+            height = btn_h,
+            is_focused = is_focused,
+            allow_flash = (id ~= "close"),
+            callback = function()
+                if self.is_touch_device then self.focus_zone = nil end
+                callback()
+            end,
+        })
+    end
+
+    -- A. Search button
+    addHeaderAction("search", "search.svg", function() self:showSearchDialog() end)
+
+    if self.mode == "mentions" then
+        -- Refresh mentions button
+        addHeaderAction("refresh", "rotate-cw.svg", function()
+            if p then
+                if p.active_mention_scan and p.active_mention_scan.cancel_handle then
+                    p.active_mention_scan.cancel_handle:cancel()
+                end
+                p.active_mention_scan = nil
+                if self.entity then
+                    self.entity.mentions = {}
+                    self.entity.last_mention_page = nil
+                    p:showMentionsForEntity(self.entity)
+                end
+            end
+        end)
+    else
+        -- B. Merge Duplicates button (characters and locations only)
+        if self.mode == "characters" or self.mode == "locations" then
+            addHeaderAction("merge", "git-merge.svg", function() self:showMergeDialog() end)
+        end
+
+        -- C. Fetch More button (Characters & Terms; Timeline specifically omits it per user requirement)
+        if self.mode == "characters" or self.mode == "terms" then
+            addHeaderAction("fetch", "plus.svg", function()
+                if self.mode == "characters" then
+                    p:fetchMoreCharacters()
+                elseif self.mode == "terms" then
+                    p:fetchMoreTerms()
+                end
+            end)
+        end
+
+        -- D. Sort button (Sliders icon from Feather Icons)
+        if self.mode ~= "timeline" then
+            addHeaderAction("sort", "sliders.svg", function() self:showSortDialog() end)
+        end
+    end
+
+    -- E. Close button (x.svg from Feather Icons, allow_flash=false)
+    addHeaderAction("close", "x.svg", function() self:close() end)
+
+    local header_actions_group = HorizontalGroup:new(action_btns)
+    header_actions_group.align = "center"
+
+    local is_filtered = (self.search_query and self.search_query ~= "")
+    local num_btns = #self.current_header_actions
+    local total_btns_w = num_btns * btn_w + math.max(0, num_btns - 1) * btn_gap
+    local row_w = sw - sc(32)
+    local title_container_w = row_w - total_btns_w - sc(12)
+    local title_max_w = math.max(sc(140), title_container_w)
+
+    local title_w = TextWidget:new{
+        text = header_title,
+        face = Font:getFace("cfont", is_filtered and 15 or 18),
+        bold = true,
+        fgcolor = Blitbuffer.COLOR_BLACK,
+        max_width = title_max_w,
+    }
+
+    local title_left_widget
+    if is_filtered then
+        local sub_info = "Filter: \"" .. self.search_query .. "\" (" .. tostring(#(self.items or {})) .. " matches)"
+        local sub_w = TextWidget:new{
+            text = sub_info,
+            face = Font:getFace("cfont", 12),
+            fgcolor = Blitbuffer.Color8(85),
+            max_width = title_max_w,
+        }
+        title_left_widget = VerticalGroup:new{
+            align = "left",
+            title_w,
+            VerticalSpan:new{ width = sc(2) },
+            sub_w,
+        }
+    else
+        title_left_widget = title_w
+    end
+
+    local header_row = OverlapGroup:new{
+        dimen = Geom:new{ w = row_w, h = sc(48) },
+        LeftContainer:new{
+            dimen = Geom:new{ w = title_container_w, h = sc(48) },
+            title_left_widget,
+        },
+        RightContainer:new{
+            dimen = Geom:new{ w = row_w, h = sc(48) },
+            header_actions_group,
+        },
+    }
+
+    local header_frame = FrameContainer:new{
+        padding_left = sc(16),
+        padding_right = sc(16),
+        padding_top = sc(10),
+        padding_bottom = sc(4),
+        bordersize = 0,
+        width = sw,
+        VerticalGroup:new{
+            align = "left",
+            header_row,
+            VerticalSpan:new{ width = sc(6) },
+            LineWidget:new{
+                background = Blitbuffer.COLOR_DARK_GRAY,
+                dimen = Geom:new{ w = sw - sc(32), h = sc(1) },
+            },
+        }
+    }
+
+    -- ── 2. Content Height Budgeting & Pagination ──────────────────────────────
+    local header_h = header_frame:getSize().h
+    local footer_h = sc(44)
+    local avail_content_h = sh - header_h - footer_h
+
+    local is_timeline = (self.mode == "timeline")
+    local is_mentions = (self.mode == "mentions")
+    local row_h = (is_timeline or is_mentions) and sc(60) or sc(58)
+    local divider_h = sc(1)
+    local items_per_page = math.max(1, math.floor(avail_content_h / (row_h + divider_h)))
+
+    -- Check if we have prior-book events in timeline
+    local display_items = {}
+    if is_timeline then
+        local has_prior = false
+        for _, it in ipairs(self.items or {}) do
+            if it.source == "series_prior" then has_prior = true; break end
+        end
+        if has_prior then
+            table.insert(display_items, {
+                is_prior_header = true,
+                collapsed = self.prior_collapsed,
+            })
+        end
+        for _, it in ipairs(self.items or {}) do
+            if it.source == "series_prior" then
+                if not self.prior_collapsed then
+                    table.insert(display_items, it)
+                end
+            else
+                table.insert(display_items, it)
+            end
+        end
+    else
+        display_items = self.items or {}
+    end
+
+    local total_display = #display_items
+    local pages = {}
+    local cur_page_items = {}
+    for idx, it in ipairs(display_items) do
+        table.insert(cur_page_items, it)
+        if #cur_page_items == items_per_page or idx == total_display then
+            table.insert(pages, cur_page_items)
+            cur_page_items = {}
+        end
+    end
+    if #pages == 0 then pages = {{}} end
+
+    self.total_pages = #pages
+    if self.current_page > self.total_pages then self.current_page = self.total_pages end
+    if self.current_page < 1 then self.current_page = 1 end
+
+    local page_items = pages[self.current_page] or {}
+    self.current_page_items = page_items
+
+    local page_content_vg = VerticalGroup:new{ align = "left" }
+
+    if total_display == 0 then
+        local empty_str = (loc and loc:t("no_items")) or "No items found"
+        if self.mode == "mentions" then
+            if is_scanning then
+                local scan_tmpl = (loc and loc:t("mentions_scanning")) or "Scanning... %1 of %2 chapters"
+                if scan_tmpl == "mentions_scanning" then scan_tmpl = "Scanning... %1 of %2 chapters" end
+                empty_str = scan_tmpl:gsub("%%1", tostring(p.active_mention_scan.chapter_idx or 0)):gsub("%%2", tostring(p.active_mention_scan.total_chapters or 0))
+            else
+                local none_tmpl = (loc and loc:t("mentions_none")) or "No mentions found for '%s' yet."
+                if none_tmpl == "mentions_none" then none_tmpl = "No mentions found for '%s' yet." end
+                empty_str = none_tmpl:format((self.entity and self.entity.name) or "this entity")
+            end
+        elseif self.search_query and self.search_query ~= "" then
+            empty_str = "No items matching \"" .. self.search_query .. "\""
+        end
+        local empty_w = TextWidget:new{
+            text = empty_str,
+            face = Font:getFace("cfont", 16),
+            fgcolor = Blitbuffer.COLOR_DARK_GRAY,
+        }
+        table.insert(page_content_vg, CenterContainer:new{
+            dimen = Geom:new{ w = sw, h = avail_content_h },
+            empty_w,
+        })
+    else
+        for idx, it in ipairs(page_items) do
+            if it.is_prior_header then
+                -- Collapsible Prior Books section row
+                local icon_name = it.collapsed and "chevron-right.svg" or "chevron-down.svg"
+                local chevron_icon = ImageWidget:new{
+                    file = getAssetPath(icon_name),
+                    width = sc(18),
+                    height = sc(18),
+                    scale_factor = 0,
+                    is_icon = true,
+                    alpha = true,
+                }
+                local prior_txt = TextWidget:new{
+                    text = (loc and loc:t("series_prior_books_header")) or "Prior Books in Series",
+                    face = Font:getFace("cfont", 15),
+                    bold = true,
+                    fgcolor = Blitbuffer.COLOR_BLACK,
+                }
+                local sec_row = HorizontalGroup:new{
+                    align = "center",
+                    chevron_icon,
+                    HorizontalSpan:new{ width = sc(8) },
+                    prior_txt,
+                }
+                local is_sec_focused = (self.focus_zone == "cards" and idx == self.focused_index)
+                local sec_frame = FrameContainer:new{
+                    padding = sc(8),
+                    padding_left = sc(16),
+                    padding_right = sc(16),
+                    bordersize = 0,
+                    background = is_sec_focused and Blitbuffer.Color8(235) or Blitbuffer.Color8(246),
+                    radius = is_sec_focused and sc(4) or 0,
+                    width = sw,
+                    height = sc(40),
+                    LeftContainer:new{
+                        dimen = Geom:new{ w = sw - sc(32), h = sc(40) },
+                        sec_row,
+                    },
+                }
+                local sec_item = makeTapItem(sec_frame, function()
+                    if self.is_touch_device then self.focus_zone = nil end
+                    self.prior_collapsed = not self.prior_collapsed
+                    if self.plugin then
+                        self.plugin.series_prior_timeline_collapsed = self.prior_collapsed
+                    end
+                    self.current_page = 1
+                    self:buildUI()
+                    UIManager:setDirty(self, "ui")
+                end)
+                table.insert(page_content_vg, sec_item)
+                if idx < #page_items then
+                    table.insert(page_content_vg, CenterContainer:new{
+                        dimen = Geom:new{ w = sw, h = sc(1) },
+                        LineWidget:new{
+                            background = Blitbuffer.Color8(180),
+                            dimen = Geom:new{ w = sw - sc(32), h = sc(1) },
+                        },
+                    })
+                end
+            else
+                local is_focused = (self.focus_zone == "cards" and idx == self.focused_index)
+                local row_widget = self:renderRow(it, sw, row_h, is_focused, idx)
+                table.insert(page_content_vg, row_widget)
+                if idx < #page_items then
+                    table.insert(page_content_vg, CenterContainer:new{
+                        dimen = Geom:new{ w = sw, h = sc(1) },
+                        LineWidget:new{
+                            background = Blitbuffer.Color8(180),
+                            dimen = Geom:new{ w = sw - sc(32), h = sc(1) },
+                        },
+                    })
+                end
+            end
+        end
+    end
+
+    local list_frame = FrameContainer:new{
+        padding = 0,
+        bordersize = 0,
+        width = sw,
+        page_content_vg,
+    }
+
+    -- ── 3. Footer Bar with Storefront Pagination ──────────────────────────────
+    local nav_btn_size = sc(20)
+    local nav_btn_w = sc(38)
+
+    local is_prev_focused = (self.focus_zone == "footer" and self.footer_focus_idx == 1)
+    local is_page_focused = (self.focus_zone == "footer" and self.footer_focus_idx == 2)
+    local is_next_focused = (self.focus_zone == "footer" and self.footer_focus_idx == 3)
+
+    local prev_btn = createIconButton{
+        icon = "chevron-left.svg",
+        size = nav_btn_size,
+        width = nav_btn_w,
+        height = nav_btn_w,
+        is_focused = is_prev_focused,
+        allow_flash = false,
+        callback = function()
+            if self.is_touch_device then self.focus_zone = nil end
+            self:onPrevPage()
+        end,
+    }
+
+    local page_label = TextWidget:new{
+        text = string.format("Page %d of %d", self.current_page, math.max(1, self.total_pages)),
+        face = Font:getFace("cfont", 15),
+        bold = true,
+        fgcolor = Blitbuffer.COLOR_BLACK,
+    }
+
+    local page_frame = FrameContainer:new{
+        padding_top = sc(4),
+        padding_bottom = sc(4),
+        padding_left = sc(10),
+        padding_right = sc(10),
+        bordersize = 0,
+        background = is_page_focused and Blitbuffer.Color8(240) or nil,
+        radius = sc(4),
+        page_label,
+    }
+
+    local page_item = makeTapItem(page_frame, function()
+        if self.is_touch_device then self.focus_zone = nil end
+        self:onJumpPage()
+    end)
+
+    local next_btn = createIconButton{
+        icon = "chevron-right.svg",
+        size = nav_btn_size,
+        width = nav_btn_w,
+        height = nav_btn_w,
+        is_focused = is_next_focused,
+        allow_flash = false,
+        callback = function()
+            if self.is_touch_device then self.focus_zone = nil end
+            self:onNextPage()
+        end,
+    }
+
+    local footer_group = HorizontalGroup:new{
+        align = "center",
+        prev_btn,
+        HorizontalSpan:new{ width = sc(16) },
+        page_item,
+        HorizontalSpan:new{ width = sc(16) },
+        next_btn,
+    }
+
+    local footer_divider = CenterContainer:new{
+        dimen = Geom:new{ w = sw, h = sc(1) },
+        LineWidget:new{
+            background = Blitbuffer.Color8(180),
+            dimen = Geom:new{ w = sw - sc(32), h = sc(1) },
+        },
+    }
+
+    local footer_frame = FrameContainer:new{
+        padding_top = 0,
+        padding_bottom = 0,
+        bordersize = 0,
+        width = sw,
+        height = footer_h,
+        VerticalGroup:new{
+            align = "left",
+            footer_divider,
+            CenterContainer:new{
+                dimen = Geom:new{ w = sw, h = footer_h - sc(1) },
+                footer_group,
+            },
+        }
+    }
+
+    -- ── Overall Fullscreen Assembly ───────────────────────────────────────────
+    local main_surface = FrameContainer:new{
+        padding = 0,
+        bordersize = 0,
+        background = Blitbuffer.COLOR_WHITE,
+        width = sw,
+        height = sh,
+        VerticalGroup:new{
+            align = "left",
+            header_frame,
+            list_frame,
+        }
+    }
+
+    local bottom_pinned_footer = BottomContainer:new{
+        dimen = Geom:new{ x = 0, y = 0, w = sw, h = sh },
+        footer_frame,
+    }
+
+    self[1] = OverlapGroup:new{
+        dimen = Geom:new{ x = 0, y = 0, w = sw, h = sh },
+        main_surface,
+        bottom_pinned_footer,
+    }
+    self.dimen = Geom:new{ x = 0, y = 0, w = sw, h = sh }
+end
+
+return EntityListOverlay

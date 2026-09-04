@@ -54,26 +54,25 @@ describe("xray_ui", function()
     end)
 
     describe("showCharacters", function()
-        it("should show a Menu even if no characters, containing Fetch More", function()
+        it("should show EntityListOverlay even if no characters", function()
             plugin.characters = {}
             plugin:showCharacters()
             local last = _G.ui_tracker.last_shown
-            assert.are.equal("Menu", last.type)
-            assert.truthy(last.args.title:find("menu_characters"))
-            assert.are.equal(1, #last.args.item_table)
-            assert.truthy(last.args.item_table[1].text:find("menu_fetch_more_chars"))
+            assert.are.equal("InputContainer", last.type)
+            assert.truthy(last.title:find("menu_characters"))
+            assert.are.equal(0, #last.raw_items)
         end)
 
-        it("should show a Menu if characters exist", function()
+        it("should show EntityListOverlay if characters exist", function()
             plugin.characters = { { name = "Alice", description = "Test" } }
             plugin:showCharacters()
             local last = _G.ui_tracker.last_shown
-            assert.are.equal("Menu", last.type)
-            assert.truthy(last.args.title:find("menu_characters"))
-            -- Verify Alice is in the menu
+            assert.are.equal("InputContainer", last.type)
+            assert.truthy(last.title:find("menu_characters"))
+            -- Verify Alice is in items
             local found = false
-            for _, item in ipairs(last.args.item_table) do
-                if item.text:find("Alice") then found = true; break end
+            for _, item in ipairs(last.items or {}) do
+                if (item.name or ""):find("Alice") then found = true; break end
             end
             assert.is_true(found)
         end)
@@ -332,26 +331,25 @@ describe("xray_ui", function()
     end)
 
     describe("showTerms", function()
-        it("should show a Menu even if no terms, containing Fetch More", function()
+        it("should show EntityListOverlay even if no terms", function()
             plugin.terms = {}
             plugin:showTerms()
             local last = _G.ui_tracker.last_shown
-            assert.are.equal("Menu", last.type)
-            assert.truthy(last.args.title:find("menu_terms"))
-            assert.are.equal(1, #last.args.item_table)
-            assert.truthy(last.args.item_table[1].text:find("menu_fetch_more_terms"))
+            assert.are.equal("InputContainer", last.type)
+            assert.truthy(last.title:find("menu_terms"))
+            assert.are.equal(0, #last.raw_items)
         end)
 
-        it("should show a Menu if terms exist", function()
+        it("should show EntityListOverlay if terms exist", function()
             plugin.terms = { { name = "Muggle", definition = "Non-magical person" } }
             plugin:showTerms()
             local last = _G.ui_tracker.last_shown
-            assert.are.equal("Menu", last.type)
-            assert.truthy(last.args.title:find("menu_terms"))
-            -- Verify Muggle is in the menu
+            assert.are.equal("InputContainer", last.type)
+            assert.truthy(last.title:find("menu_terms"))
+            -- Verify Muggle is in items
             local found = false
-            for _, item in ipairs(last.args.item_table) do
-                if item.text:find("Muggle") then found = true; break end
+            for _, item in ipairs(last.items or {}) do
+                if (item.name or ""):find("Muggle") then found = true; break end
             end
             assert.is_true(found)
         end)
@@ -1445,6 +1443,197 @@ describe("xray_ui", function()
             assert.is_true(plugin.images[1].is_hidden)
             assert.is_nil(plugin.image_gallery_overlay.cached_pages)
             assert.is_true(gallery_rebuilt)
+        end)
+    end)
+
+    describe("EntityListOverlay D-pad and non-touch navigation", function()
+        local EntityListOverlay = require("xray_entity_list")
+
+        it("starts with no initial focus highlight until D-pad is moved", function()
+            local overlay = EntityListOverlay:new{
+                plugin = plugin,
+                mode = "characters",
+                raw_items = {
+                    { name = "Char 1", description = "Desc 1" },
+                    { name = "Char 2", description = "Desc 2" },
+                },
+                is_touch_device = false,
+            }
+            -- Starts clean without any focus highlight
+            assert.is_nil(overlay.focus_zone)
+            assert.is_nil(overlay.focused_index)
+
+            -- First D-pad press activates focus on cards 1
+            overlay:onKeyPress("Down")
+            assert.are.equal("cards", overlay.focus_zone)
+            assert.are.equal(1, overlay.focused_index)
+        end)
+
+        it("navigates down and up through list items and zones with D-pad", function()
+            local overlay = EntityListOverlay:new{
+                plugin = plugin,
+                mode = "characters",
+                raw_items = {
+                    { name = "Char 1", description = "Desc 1" },
+                    { name = "Char 2", description = "Desc 2" },
+                },
+                is_touch_device = false,
+            }
+            -- First Down activates cards 1
+            overlay:onKeyPress("Down")
+            assert.are.equal("cards", overlay.focus_zone)
+            assert.are.equal(1, overlay.focused_index)
+
+            -- Second Down moves to cards 2
+            overlay:onKeyPress("Down")
+            assert.are.equal("cards", overlay.focus_zone)
+            assert.are.equal(2, overlay.focused_index)
+
+            -- Down from last card goes to footer
+            overlay:onKeyPress("Down")
+            assert.are.equal("footer", overlay.focus_zone)
+            assert.are.equal(2, overlay.footer_focus_idx)
+
+            -- Down from footer goes to header
+            overlay:onKeyPress("Down")
+            assert.are.equal("header", overlay.focus_zone)
+            assert.are.equal(1, overlay.header_focus_idx)
+
+            -- Down from header goes back to cards 1
+            overlay:onKeyPress("Down")
+            assert.are.equal("cards", overlay.focus_zone)
+            assert.are.equal(1, overlay.focused_index)
+
+            -- Up from cards 1 goes to header
+            overlay:onKeyPress("Up")
+            assert.are.equal("header", overlay.focus_zone)
+            assert.are.equal(1, overlay.header_focus_idx)
+
+            -- Up from header goes to footer
+            overlay:onKeyPress("Up")
+            assert.are.equal("footer", overlay.focus_zone)
+
+            -- Up from footer goes to bottom card
+            overlay:onKeyPress("Up")
+            assert.are.equal("cards", overlay.focus_zone)
+            assert.are.equal(2, overlay.focused_index)
+        end)
+
+        it("allows opening selected item with Return / Enter", function()
+            local selected_item = nil
+            plugin.showCharacterDetails = function(self, char)
+                selected_item = char
+            end
+
+            local overlay = EntityListOverlay:new{
+                plugin = plugin,
+                mode = "characters",
+                raw_items = {
+                    { name = "Char 1", description = "Desc 1" },
+                    { name = "Char 2", description = "Desc 2" },
+                },
+                is_touch_device = false,
+            }
+            overlay:onKeyPress("Down") -- activates Char 1
+            overlay:onKeyPress("Down") -- moves to Char 2
+            overlay:onKeyPress("Return")
+            assert.is_not_nil(selected_item)
+            assert.are.equal("Char 2", selected_item.name)
+        end)
+
+        it("supports direct number hotkeys 1-9 to select items", function()
+            local selected_item = nil
+            plugin.showCharacterDetails = function(self, char)
+                selected_item = char
+            end
+
+            local overlay = EntityListOverlay:new{
+                plugin = plugin,
+                mode = "characters",
+                raw_items = {
+                    { name = "Alpha", description = "First" },
+                    { name = "Beta", description = "Second" },
+                },
+                is_touch_device = false,
+            }
+            overlay:onKeyPress("2")
+            assert.is_not_nil(selected_item)
+            assert.are.equal("Beta", selected_item.name)
+        end)
+
+        it("navigates header buttons with Left and Right D-pad", function()
+            local overlay = EntityListOverlay:new{
+                plugin = plugin,
+                mode = "characters",
+                raw_items = { { name = "Alpha", description = "First" } },
+                is_touch_device = false,
+            }
+            -- First Down activates cards
+            overlay:onKeyPress("Down")
+            -- Move focus to header
+            overlay:onKeyPress("Up")
+            assert.are.equal("header", overlay.focus_zone)
+            assert.are.equal(1, overlay.header_focus_idx)
+
+            -- Right moves through header buttons
+            overlay:onKeyPress("Right")
+            assert.are.equal(2, overlay.header_focus_idx)
+            overlay:onKeyPress("Right")
+            assert.are.equal(3, overlay.header_focus_idx)
+
+            -- Left moves back
+            overlay:onKeyPress("Left")
+            assert.are.equal(2, overlay.header_focus_idx)
+        end)
+
+        it("navigates footer buttons with Left and Right D-pad", function()
+            local overlay = EntityListOverlay:new{
+                plugin = plugin,
+                mode = "characters",
+                raw_items = { { name = "Alpha", description = "First" } },
+                is_touch_device = false,
+            }
+            -- First Down activates cards 1
+            overlay:onKeyPress("Down")
+            -- Second Down moves from last card to footer
+            overlay:onKeyPress("Down")
+            assert.are.equal("footer", overlay.focus_zone)
+            assert.are.equal(2, overlay.footer_focus_idx)
+
+            -- Right moves to next button (idx 3)
+            overlay:onKeyPress("Right")
+            assert.are.equal(3, overlay.footer_focus_idx)
+
+            -- Left moves to page button (idx 2)
+            overlay:onKeyPress("Left")
+            assert.are.equal(2, overlay.footer_focus_idx)
+
+            -- Left moves to prev button (idx 1)
+            overlay:onKeyPress("Left")
+            assert.are.equal(1, overlay.footer_focus_idx)
+        end)
+
+        it("triggers shortcuts for search, sort, and merge", function()
+            local overlay = EntityListOverlay:new{
+                plugin = plugin,
+                mode = "characters",
+                raw_items = { { name = "Alpha", description = "First" } },
+                is_touch_device = false,
+            }
+            local search_called = false
+            overlay.showSearchDialog = function() search_called = true; return true end
+            overlay:handleEvent({ type = "Key", key = "f" })
+            assert.is_true(search_called)
+
+            local sort_called = false
+            overlay.showSortDialog = function() sort_called = true; return true end
+            overlay:handleEvent({ type = "Key", key = "s" })
+            assert.is_true(sort_called)
+
+            local merge_called = false
+            overlay.showMergeDialog = function() merge_called = true; return true end
+            overlay:handleEvent({ type = "Key", key = "m" })
+            assert.is_true(merge_called)
         end)
     end)
 end)
