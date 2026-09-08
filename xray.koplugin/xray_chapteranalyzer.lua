@@ -569,29 +569,39 @@ function ChapterAnalyzer:getTextForAnalysis(ui, max_len, progress_callback, curr
                 AIHelper:log("ChapterAnalyzer: getTextForAnalysis - incremental mode from page " .. tostring(start_page))
                 
                 -- Cap the window: never look back more than 60 pages regardless of start_page.
-                -- getTextFromXPointers is synchronous and blocking; a large span freezes the UI
-                -- on long books (e.g. page 460 of a large EPUB).
+                -- If start_page is ahead of or equal to current_p, an incremental XPointer
+                -- range would be empty/reversed and can freeze the UI on massive extractions.
                 local current_p = current_page or 1
-                local max_lookback = 60
-                local capped_start = math.max(start_page, current_p - max_lookback)
-                if capped_start > start_page then
-                    AIHelper:log("ChapterAnalyzer: Capping incremental start_page from " .. tostring(start_page) .. " to " .. tostring(capped_start) .. " (60-page window)")
-                    start_page = capped_start
+                if start_page >= current_p then
+                    AIHelper:log("ChapterAnalyzer: start_page=" .. tostring(start_page)
+                        .. " >= current_page=" .. tostring(current_p)
+                        .. "; treating as no incremental start (nothing new to fetch)")
+                    start_page = nil
+                else
+                    local max_lookback = 60
+                    local capped_start = math.max(start_page, current_p - max_lookback)
+                    if capped_start > start_page then
+                        AIHelper:log("ChapterAnalyzer: Capping incremental start_page from " .. tostring(start_page) .. " to " .. tostring(capped_start) .. " (60-page window)")
+                        start_page = capped_start
+                    end
                 end
 
-                -- Method 1: Use getPageXPointer (fast, no flash)
-                if ui.document.getPageXPointer then
-                    start_xp = ui.document:getPageXPointer(start_page)
+                if start_page then
+                    -- Method 1: Use getPageXPointer (fast, no flash)
+                    if ui.document.getPageXPointer then
+                        start_xp = ui.document:getPageXPointer(start_page)
+                    end
+                    
+                    -- Method 2: Fallback to jumping (causes flash, but only if Method 1 failed)
+                    if not start_xp then
+                        AIHelper:log("ChapterAnalyzer: Fallback to gotoPage for start XPointer")
+                        ui.document:gotoPage(start_page)
+                        start_xp = ui.document:getXPointer()
+                        ui.document:gotoXPointer(current_xp)
+                    end
                 end
-                
-                -- Method 2: Fallback to jumping (causes flash, but only if Method 1 failed)
-                if not start_xp then
-                    AIHelper:log("ChapterAnalyzer: Fallback to gotoPage for start XPointer")
-                    ui.document:gotoPage(start_page)
-                    start_xp = ui.document:getXPointer()
-                    ui.document:gotoXPointer(current_xp)
-                end
-            else
+            end
+            if not start_page or start_page <= 1 then
                 -- Limit window: at most 60 pages back to avoid blocking extraction
                 local current_p = current_page or (ui.getCurrentPage and ui:getCurrentPage()) or 1
                 local window_start = math.max(1, current_p - 60)

@@ -592,6 +592,18 @@ function M:continueWithFetch(reading_percent, is_update, last_fetch_page, is_sil
         if spoiler_setting ~= "full_book" then
             end_page_analysis = self.chapter_analyzer:getEndPageForCurrentPage(self.ui, current_page)
         end
+
+        -- A cached page can outlive pagination changes or be ahead of the
+        -- reader's current position. In that case an incremental XPointer
+        -- range would be empty/reversed; use the current chapter context.
+        local stale_cached_position = false
+        if first_missing_page and first_missing_page > end_page_analysis then
+            stale_cached_position = true
+            self:log("XRayPlugin: Ignoring stale last_fetch_page=" .. tostring(first_missing_page)
+                .. " beyond analysis boundary=" .. tostring(end_page_analysis))
+            first_missing_page = nil
+        end
+
         local book_text = self.chapter_analyzer:getTextForAnalysis(self.ui, 20000, nil, end_page_analysis, first_missing_page)
         local known_chapters = {}
         if is_update and self.timeline then
@@ -607,17 +619,6 @@ function M:continueWithFetch(reading_percent, is_update, last_fetch_page, is_sil
                     and "Fetch stopped because plugin was destroyed"
                     or "Fetch stopped because the document was closed")
                 return
-            end
-
-            -- A cached page can outlive pagination changes or be ahead of the
-            -- reader's current position. In that case an incremental XPointer
-            -- range would be empty/reversed; use the current chapter context.
-            local stale_cached_position = false
-            if first_missing_page and first_missing_page > end_page_analysis then
-                stale_cached_position = true
-                self:log("XRayPlugin: Ignoring stale last_fetch_page=" .. tostring(first_missing_page)
-                    .. " beyond analysis boundary=" .. tostring(end_page_analysis))
-                first_missing_page = nil
             end
 
             local samples, chapter_titles = self.chapter_analyzer:getDetailedChapterSamples(
