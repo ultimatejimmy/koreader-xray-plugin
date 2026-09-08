@@ -197,6 +197,10 @@ msgstr "Откажи"
 msgid "character_not_found"
 msgstr "Није пронађен лик који одговара '%s'"
 
+# en-hash: 01bc6f8efa4202821e95f4fdf6298b30
+msgid "clear"
+msgstr "Очисти"
+
 # en-hash: d3d2e617335f08df83599665eef8a418
 msgid "close"
 msgstr "Затвори"
@@ -961,9 +965,9 @@ msgstr "Споји"
 msgid "merge_confirm"
 msgstr "Спојити %s у %s? Секундарни унос ће бити обрисан, а његови алијаси припојени примарном."
 
-# en-hash: f05bbbb62dd4920db1277184e3fd98ce
+# en-hash: 288650687add5951b526ac950ce45b03
 msgid "merge_duplicates"
-msgstr "Споји дупликате..."
+msgstr "⋈ Споји дупликате..."
 
 # en-hash: 1a0eb2431b20a745a419931f2f637210
 msgid "merge_failed"
@@ -1037,9 +1041,9 @@ msgstr "АИ АПИ кључ није подешен!\n\nУнесите АПИ �
 msgid "no_author_data_fetch"
 msgstr "Нема доступних информација о аутору.\n\nЖелите ли да их преузмете помоћу АИ-ја?"
 
-# en-hash: 6cbd3b9b2bb981930fa8f38f26ca5f61
+# en-hash: 18b36cd276b2c5afa9f9cdf198876b20
 msgid "no_character_data"
-msgstr "Још увек нема података о ликовима.\n\nПрво преузмите X-Ray податке."
+msgstr "Нису пронађени ликови."
 
 # en-hash: 80a4905228688f8ad8ec996803f60ffb
 msgid "no_data_prompt"
@@ -1052,6 +1056,10 @@ msgstr "Нема пронађених дупликата."
 # en-hash: 064105ef9b1bca475059078013cc4a4b
 msgid "no_historical_data"
 msgstr "Још увек нема података о историјским личностима.\n\nПрво преузмите X-Ray податке.\n\nАИ ће детектовати стварне историјске\nличности поменуте у књизи."
+
+# en-hash: 4c58fb13d107106e3765e3f635e64517
+msgid "no_items"
+msgstr "Нема ставки"
 
 # en-hash: 4d0e58f2c49ca238a05d2a92486d3d70
 msgid "no_location_data"
@@ -1075,7 +1083,7 @@ msgstr "Није откривена серија за ову књигу."
 
 # en-hash: 29503d301d509e5cfea9e97daffa9e79
 msgid "no_terms_data"
-msgstr "Још увек нема података о терминима. Прво преузмите X-Ray податке."
+msgstr "Још нема података о терминима. Прво користите 'Fetch X-Ray Data'."
 
 # en-hash: 0c8a85db22b4a3eadf95fe1a55f00c63
 msgid "no_timeline_data"
@@ -1156,6 +1164,10 @@ msgstr "Прегледај"
 # en-hash: c9cc8cce247e49bae79f15173ce97354
 msgid "save"
 msgstr "Сачувај"
+
+# en-hash: 06a943c59f33a34bb5924aaf72cd2995
+msgid "search"
+msgstr "Претрага"
 
 # en-hash: 13348442cc6a27032d2b4aa28b75a5d3
 msgid "search_button"

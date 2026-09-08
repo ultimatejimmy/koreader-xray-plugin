@@ -626,4 +626,62 @@ describe("xray_fetch", function()
             assert.is_nil(err)
         end)
     end)
+
+    describe("fetchMoreEntities modal behavior", function()
+        it("shows key_dlg with modal = true when API key is missing", function()
+            local shown_widget
+            local UIManager = require("ui/uimanager")
+            local old_show = UIManager.show
+            UIManager.show = function(self, widget)
+                shown_widget = widget
+            end
+
+            plugin.ai_helper = {
+                hasApiKey = function() return false end,
+                init = function() end,
+            }
+
+            plugin:fetchMoreCharacters()
+
+            UIManager.show = old_show
+            assert.is_not_nil(shown_widget)
+            assert.are.equal("ButtonDialog", shown_widget.type)
+            assert.is_true(shown_widget.args.modal)
+        end)
+
+        it("shows wait_msg with modal = true and does not prematurely clear char_menu", function()
+            local shown_dialogs = {}
+            local UIManager = require("ui/uimanager")
+            local old_show = UIManager.show
+            local old_schedule = UIManager.scheduleIn
+            UIManager.show = function(self, widget)
+                table.insert(shown_dialogs, widget)
+            end
+            UIManager.scheduleIn = function(self, delay, fn)
+                -- Defer callback execution
+            end
+
+            local mock_menu = { id = "existing_menu" }
+            plugin.char_menu = mock_menu
+
+            plugin.ai_helper = {
+                hasApiKey = function() return true end,
+                init = function() end,
+                settings = { spoiler_setting = "spoiler_free" },
+            }
+            plugin.ui.document.file = "/path/to/book.epub"
+            plugin.ui.getCurrentPage = function() return 10 end
+            plugin.ui.document.getPageCount = function() return 100 end
+
+            plugin:fetchMoreCharacters()
+
+            UIManager.show = old_show
+            UIManager.scheduleIn = old_schedule
+
+            assert.are.equal(mock_menu, plugin.char_menu)
+            assert.is_not_nil(plugin._active_ai_dialog)
+            assert.is_true(plugin._active_ai_dialog.args.modal)
+        end)
+    end)
 end)
+

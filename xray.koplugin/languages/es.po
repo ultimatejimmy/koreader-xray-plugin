@@ -197,6 +197,10 @@ msgstr "Cancelar"
 msgid "character_not_found"
 msgstr "No se encontró ningún personaje que coincida con '%s'"
 
+# en-hash: 01bc6f8efa4202821e95f4fdf6298b30
+msgid "clear"
+msgstr "Limpiar"
+
 # en-hash: d3d2e617335f08df83599665eef8a418
 msgid "close"
 msgstr "Cerrar"
@@ -961,9 +965,9 @@ msgstr "Merge"
 msgid "merge_confirm"
 msgstr "¿Fusionar %s en %s? La entrada secundaria será eliminada y sus alias absorbidos."
 
-# en-hash: f05bbbb62dd4920db1277184e3fd98ce
+# en-hash: 288650687add5951b526ac950ce45b03
 msgid "merge_duplicates"
-msgstr "Fusionar duplicados..."
+msgstr "⋈ Fusionar duplicados..."
 
 # en-hash: 1a0eb2431b20a745a419931f2f637210
 msgid "merge_failed"
@@ -1037,9 +1041,9 @@ msgstr "¡Clave API de IA no configurada!\n\nIngresa la clave API en:\nMenú →
 msgid "no_author_data_fetch"
 msgstr "No hay información del autor disponible.\n\n¿Desea obtenerla de la IA?"
 
-# en-hash: 6cbd3b9b2bb981930fa8f38f26ca5f61
+# en-hash: 18b36cd276b2c5afa9f9cdf198876b20
 msgid "no_character_data"
-msgstr "Aún no hay datos de personajes.\n\nUsa primero 'Obtener datos de X-Ray'."
+msgstr "No se encontraron personajes."
 
 # en-hash: 80a4905228688f8ad8ec996803f60ffb
 msgid "no_data_prompt"
@@ -1052,6 +1056,10 @@ msgstr "No se encontraron duplicados."
 # en-hash: 064105ef9b1bca475059078013cc4a4b
 msgid "no_historical_data"
 msgstr "Aún no hay datos de personajes históricos.\n\nUsa primero 'Obtener datos de X-Ray'.\n\nLa IA detectará personajes históricos reales mencionados en el libro."
+
+# en-hash: 4c58fb13d107106e3765e3f635e64517
+msgid "no_items"
+msgstr "No hay elementos"
 
 # en-hash: 4d0e58f2c49ca238a05d2a92486d3d70
 msgid "no_location_data"
@@ -1075,7 +1083,7 @@ msgstr "No se detectó ninguna serie para este libro."
 
 # en-hash: 29503d301d509e5cfea9e97daffa9e79
 msgid "no_terms_data"
-msgstr "No hay datos de términos todavía. Por favor, usa 'Fetch X-Ray Data' primero."
+msgstr "Aún no hay datos de términos. Primero use 'Fetch X-Ray Data'."
 
 # en-hash: 0c8a85db22b4a3eadf95fe1a55f00c63
 msgid "no_timeline_data"
@@ -1156,6 +1164,10 @@ msgstr "Review"
 # en-hash: c9cc8cce247e49bae79f15173ce97354
 msgid "save"
 msgstr "Guardar"
+
+# en-hash: 06a943c59f33a34bb5924aaf72cd2995
+msgid "search"
+msgstr "Buscar"
 
 # en-hash: 13348442cc6a27032d2b4aa28b75a5d3
 msgid "search_button"

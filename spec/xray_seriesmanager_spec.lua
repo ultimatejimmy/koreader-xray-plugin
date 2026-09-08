@@ -365,5 +365,184 @@ describe("xray_seriesmanager", function()
             end
             assert.are.equal(1, count)
         end)
+
+        it("assigns sort_order >= 10000 to prior characters so they sort after current characters", function()
+            plugin.characters = {
+                { name = "Vin", sort_order = 1 },
+                { name = "Elend", sort_order = 2 }
+            }
+            local cache_data = {
+                books = {
+                    [1] = {
+                        characters = {
+                            { name = "Kelsier", sort_order = 1 }
+                        }
+                    }
+                }
+            }
+            local series_info = { name = "Mistborn", index = 2, slug = "mistborn" }
+            plugin:mergeSeriesContext(cache_data, series_info)
+
+            assert.are.equal(3, #plugin.characters)
+            local kelsier = plugin.characters[3]
+            assert.are.equal("Kelsier", kelsier.name)
+            assert.are.equal("series_prior", kelsier.source)
+            assert.is_true(kelsier.sort_order >= 10000)
+        end)
+    end)
+
+    describe("syncBookToSeriesCache", function()
+        it("saves clean book data with source=local_xray and tracks book_path", function()
+            local book_data = {
+                title = "The Final Empire",
+                author = "Brandon Sanderson",
+                characters = {
+                    { name = "Kelsier", description = "The Survivor" },
+                    { name = "Old Char", source = "series_prior" } -- should be filtered out
+                },
+                locations = {
+                    { name = "Luthadel", description = "Capital" }
+                },
+                terms = {},
+                timeline = {
+                    { chapter = "Chapter 1", event = "Beginning" }
+                }
+            }
+
+            local ok = manager:syncBookToSeriesCache("mistborn", 1, book_data, "/books/mistborn_1.epub")
+            assert.is_true(ok)
+
+            local loaded = manager:loadSeriesCache("mistborn")
+            assert.is_not_nil(loaded)
+            assert.is_not_nil(loaded.books[1])
+            assert.are.equal("local_xray", loaded.books[1].source)
+            assert.are.equal("The Final Empire", loaded.books[1].title)
+            assert.are.equal(1, #loaded.books[1].characters)
+            assert.are.equal("Kelsier", loaded.books[1].characters[1].name)
+            assert.are.equal("/books/mistborn_1.epub", loaded.book_paths[1])
+        end)
+    end)
+
+    describe("findLocalBookXRay", function()
+        local series_info = { name = "Mistborn", slug = "mistborn", index = 2 }
+
+        it("returns existing local_xray entry from SeriesCache directly", function()
+            local cache_data = {
+                books = {
+                    [1] = {
+                        title = "The Final Empire",
+                        source = "local_xray",
+                        characters = { { name = "Kelsier" } }
+                    }
+                }
+            }
+            manager:saveSeriesCache("mistborn", cache_data)
+
+            local found = manager:findLocalBookXRay(series_info, 1, "/books/book2.epub", "The Final Empire", nil)
+            assert.is_not_nil(found)
+            assert.are.equal("The Final Empire", found.title)
+            assert.are.equal("local_xray", found.source)
+        end)
+
+        it("discovers local book from tracked book_paths", function()
+            local mock_cache_mgr = {
+                loadCache = function(self, path)
+                    if path == "/books/tracked_book1.epub" then
+                        return {
+                            title = "The Final Empire",
+                            series_slug = "mistborn",
+                            series_index = 1,
+                            characters = { { name = "Kelsier" } },
+                            locations = {},
+                            terms = {},
+                            timeline = {}
+                        }
+                    end
+                    return nil
+                end
+            }
+
+            local initial_cache = {
+                book_paths = {
+                    [1] = "/books/tracked_book1.epub"
+                },
+                books = {}
+            }
+            manager:saveSeriesCache("mistborn", initial_cache)
+
+            local found = manager:findLocalBookXRay(series_info, 1, "/books/book2.epub", "The Final Empire", mock_cache_mgr)
+            assert.is_not_nil(found)
+            assert.are.equal("The Final Empire", found.title)
+            assert.are.equal("local_xray", found.source)
+        end)
+
+        it("discovers local book via directory scanning of sibling SDRs", function()
+            local lfs = require("lfs")
+            local orig_dir = lfs.dir
+            lfs.dir = function(path)
+                local entries = { "01 - The Final Empire.sdr", "02 - The Well of Ascension.epub" }
+                local idx = 0
+                return function()
+                    idx = idx + 1
+                    return entries[idx]
+                end
+            end
+
+            -- Write a mock xray_cache.lua file in tmp
+            local mock_sdr_dir = "/tmp/koreader/01 - The Final Empire.sdr"
+            os.execute("mkdir -p '" .. mock_sdr_dir .. "'")
+            local f = io.open(mock_sdr_dir .. "/xray_cache.lua", "w")
+            f:write("return { title = 'The Final Empire', series_slug = 'mistborn', series_index = 1, characters = {{ name = 'Kelsier' }} }")
+            f:close()
+
+            local found = manager:findLocalBookXRay(series_info, 1, "/tmp/koreader/02 - The Well of Ascension.epub", "The Final Empire", nil)
+            lfs.dir = orig_dir
+
+            assert.is_not_nil(found)
+            assert.are.equal("The Final Empire", found.title)
+            assert.are.equal("local_xray", found.source)
+        end)
+
+        it("returns nil when no matching local book is found", function()
+            local found = manager:findLocalBookXRay(series_info, 1, "/nonexistent/book2.epub", "Unknown Title", nil)
+            assert.is_nil(found)
+        end)
+    end)
+
+    describe("Prompt safeguards and timeline synthesis", function()
+        local ai_helper
+
+        before_each(function()
+            ai_helper = require("xray_aihelper")
+            local en_prompts = require("prompts/en")
+            ai_helper.prompts = en_prompts
+        end)
+
+        it("injects strict anti-spoiler safeguards into series_book_summary", function()
+            local context = {
+                series_name = "Mistborn",
+                index = 1
+            }
+            local prompt = ai_helper:createPrompt("The Final Empire", "Brandon Sanderson", context, "series_book_summary")
+
+            assert.is_not_nil(prompt:find("ABSOLUTE SPOILER BOUNDARY"))
+            assert.is_not_nil(prompt:find("FORBIDDEN LATER%-BOOK INFORMATION"))
+            assert.is_not_nil(prompt:find("CRITICAL ANTI%-SPOILER SAFEGUARD"))
+            assert.is_not_nil(prompt:find("reborn"))
+        end)
+
+        it("formats local_timeline_summary with grounding constraint and chapter events", function()
+            local context = {
+                series_name = "Mistborn",
+                index = 1,
+                events_text = "[Chapter 1] Kelsier visits the plantation.\n\n[Chapter 2] Vin hides in Luthadel."
+            }
+            local prompt = ai_helper:createPrompt("The Final Empire", "Brandon Sanderson", context, "local_timeline_summary")
+
+            assert.is_not_nil(prompt:find("STRICT GROUNDING CONSTRAINT"))
+            assert.is_not_nil(prompt:find("Kelsier visits the plantation"))
+            assert.is_not_nil(prompt:find("Vin hides in Luthadel"))
+            assert.is_not_nil(prompt:find("TARGET BOOK INDEX: 1"))
+        end)
     end)
 end)

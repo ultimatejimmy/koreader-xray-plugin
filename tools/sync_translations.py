@@ -15,8 +15,8 @@ if sys.version_info >= (3, 7):
     except Exception:
         pass
 
-LANGUAGES_DIR = os.path.join(os.path.dirname(__file__), '..', 'xray.koplugin', 'languages')
-SOURCE_DIR = os.path.join(os.path.dirname(__file__), '..', 'xray.koplugin')
+LANGUAGES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'xray.koplugin', 'languages'))
+SOURCE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'xray.koplugin'))
 MASTER_LANG = 'en'
 
 # Narrow allowlist of keys that legitimately don't need translations (symbols, paths, brand names, etc.)
@@ -32,6 +32,40 @@ ALLOWLIST = {
 
 def get_md5(text):
     return hashlib.md5(text.encode('utf-8')).hexdigest()
+
+def decode_po_string(s):
+    if not s: return ""
+    return s.replace('\\n', '\n').replace('\\"', '"').replace('\\\\', '\\')
+
+def encode_po_string(s):
+    if not s: return ""
+    return s.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n')
+
+def format_specifiers(s):
+    if not s: return []
+    return re.findall(r'%[0-9]*\$?[a-zA-Z]', s)
+
+def extract_keys_from_lua(source_dir=None):
+    src = source_dir or SOURCE_DIR
+    used_keys = {}  # key -> default_string
+    fallback_map = {}
+    for root, _, files in os.walk(src):
+        if 'languages' in root or 'tools' in root or 'spec' in root:
+            continue
+        for file in files:
+            if file.endswith('.lua'):
+                with open(os.path.join(root, file), 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
+                    matches = re.finditer(r'loc:t\([\"\']([^\"\']*)[\"\'](?:,\s*.*?)?\)(?:\s*or\s*([\"\'])(.*?)\2)?', content, re.DOTALL)
+                    for m in matches:
+                        used_keys[m.group(1)] = m.group(3) or used_keys.get(m.group(1), "")
+                    if 'localization_xray.lua' in file:
+                        fb_matches = re.finditer(r'(\w+)\s*=\s*\"(.*?)\"', content)
+                        for m in fb_matches:
+                            used_keys[m.group(1)] = m.group(2)
+                            fallback_map[m.group(1)] = m.group(2)
+    used_keys.pop("", None)
+    return set(used_keys.keys()), fallback_map, used_keys
 
 def parse_po(file_path):
     entries = []
@@ -100,7 +134,7 @@ def call_gemini(prompt):
     key = get_gemini_key()
     if not key: return None
     
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={key}"
     headers = {"Content-Type": "application/json"}
     data = {
         "contents": [{"parts": [{"text": prompt}]}],
@@ -129,7 +163,7 @@ def call_gemini(prompt):
                     retry_after = e.headers.get('Retry-After')
                     sleep_time = int(retry_after) if retry_after else 10 * (attempt + 1)
                 else:
-                    sleep_time = 5 * (attempt + 1)
+                    sleep_time = 10 * (attempt + 1)
                 print(f"  - HTTP {e.code}, waiting {sleep_time}s before retry {attempt + 1}/{max_retries - 1}...")
                 time.sleep(sleep_time)
             else:
@@ -147,7 +181,7 @@ def call_gemini(prompt):
             return None
     return None
 
-def translate_all_gemini(all_untranslated, lang_names, max_pairs=60):
+def translate_all_gemini(all_untranslated, lang_names, max_pairs=50):
     """
     Translates all untranslated keys across all languages in batches.
     all_untranslated: {lang_code: {key: en_val}}

@@ -197,6 +197,10 @@ msgstr "Anuluj"
 msgid "character_not_found"
 msgstr "Nie znaleziono postaci pasującej do '%s'"
 
+# en-hash: 01bc6f8efa4202821e95f4fdf6298b30
+msgid "clear"
+msgstr "Wyczyść"
+
 # en-hash: d3d2e617335f08df83599665eef8a418
 msgid "close"
 msgstr "Zamknij"
@@ -961,7 +965,7 @@ msgstr "Merge"
 msgid "merge_confirm"
 msgstr "Połączyć %s z %s? Drugi wpis zostanie usunięty, a jego aliasy wchłonięte."
 
-# en-hash: f05bbbb62dd4920db1277184e3fd98ce
+# en-hash: 288650687add5951b526ac950ce45b03
 msgid "merge_duplicates"
 msgstr "Połącz duplikaty..."
 
@@ -1037,7 +1041,7 @@ msgstr "Klucz API do AI nie jest ustawiony!\n\nWprowadź klucz API w:\nMenu → 
 msgid "no_author_data_fetch"
 msgstr "Brak dostępnych informacji o autorze.\n\nCzy chcesz pobrać je z AI?"
 
-# en-hash: 6cbd3b9b2bb981930fa8f38f26ca5f61
+# en-hash: 18b36cd276b2c5afa9f9cdf198876b20
 msgid "no_character_data"
 msgstr "Brak danych o postaciach.\n\nNajpierw użyj 'Pobierz dane X-Ray'."
 
@@ -1052,6 +1056,10 @@ msgstr "Nie znaleziono duplikatów."
 # en-hash: 064105ef9b1bca475059078013cc4a4b
 msgid "no_historical_data"
 msgstr "Brak danych o postaciach historycznych.\n\nNajpierw użyj 'Pobierz dane X-Ray'.\n\nAI wykryje rzeczywiste postacie\nhistoryczne wspomniane w książce."
+
+# en-hash: 4c58fb13d107106e3765e3f635e64517
+msgid "no_items"
+msgstr "Brak elementów"
 
 # en-hash: 4d0e58f2c49ca238a05d2a92486d3d70
 msgid "no_location_data"
@@ -1075,7 +1083,7 @@ msgstr "Nie wykryto serii dla tej książki."
 
 # en-hash: 29503d301d509e5cfea9e97daffa9e79
 msgid "no_terms_data"
-msgstr "Brak danych o pojęciach. Najpierw użyj 'Pobierz dane X-Ray'."
+msgstr "Brak danych pojęć. Najpierw użyj 'Fetch X-Ray Data'."
 
 # en-hash: 0c8a85db22b4a3eadf95fe1a55f00c63
 msgid "no_timeline_data"
@@ -1156,6 +1164,10 @@ msgstr "Review"
 # en-hash: c9cc8cce247e49bae79f15173ce97354
 msgid "save"
 msgstr "Zapisz"
+
+# en-hash: 06a943c59f33a34bb5924aaf72cd2995
+msgid "search"
+msgstr "Szukaj"
 
 # en-hash: 13348442cc6a27032d2b4aa28b75a5d3
 msgid "search_button"

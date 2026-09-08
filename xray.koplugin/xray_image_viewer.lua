@@ -220,6 +220,8 @@ end
 local ZOOM_STEPS = { 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0 }
 
 local ImageViewer = InputContainer:extend{
+    covers_fullscreen = true,
+    modal = true,
     plugin = nil,
     image_entry = nil,
     file_path = nil,
@@ -232,6 +234,8 @@ local ImageViewer = InputContainer:extend{
 }
 
 function ImageViewer:init()
+    self.modal = true
+    self.covers_fullscreen = true
     self.sw = Screen:getWidth()
     self.sh = Screen:getHeight()
     self.dimen = Geom:new{ x = 0, y = 0, w = self.sw, h = self.sh }

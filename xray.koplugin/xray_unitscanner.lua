@@ -60,9 +60,29 @@ local function _getCurrentPage(plugin)
 end
 
 -- Clear underlines overlay
+function M:clearTileCaches()
+    if _wavy_tile_cache then
+        for _, tile in pairs(_wavy_tile_cache) do
+            if tile and type(tile) == "table" and type(tile.free) == "function" then
+                pcall(function() tile:free() end)
+            end
+        end
+        _wavy_tile_cache = {}
+    end
+    if _circle_tile_cache then
+        for _, tile in pairs(_circle_tile_cache) do
+            if tile and type(tile) == "table" and type(tile.free) == "function" then
+                pcall(function() tile:free() end)
+            end
+        end
+        _circle_tile_cache = {}
+    end
+end
+
 function M:clearUnitUnderlines()
     self.unit_conversion_boxes = nil
     self.unit_xp_matches = nil
+    self:clearTileCaches()
     if self.ui and self.ui.view and self.ui.view.dialog then
         UIManager:setDirty(self.ui.view.dialog, "ui")
     end
@@ -154,6 +174,22 @@ end
 
 local _wavy_svg_template
 local _wavy_tile_cache = {}
+local _circle_tile_cache = {}
+local _sidecar_dir_created = false
+
+local function _ensure_sidecar_dir(dir)
+    if _sidecar_dir_created then return end
+    local ok_lfs, lfs = pcall(require, "libs/libkoreader-lfs")
+    if not ok_lfs or type(lfs) ~= "table" then
+        ok_lfs, lfs = pcall(require, "lfs")
+    end
+    if ok_lfs and lfs and lfs.mkdir then
+        pcall(function() lfs.mkdir(dir) end)
+    else
+        pcall(function() os.execute("mkdir -p " .. dir) end)
+    end
+    _sidecar_dir_created = true
+end
 
 local function _load_wavy_template(plugin_path)
     if _wavy_svg_template then return _wavy_svg_template end
@@ -182,7 +218,7 @@ local function _wavy_tile(plugin_path, raw_width, grey)
 
     local DataStorage = require("datastorage")
     local sidecar_dir = DataStorage:getDataDir() .. "/xray"
-    os.execute("mkdir -p " .. sidecar_dir)
+    _ensure_sidecar_dir(sidecar_dir)
     local svg_path = sidecar_dir .. "/wavy_" .. key .. ".svg"
     local fh = io.open(svg_path, "w")
     if fh then fh:write(svg); fh:close() end
@@ -203,8 +239,6 @@ local function _wavy_tile(plugin_path, raw_width, grey)
     return tile
 end
 
-local _circle_tile_cache = {}
-
 local function _circle_tile(diameter, grey)
     local key = diameter .. "_" .. grey
     local cached = _circle_tile_cache[key]
@@ -217,7 +251,7 @@ local function _circle_tile(diameter, grey)
 
     local DataStorage = require("datastorage")
     local sidecar_dir = DataStorage:getDataDir() .. "/xray"
-    os.execute("mkdir -p " .. sidecar_dir)
+    _ensure_sidecar_dir(sidecar_dir)
     local svg_path = sidecar_dir .. "/circle_" .. key .. ".svg"
     local fh = io.open(svg_path, "w")
     if fh then

@@ -109,7 +109,9 @@ package.loaded["ui/widget/progressbardialog"] = {
 }
 package.loaded["ui/widget/buttondialog"] = {
     new = function(a, b) 
-        local dialog = { type = "ButtonDialog", args = b or a }
+        local args = b or a or {}
+        local dialog = { type = "ButtonDialog", args = args }
+        for k, v in pairs(args) do dialog[k] = v end
         dialog.getSize = function() return { w = 800, h = 100 } end
         return dialog
     end
@@ -140,7 +142,7 @@ package.loaded["ui/renderimage"] = {
     scaleBlitBuffer = function() return nil end,
 }
 package.loaded["ui/widget/verticalgroup"] = {
-    new = function(a, b) return { type = "VerticalGroup", args = b or a } end
+    new = function(a, b) return { type = "VerticalGroup", args = b or a, getSize = function() return { w = 400, h = 40 } end } end
 }
 package.loaded["ui/widget/verticalspan"] = {
     new = function(a, b) return { type = "VerticalSpan", args = b or a, getSize = function() return { w = 0, h = (b or a or {}).width or 0 } end } end
@@ -168,10 +170,19 @@ package.loaded["ui/widget/widgetcontainer"] = {
 package.loaded["ui/widget/container/framecontainer"] = {
     new = function(a, b) 
         local fc = { type = "FrameContainer", args = b or a }
-        fc.getSize = function() return { w = 800, h = 300 } end
+        local args = b or a or {}
+        for k, v in pairs(args) do fc[k] = v end
+        fc.getSize = function(self)
+            local content = self[1] or (self.args and self.args[1])
+            if not content then
+                error("FrameContainer:getSize called on FrameContainer with no children!")
+            end
+            return { w = 800, h = 300 }
+        end
         fc.paintTo = function(self, bb, x, y)
-            if self.args and self.args[1] and self.args[1].paintTo then
-                self.args[1]:paintTo(bb, x, y)
+            local content = self[1] or (self.args and self.args[1])
+            if content and content.paintTo then
+                content:paintTo(bb, x, y)
             end
         end
         return fc

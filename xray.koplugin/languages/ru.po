@@ -197,6 +197,10 @@ msgstr "Отмена"
 msgid "character_not_found"
 msgstr "Персонаж, соответствующий '%s', не найден"
 
+# en-hash: 01bc6f8efa4202821e95f4fdf6298b30
+msgid "clear"
+msgstr "Очистить"
+
 # en-hash: d3d2e617335f08df83599665eef8a418
 msgid "close"
 msgstr "Закрыть"
@@ -961,7 +965,7 @@ msgstr "Merge"
 msgid "merge_confirm"
 msgstr "Объединить %s с %s? Вторичная запись будет удалена, а ее псевдонимы поглощены."
 
-# en-hash: f05bbbb62dd4920db1277184e3fd98ce
+# en-hash: 288650687add5951b526ac950ce45b03
 msgid "merge_duplicates"
 msgstr "Объединить дубликаты..."
 
@@ -1037,9 +1041,9 @@ msgstr "API-ключ ИИ не установлен!\n\nВведите ключ 
 msgid "no_author_data_fetch"
 msgstr "Информация об авторе отсутствует.\n\nХотите получить её через ИИ?"
 
-# en-hash: 6cbd3b9b2bb981930fa8f38f26ca5f61
+# en-hash: 18b36cd276b2c5afa9f9cdf198876b20
 msgid "no_character_data"
-msgstr "Данных о персонажах пока нет.\n\nПожалуйста, сначала используйте 'Получить данные X-Ray'."
+msgstr "Персонажи не найдены."
 
 # en-hash: 80a4905228688f8ad8ec996803f60ffb
 msgid "no_data_prompt"
@@ -1052,6 +1056,10 @@ msgstr "Дубликатов не найдено."
 # en-hash: 064105ef9b1bca475059078013cc4a4b
 msgid "no_historical_data"
 msgstr "Данных об исторических личностях пока нет.\n\nПожалуйста, сначала используйте 'Получить данные X-Ray'.\n\nИИ обнаружит реальных исторических личностей, упомянутых в книге."
+
+# en-hash: 4c58fb13d107106e3765e3f635e64517
+msgid "no_items"
+msgstr "Нет элементов"
 
 # en-hash: 4d0e58f2c49ca238a05d2a92486d3d70
 msgid "no_location_data"
@@ -1075,7 +1083,7 @@ msgstr "Для этой книги не найдено серий."
 
 # en-hash: 29503d301d509e5cfea9e97daffa9e79
 msgid "no_terms_data"
-msgstr "Данные терминов еще отсутствуют. Пожалуйста, сначала используйте 'Fetch X-Ray Data'."
+msgstr "Нет данных о терминах. Сначала выполните «Fetch X-Ray Data»."
 
 # en-hash: 0c8a85db22b4a3eadf95fe1a55f00c63
 msgid "no_timeline_data"
@@ -1156,6 +1164,10 @@ msgstr "Review"
 # en-hash: c9cc8cce247e49bae79f15173ce97354
 msgid "save"
 msgstr "Сохранить"
+
+# en-hash: 06a943c59f33a34bb5924aaf72cd2995
+msgid "search"
+msgstr "Поиск"
 
 # en-hash: 13348442cc6a27032d2b4aa28b75a5d3
 msgid "search_button"
