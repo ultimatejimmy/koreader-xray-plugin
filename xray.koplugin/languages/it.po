@@ -7,11 +7,11 @@ msgstr ""
 
 # en-hash: 1354e62b68c1d35133d396fc419901c2
 msgid "ai_error"
-msgstr "Errore AI:"
+msgstr "Errore AI: "
 
 # en-hash: 582a282f6b085c7665c843fb7e06e4e6
 msgid "ai_fetch_complete"
-msgstr "Recuperato con successo da %s!\n\nLibro: %s\nAutore: %s\n\nPersonaggi: %d\nPosizioni: %d\nTemi: %d\nEventi della sequenza temporale: %d\nPersonaggi storici: %d\n\n%s\n\nSOMMARIO:\n%s"
+msgstr "Recuperato dall'AI %s\n\nLibro: %s\nAutore: %s\n\nPersonaggi: %d | Luoghi: %d | Temi: %d | Eventi: %d | Storia: %d\n\n%s\n\n%s"
 
 # en-hash: 34f82d2e8250bbcf8a0395a1eb4f1833
 msgid "ai_fetch_complete_msg"
@@ -19,35 +19,35 @@ msgstr "Recupero AI completato!"
 
 # en-hash: b0fc5654248cb92282e5ece124a750bd
 msgid "ai_key_required"
-msgstr "È richiesta una chiave API AI."
+msgstr "È necessaria una chiave API AI."
 
 # en-hash: ba33be58a8b8f658193f4b86c5e05b71
 msgid "ai_merge_confirm_title"
-msgstr "Rilevato duplicato AI"
+msgstr "Duplicato rilevato dall'AI"
 
 # en-hash: adb9b4c51ae2df392591ca847017c9f8
 msgid "ai_merged_n"
-msgstr "%d coppie unite correttamente."
+msgstr "Unite correttamente %d coppie."
 
 # en-hash: a33bcf890b6eb6b64b4e272f79e05eda
 msgid "ai_scan"
-msgstr "AI Scan"
+msgstr "Scansione AI"
 
 # en-hash: aeb5711552b5cd7ae34cc3c3393052f8
 msgid "ai_scanning_duplicates"
-msgstr "L'intelligenza artificiale sta cercando duplicati..."
+msgstr "L'AI sta cercando duplicati..."
 
 # en-hash: ad608bec35300c1dbb0180723f2f6b9f
 msgid "ask_later"
-msgstr "Ask Later"
+msgstr "Chiedi più tardi"
 
 # en-hash: bff74eab9088ad053737e6f0d424ea7e
 msgid "author_born"
-msgstr "Nato: "
+msgstr "Nato/a: "
 
 # en-hash: 94e26ed13a62af4b3549ff9e583a0691
 msgid "author_died"
-msgstr "Morto: "
+msgstr "Morto/a: "
 
 # en-hash: b9f5c797ebbf55adccdd8539a65a0241
 msgid "auto_dupe_check_disabled"
@@ -59,7 +59,7 @@ msgstr "Abilitato"
 
 # en-hash: e791101a1a10500d1f0727b4b8e963b5
 msgid "auto_dupe_check_preference_desc"
-msgstr "Seleziona la tua preferenza per il rilevamento automatico dei duplicati AI:"
+msgstr "Seleziona la tua preferenza per il rilevamento automatico dei duplicati tramite AI:"
 
 # en-hash: 670e2792d29f2f41e891f40c6c5b03ea
 msgid "auto_dupe_check_setting_desc"
@@ -67,11 +67,11 @@ msgstr "Se abilitato, X-Ray chiede automaticamente all'IA di verificare la prese
 
 # en-hash: 0700ab9afc75d300e49fd3aac9c86ee8
 msgid "auto_dupe_check_setting_title"
-msgstr "Controllo duplicato"
+msgstr "Controllo dei duplicati"
 
 # en-hash: b7e84428c69c17c5536c4a912a191e54
 msgid "auto_fetch_page_interval_prompt"
-msgstr "Intervallo di pagina"
+msgstr "Intervallo di pagine"
 
 # en-hash: 14b471ac49a5d3258cc95b0762da9834
 msgid "auto_update_aggressive"
@@ -79,7 +79,7 @@ msgstr "Aggressivo: controlla ogni nuovo capitolo"
 
 # en-hash: 6349e8d6a59311506a78bb0cd3d5b92d
 msgid "auto_update_balanced"
-msgstr "Bilanciato: controlli al massimo ogni 5 minuti"
+msgstr "Bilanciato: controlla al massimo ogni 5 minuti"
 
 # en-hash: b9f5c797ebbf55adccdd8539a65a0241
 msgid "auto_update_disabled"
@@ -87,7 +87,7 @@ msgstr "Disabilitato"
 
 # en-hash: 9ffbf6e9ce7efcb2b5d02ca4b8554236
 msgid "auto_update_economical"
-msgstr "Economico: controlli al massimo ogni 15 minuti"
+msgstr "Economico: controlla al massimo ogni 15 minuti"
 
 # en-hash: 9c620fb1d2e2f8bbb20cf5cc70800efc
 msgid "auto_update_freq_about"
@@ -99,7 +99,7 @@ msgstr "Frequenza di recupero in background:"
 
 # en-hash: c0b6e5d7b1280ea464d54bf9cbfffd37
 msgid "auto_update_sparse"
-msgstr "Scarso: controlli al massimo ogni 30 minuti"
+msgstr "Raro: controlla al massimo ogni 30 minuti"
 
 # en-hash: 7f4cc9b44db70ed676e621f17b8228e3
 msgid "auto_update_ultra"
@@ -111,7 +111,7 @@ msgstr "Torna alla lettura"
 
 # en-hash: 5fcd6ed2b6f2c21bc5c936cf44c36b37
 msgid "beta_channel_desc"
-msgstr "Il canale beta ti consente di ricevere versioni pre-release del plugin X-Ray. Queste versioni includono le funzionalità più recenti e le correzioni di bug, ma potrebbero essere meno stabili della versione normale."
+msgstr "Il canale beta consente di ricevere versioni preliminari del plugin X-Ray. Queste versioni includono le funzionalità e le correzioni di bug più recenti, ma potrebbero essere [B]meno stabili[/B] rispetto alla versione normale."
 
 # en-hash: 9aac8fedb45eb817ee12a885f1dedc8f
 msgid "beta_disabled"
@@ -119,23 +119,23 @@ msgstr "Canale stabile (consigliato)"
 
 # en-hash: f4bdad9b1beff62e922458298afd169e
 msgid "beta_enabled"
-msgstr "Canale Beta abilitato"
+msgstr "Canale beta abilitato"
 
 # en-hash: ee4ee500762b7cab66634e1a2df9a053
 msgid "beta_preference_desc"
-msgstr "Seleziona la preferenza del canale di aggiornamento:"
+msgstr "Seleziona il canale di aggiornamento che preferisci:"
 
 # en-hash: 06b9281e396db002010bde1de57262eb
 msgid "book_mode_auto"
-msgstr "Auto"
+msgstr "Automatico"
 
 # en-hash: c549e231df08c60006ca035f7834366e
 msgid "book_mode_desc"
-msgstr "Seleziona la modalità per questo libro."
+msgstr "Seleziona il tipo di questo libro:"
 
 # en-hash: c3f11f427a0600042da7bc1c37c5a3e1
 msgid "book_mode_fiction"
-msgstr "Fictional"
+msgstr "Narrativa"
 
 # en-hash: 314bf1da631aba7851556f01b79c3fef
 msgid "book_mode_nonfiction"
@@ -143,7 +143,7 @@ msgstr "Saggistica"
 
 # en-hash: 272668c7f021d1ae07f88c6593527c61
 msgid "book_mode_saved"
-msgstr "Modalità Prenota salvata!"
+msgstr "Modalità libro salvata!"
 
 # en-hash: 9ea3cd79552afa39d886f96f4b101991
 msgid "book_type_about"
@@ -155,7 +155,7 @@ msgstr "Rilevamento automatico"
 
 # en-hash: c3f11f427a0600042da7bc1c37c5a3e1
 msgid "book_type_fiction"
-msgstr "Fictional"
+msgstr "Narrativa"
 
 # en-hash: 314bf1da631aba7851556f01b79c3fef
 msgid "book_type_nonfiction"
@@ -191,11 +191,11 @@ msgstr "Salvato nella cache!"
 
 # en-hash: ea4788705e6873b424c65e91c2846b19
 msgid "cancel"
-msgstr "Cancellare"
+msgstr "Annulla"
 
 # en-hash: 261d30af0907fa3e87d73d7719d2b4ef
 msgid "character_not_found"
-msgstr "Nessun carattere trovato corrispondente a '%s'"
+msgstr "Nessun personaggio corrispondente a '%s' trovato"
 
 # en-hash: 01bc6f8efa4202821e95f4fdf6298b30
 msgid "clear"
@@ -203,7 +203,7 @@ msgstr "Cancella"
 
 # en-hash: d3d2e617335f08df83599665eef8a418
 msgid "close"
-msgstr "Vicino"
+msgstr "Chiudi"
 
 # en-hash: 400a15f44cdb7cf1b903d40d661c98c4
 msgid "cloud_setup_title"
@@ -223,7 +223,7 @@ msgstr "IMPOSTATO"
 
 # en-hash: 70d9be9b139893aa6c69b5e77e614311
 msgid "confirm"
-msgstr "Confirm"
+msgstr "Conferma"
 
 # en-hash: af56aa659f5ec4ce42bb02c3b75dd111
 msgid "confirm_clear_all_keys"
@@ -295,19 +295,19 @@ msgstr "CRONOLOGIA: UN EVENTO PER CAPITOLO (sempre)\n\nLa cronologia ha sempre e
 
 # en-hash: 7a1920d61156abc05a60135aefe8bc67
 msgid "desc_len_default"
-msgstr "Predefinito"
+msgstr "Predefinita"
 
 # en-hash: 4042fcadbe61a3300451157e2c9fe651
 msgid "desc_len_detailed"
-msgstr "Dettagliato"
+msgstr "Dettagliata"
 
 # en-hash: 30bb747c98bccdd11b3f89e644c4d0ad
 msgid "desc_len_short"
-msgstr "Corto"
+msgstr "Breve"
 
 # en-hash: 32e4e2960890d7cbb4890166ac18d7f8
 msgid "desc_len_v_detailed"
-msgstr "Molto dettagliato"
+msgstr "Molto dettagliata"
 
 # en-hash: 7be0e84edd4626f6b7d42f1e8174f118
 msgid "dont_ask_again"
@@ -315,15 +315,15 @@ msgstr "Non chiedermelo più"
 
 # en-hash: 2593c7ce3ff937293feb1e61c152e551
 msgid "entity_label_characters"
-msgstr "caratteri"
+msgstr "personaggi"
 
 # en-hash: b4c0b6c75f651ee809fd20c087a4a533
 msgid "entity_label_locations"
-msgstr "posizioni"
+msgstr "luoghi"
 
 # en-hash: b972b14200d0fad941304c0b361a18f0
 msgid "entity_not_found"
-msgstr "'%s' non è stato trovato come carattere o luogo."
+msgstr "'%s' non è stato trovato come personaggio o luogo."
 
 # en-hash: 76e73569f84e76aa9de514fea51ef9f3
 msgid "entity_ui_style_both"
@@ -331,7 +331,7 @@ msgstr "Popup moderno (entrambi)"
 
 # en-hash: 386963b724dc569ddd1b4a480c24b826
 msgid "entity_ui_style_classic"
-msgstr "Dialogo classico"
+msgstr "Finestra di dialogo classica"
 
 # en-hash: ce817225f09cf8f997decfb4619c28ef
 msgid "entity_ui_style_desc"
@@ -343,7 +343,7 @@ msgstr "Popup moderno (solo nel testo)"
 
 # en-hash: beae8da8a7553c33bf5d6ae7bdf91002
 msgid "entity_ui_style_menu"
-msgstr "Popup moderno (solo menu)"
+msgstr "Popup moderno (solo nel menu)"
 
 # en-hash: 902b0d55fddef6f8d651fe1035b7d4bd
 msgid "error"
@@ -371,7 +371,7 @@ msgstr "La tua chiave API non ha accesso al modello selezionato. Potrebbe essere
 
 # en-hash: c4a195c14e7e5b76a6c25cf8991042a3
 msgid "error_model_access_title"
-msgstr "Autorizzazione negata"
+msgstr "Accesso negato"
 
 # en-hash: e40ae570525f73b62420a63937e3fdc5
 msgid "error_model_not_found_desc"
@@ -391,7 +391,7 @@ msgstr "L'IA ha restituito una risposta che non è stata possibile elaborare. Po
 
 # en-hash: d80a250008a1d3ed31be8a53cc7e7d74
 msgid "error_parse_title"
-msgstr "Errore dati"
+msgstr "Errore nei dati"
 
 # en-hash: 8101890ac4a7cc06535730504b0e4dc6
 msgid "error_quota_desc"
@@ -411,7 +411,7 @@ msgstr "Servizio non disponibile"
 
 # en-hash: 2e00df16667de68033b771bf907f0223
 msgid "error_timeout"
-msgstr "Richiesta scaduta"
+msgstr "Tempo di richiesta scaduto"
 
 # en-hash: 41fd6797646e09ef2fb1024cd8a2b134
 msgid "error_timeout_desc"
@@ -431,15 +431,15 @@ msgstr "Recupero non riuscito"
 
 # en-hash: bd109e1437d54acaada2eb31eebd39d2
 msgid "extracting_more_characters"
-msgstr "Estrazione di caratteri aggiuntivi..."
+msgstr "Estrazione di altri personaggi..."
 
 # en-hash: a4a9bd989f4fbd0841ad6a1e194eecac
 msgid "extracting_more_terms"
-msgstr "Estrazione termini aggiuntivi..."
+msgstr "Estrazione di altri termini..."
 
 # en-hash: 4ea7755f84f02d23876d90be2f9765cf
 msgid "fetch_button"
-msgstr "Andare a prendere"
+msgstr "Recupera"
 
 # en-hash: 05ab2ce95089e50db065a1bd1ed0cd85
 msgid "fetch_single_word_prompt"
@@ -455,11 +455,11 @@ msgstr "Recupero X-Ray..."
 
 # en-hash: cfecb2031470d0e28420642fc37ab55f
 msgid "fetching_author"
-msgstr "Recupero informazioni sull'autore da %s..."
+msgstr "Recupero dell'autore..."
 
 # en-hash: 403bf4429b560eb3652c17997d655811
 msgid "fetching_series_context"
-msgstr "Recupero del contesto della serie: Libro %d di %d..."
+msgstr "Recupero del contesto della serie: libro %d di %d…"
 
 # en-hash: 019511d88cae31edb42daf4d90ca9a36
 msgid "fetching_series_info"
@@ -467,7 +467,7 @@ msgstr "Identificazione dei libri della serie…"
 
 # en-hash: 00deb09e5e37bd7e81c99a6bf98d8380
 msgid "fetching_wait"
-msgstr "⏳ Attendi...\nQuesto processo potrebbe richiedere 10-50 secondi."
+msgstr "Potrebbe volerci qualche istante.\nTocca Annulla per interrompere."
 
 # en-hash: c65aba36ac8b272d7e881146a6d885bc
 msgid "find_mentions"
@@ -627,7 +627,7 @@ msgstr "La lingua è cambiata. Riapri il menu per vedere le modifiche."
 
 # en-hash: 61057a0c84605444201929bdd72014f0
 msgid "later"
-msgstr "Later"
+msgstr "Più tardi"
 
 # en-hash: 94f97454f5a2c6bbca33f92d4818fcef
 msgid "linked_entries"
@@ -675,7 +675,7 @@ msgstr "Corrispondenza parziale: mostra '%s' per la tua query. Tocca qui sotto p
 
 # en-hash: 6ca35323241366b4da17cd03396f1f69
 msgid "manual_pick"
-msgstr "Manual Pick"
+msgstr "Selezione manuale"
 
 # en-hash: 9899bf3319fb8c6b34520d599f30281e
 msgid "mention_dismiss_btn"
@@ -683,11 +683,11 @@ msgstr "✕"
 
 # en-hash: fa9309cd5ba2f89ef8590aa88cbc9579
 msgid "mention_return_btn"
-msgstr "Torniamo alla lettura"
+msgstr "← Torna alla lettura"
 
 # en-hash: 1c2fbf8b19aa215337092cba9e51979a
 msgid "mention_return_label"
-msgstr "← Torna a pag.%d"
+msgstr "← Torna a pag. %d"
 
 # en-hash: 4a53c3a6c553dd59d658731018378fce
 msgid "mentions_at_location"
@@ -723,7 +723,7 @@ msgstr "La scansione delle menzioni ti consente di trovare ogni occorrenza di un
 
 # en-hash: 2c126ee6ce85ef471a3a0e096c78b724
 msgid "mentions_setting_title"
-msgstr "Menziona Impostazioni"
+msgstr "Impostazioni delle menzioni"
 
 # en-hash: 795fe7b23df416a5beffd9a50873b771
 msgid "mentions_title"
@@ -731,11 +731,11 @@ msgstr "Menzioni: %s"
 
 # en-hash: 8f7f4c1ce7a4f933663d10543562b096
 msgid "menu_about"
-msgstr "Di"
+msgstr "Informazioni"
 
 # en-hash: 92ff32056df3871303587ba7d479c47f
 msgid "menu_ai_settings"
-msgstr "Impostazioni dell'IA"
+msgstr "Impostazioni AI"
 
 # en-hash: 1d18bcea5f63d1761c231009ed210e11
 msgid "menu_api_keys"
@@ -747,7 +747,7 @@ msgstr "Informazioni sull'autore"
 
 # en-hash: a6c5c63c5c9be868061d03e89d246430
 msgid "menu_auto_update_frequency"
-msgstr "Impostazioni radiografiche automatiche"
+msgstr "Impostazioni X-Ray automatico"
 
 # en-hash: 98c609842fdba0aed4a678b1dd84a604
 msgid "menu_beta_channel"
@@ -759,7 +759,7 @@ msgstr "Tipo di libro"
 
 # en-hash: 994d06622c761cbceb384fd10a0b53f3
 msgid "menu_characters"
-msgstr "Caratteri"
+msgstr "Personaggi"
 
 # en-hash: d842d358ea8d0d431df1113c927b3629
 msgid "menu_clear_all_keys"
@@ -771,11 +771,11 @@ msgstr "Cancella cache"
 
 # en-hash: 67fd6c2ed402914b08701f21af350cc5
 msgid "menu_clear_logs"
-msgstr "Cancella registri"
+msgstr "Cancella log"
 
 # en-hash: edcf008bae916e157620688fbff8d980
 msgid "menu_clear_series_cache"
-msgstr "Svuota cache serie"
+msgstr "Cancella cache della serie"
 
 # en-hash: ebdd9cc3e307ed530b80afc1b698a302
 msgid "menu_clear_single_key"
@@ -783,7 +783,7 @@ msgstr "Cancella chiave %s..."
 
 # en-hash: 5c4a6c4395765ab86fc49b6c957525d9
 msgid "menu_content_fetch_settings"
-msgstr "Impostazioni di contenuto e recupero"
+msgstr "Impostazioni contenuti e recupero"
 
 # en-hash: ecfaa3fa16216e962dfb2337337df2e4
 msgid "menu_custom_model_title"
@@ -791,11 +791,11 @@ msgstr "Modello %s personalizzato"
 
 # en-hash: f82e66c60fd95d54434ed37dc81034e2
 msgid "menu_desc_length_settings"
-msgstr "Descrizione Lunghezza"
+msgstr "Lunghezza delle descrizioni"
 
 # en-hash: d7400967f844d2288239b8d7a10d7839
 msgid "menu_display_ui_settings"
-msgstr "Impostazioni di visualizzazione e interfaccia utente"
+msgstr "Impostazioni visualizzazione e interfaccia"
 
 # en-hash: bd44df2bee626fbc7db133d886c1cf63
 msgid "menu_enter_custom_model"
@@ -803,23 +803,23 @@ msgstr "Inserisci il modello personalizzato..."
 
 # en-hash: c78507f1735096000bbc8f4b4ddfc289
 msgid "menu_entity_ui_mode"
-msgstr "Stile della descrizione dell'entità"
+msgstr "Stile delle descrizioni delle entità"
 
 # en-hash: c1b19dc83bcbcf0c634af5164ac2f24f
 msgid "menu_fetch_author"
-msgstr "Recupera informazioni sull'autore (AI)"
+msgstr "Recupera informazioni sull'autore"
 
 # en-hash: 1481c3fcb242cec4e66828697e097d65
 msgid "menu_fetch_more_chars"
-msgstr "Ottieni più personaggi"
+msgstr "Recupera altri personaggi"
 
 # en-hash: e28e1a3102c10986b10c3a58ebc26979
 msgid "menu_fetch_more_terms"
-msgstr "Ottieni più termini"
+msgstr "Recupera altri termini"
 
 # en-hash: f0d29ae92c638538610d26014bda7269
 msgid "menu_fetch_series_context"
-msgstr "Recupera/Aggiorna contesto serie"
+msgstr "Recupera/aggiorna contesto della serie"
 
 # en-hash: 7cf395303ce3665a9834721d4b748e4b
 msgid "menu_frequency"
@@ -847,7 +847,7 @@ msgstr "Impostazioni delle voci collegate"
 
 # en-hash: eebd338ddbd547e41e4a1296de82963a
 msgid "menu_locations"
-msgstr "Posizioni"
+msgstr "Luoghi"
 
 # en-hash: 10d0de28911c5f66463b9c8783f8148a
 msgid "menu_maintenance"
@@ -855,7 +855,7 @@ msgstr "Manutenzione"
 
 # en-hash: 2c126ee6ce85ef471a3a0e096c78b724
 msgid "menu_mentions_settings"
-msgstr "Menziona Impostazioni"
+msgstr "Impostazioni delle menzioni"
 
 # en-hash: ed2a15d3eeee0693f0274e6b772fd466
 msgid "menu_paste_clipboard"
@@ -863,15 +863,15 @@ msgstr "Incolla chiave %s dagli appunti"
 
 # en-hash: f0e87a49b3cb82e4faabd5fc3729e8e8
 msgid "menu_primary_ai_model"
-msgstr "Modello di intelligenza artificiale primaria"
+msgstr "Modello AI principale"
 
 # en-hash: 22b189dd0fe1b07c3174e8a676a0fe3c
 msgid "menu_reasoning_effort"
-msgstr "Sforzo di ragionamento dell'intelligenza artificiale"
+msgstr "Livello di ragionamento del modello AI"
 
 # en-hash: 3e8a42af68c64edd3ce4f9d3d4da0147
 msgid "menu_secondary_ai_model"
-msgstr "Modello di intelligenza artificiale secondaria"
+msgstr "Modello AI secondario"
 
 # en-hash: 18f3f323b19a809e90e381568c5acb51
 msgid "menu_series_context"
@@ -923,7 +923,7 @@ msgstr "Convertitore di unità"
 
 # en-hash: f55a01bb8237586887c0f4f6c7a56131
 msgid "menu_update_xray"
-msgstr "Aggiorna i dati radiografici"
+msgstr "Aggiorna dati X-Ray (unisci)"
 
 # en-hash: 5f67980bfad5601276847f8b2f74cd19
 msgid "menu_validate_all_keys"
@@ -947,11 +947,11 @@ msgstr "Benvenuto e configurazione rapida..."
 
 # en-hash: 0863526e514d88cd2d00b39f8dda0920
 msgid "menu_xray"
-msgstr "Raggi X"
+msgstr "X-Ray"
 
 # en-hash: a805cb8f152d740dadbc6d065afb91db
 msgid "menu_xray_mode"
-msgstr "Ricerche nel testo"
+msgstr "Impostazioni modalità X-Ray"
 
 # en-hash: fa9309cd5ba2f89ef8590aa88cbc9579
 msgid "merge_back"
@@ -959,7 +959,7 @@ msgstr "← Indietro"
 
 # en-hash: 68be4837f6c739877233e527a996dd00
 msgid "merge_button"
-msgstr "Merge"
+msgstr "Unisci"
 
 # en-hash: 8bb01dda315086774624ba2e7444a265
 msgid "merge_confirm"
@@ -967,7 +967,7 @@ msgstr "Unire %s in %s? La voce secondaria verrà eliminata e i suoi alias assor
 
 # en-hash: 288650687add5951b526ac950ce45b03
 msgid "merge_duplicates"
-msgstr "Unisci duplicati..."
+msgstr "Unisci duplicati"
 
 # en-hash: 1a0eb2431b20a745a419931f2f637210
 msgid "merge_failed"
@@ -983,11 +983,11 @@ msgstr "Scegli la voce da RIMUOVERE"
 
 # en-hash: d0517e8f339cc45490ff9eb6d43fc981
 msgid "merge_success"
-msgstr "Voci unite con successo."
+msgstr "Voci unite correttamente."
 
 # en-hash: 1db7d7c3180a75c44c8edeccdfd01536
 msgid "merging_smartly"
-msgstr "Fusione..."
+msgstr "Unione..."
 
 # en-hash: aa2d6e4f578eb0cfaba23beef76c2194
 msgid "model_free"
@@ -995,7 +995,7 @@ msgstr "gratuito"
 
 # en-hash: 76e084771e78c194efd0e2d5b8920bea
 msgid "model_paid"
-msgstr "pagato"
+msgstr "a pagamento"
 
 # en-hash: e7fa74181aff985bd6dadb3d57bb7119
 msgid "msg_added_characters"
@@ -1007,7 +1007,7 @@ msgstr "Aggiunti %d nuovi termini!"
 
 # en-hash: 3f0246c95a38aaf04b2c550c9e1a287d
 msgid "msg_fetch_failed"
-msgstr "Recupero AI non riuscito"
+msgstr "Richiesta AI non riuscita. Controlla la connessione o le impostazioni API."
 
 # en-hash: dffb8357db1ec38d1f6dffbcc270400d
 msgid "msg_no_bio"
@@ -1015,19 +1015,19 @@ msgstr "Nessuna biografia disponibile."
 
 # en-hash: 1a99b2b1ba9babaa605eb045980477a7
 msgid "msg_suggest_lang"
-msgstr "Questo libro è in %s. Cambiare la lingua dei raggi X per adattarla?"
+msgstr "Questo libro è in %s. Vuoi cambiare la lingua di X-Ray per adattarla?"
 
 # en-hash: 2e7e2d7f8421035f2e307aa4064d20ee
 msgid "multiple_matches"
-msgstr "Corrispondenze multiple per '%s'. Cosa intendevi?"
+msgstr "Più corrispondenze per '%s'. Quale intendevi?"
 
 # en-hash: cafa45757baae6a9b3e4daafcc454e43
 msgid "new_feature"
-msgstr "New Feature"
+msgstr "Nuova funzionalità"
 
 # en-hash: 10ac3d04253ef7e1ddc73e6091c0cd55
 msgid "next"
-msgstr "Prossimo"
+msgstr "Avanti"
 
 # en-hash: bafd7322c6e97d25b6299b5d6fe8920b
 msgid "no"
@@ -1035,7 +1035,7 @@ msgstr "No"
 
 # en-hash: 9b793d19e6877134f19c37c3ac6247fa
 msgid "no_api_key"
-msgstr "Chiave API AI non impostata!\n\nInserisci la chiave API in:\nMenu → Raggi X → Impostazioni AI"
+msgstr "Nessuna chiave API impostata!"
 
 # en-hash: 23dfd40828eb2cf5e31ad869ef4bda83
 msgid "no_author_data_fetch"
@@ -1043,11 +1043,11 @@ msgstr "Nessuna informazione sull'autore disponibile.\n\nVuoi recuperarla da AI?
 
 # en-hash: 18b36cd276b2c5afa9f9cdf198876b20
 msgid "no_character_data"
-msgstr "Nessun dato sui personaggi ancora.\n\nPer favore usa prima 'Recupera dati X-Ray'."
+msgstr "Ancora nessun dato sui personaggi.\n\nUtilizza prima 'Recupera dati X-Ray'."
 
 # en-hash: 80a4905228688f8ad8ec996803f60ffb
 msgid "no_data_prompt"
-msgstr "Nessun dato a raggi X trovato per questo libro. Vuoi recuperarlo da AI adesso?"
+msgstr "Nessun dato X-Ray trovato per questo libro. Vuoi recuperarlo dall'AI adesso?"
 
 # en-hash: f66eabdf2cb216138e5c20cd3f9d890d
 msgid "no_duplicates_found"
@@ -1055,7 +1055,7 @@ msgstr "Nessun duplicato trovato."
 
 # en-hash: 064105ef9b1bca475059078013cc4a4b
 msgid "no_historical_data"
-msgstr "Ancora nessun dato sulle figure storiche.\n\nUtilizza prima \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"Recupera dati a raggi X\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\".\n\nL'intelligenza artificiale rileverà le figure storiche\nreali menzionate nel libro."
+msgstr "Ancora nessun dato sulle figure storiche.\n\nUtilizza prima 'Recupera dati X-Ray'.\n\nL'AI rileverà le figure storiche reali menzionate nel libro."
 
 # en-hash: 4c58fb13d107106e3765e3f635e64517
 msgid "no_items"
@@ -1063,7 +1063,7 @@ msgstr "Nessun elemento"
 
 # en-hash: 4d0e58f2c49ca238a05d2a92486d3d70
 msgid "no_location_data"
-msgstr "Nessun dato sulla posizione ancora. Utilizzare prima \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"Recupera dati radiografici\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"."
+msgstr "Ancora nessun dato sui luoghi. Utilizza prima 'Recupera dati X-Ray'."
 
 # en-hash: 6c32701ae234f6a1c3a03e18d89bd1e1
 msgid "no_merges_performed"
@@ -1083,11 +1083,11 @@ msgstr "Nessuna serie rilevata per questo libro."
 
 # en-hash: 29503d301d509e5cfea9e97daffa9e79
 msgid "no_terms_data"
-msgstr "Nessun dato sui termini. Usa prima 'Fetch X-Ray Data'."
+msgstr "Ancora nessun dato sui termini. Utilizza prima 'Recupera dati X-Ray'."
 
 # en-hash: 0c8a85db22b4a3eadf95fe1a55f00c63
 msgid "no_timeline_data"
-msgstr "Ancora nessun dato sulla sequenza temporale.\n\nUtilizza prima \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"Recupera dati a raggi X\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\".\n\nL'AI mostrerà gli eventi chiave in\nordine cronologico."
+msgstr "Ancora nessun dato sulla cronologia.\n\nUtilizza prima 'Recupera dati X-Ray'.\n\nL'AI mostrerà gli eventi chiave in ordine cronologico."
 
 # en-hash: e0aa021e21dddbd6d8cecec71e9cf564
 msgid "ok"
@@ -1095,7 +1095,7 @@ msgstr "OK"
 
 # en-hash: 386b384e3eec6bf9bf55d32b5018de15
 msgid "pair_rejected"
-msgstr "Pair marked as not a duplicate."
+msgstr "La coppia è stata contrassegnata come non duplicata."
 
 # en-hash: b8d4677ac13de48defd22ae1a3fe2479
 msgid "paste_clipboard_confirm"
@@ -1115,19 +1115,19 @@ msgstr "Trasforma la tua esperienza di lettura con l'analisi dei libri basata su
 
 # en-hash: 14230d11143a03f4330c6433d5032a9d
 msgid "prev"
-msgstr "Prec."
+msgstr "Precedente"
 
 # en-hash: 136dbfc383f7b6799dbdcb4b37c65d13
 msgid "quick_menu_title"
-msgstr "Menu rapido dei raggi X"
+msgstr "Menu rapido di X-Ray"
 
 # en-hash: decbe415d8accca7c2c16d48a79ee934
 msgid "read_more"
-msgstr "Read More"
+msgstr "Leggi altro"
 
 # en-hash: fffcb4d1e12c96b2f571f77ad25878b8
 msgid "reason"
-msgstr "Reason"
+msgstr "Motivo"
 
 # en-hash: 1ec7919a887b228482b4fd9a80fcd324
 msgid "reasoning_about"
@@ -1147,11 +1147,11 @@ msgstr "Medio"
 
 # en-hash: e22876a23ad77be581ada0285360983a
 msgid "reasoning_unset"
-msgstr "Non impostato (impostazione predefinita)"
+msgstr "Non impostato (predefinito)"
 
 # en-hash: d98ac12774fca5c3cbaffe276840c55f
 msgid "reject_pair"
-msgstr "Reject"
+msgstr "Rifiuta"
 
 # en-hash: 88e790884cd8072ac5a804be29a0a287
 msgid "relookup_button"
@@ -1159,7 +1159,7 @@ msgstr "Nuova ricerca '%s'"
 
 # en-hash: 457dd55184faedb7885afd4009d70163
 msgid "review"
-msgstr "Review"
+msgstr "Rivedi"
 
 # en-hash: c9cc8cce247e49bae79f15173ce97354
 msgid "save"
@@ -1171,15 +1171,15 @@ msgstr "Cerca"
 
 # en-hash: 13348442cc6a27032d2b4aa28b75a5d3
 msgid "search_button"
-msgstr "Ricerca"
+msgstr "Cerca"
 
 # en-hash: 428279a428d9f130d69840b2b73c7514
 msgid "search_character"
-msgstr "Cerca caratteri..."
+msgstr "Cerca personaggi..."
 
 # en-hash: c2380a3df7158668908b94405cbe5902
 msgid "search_character_title"
-msgstr "Ricerca dei personaggi"
+msgstr "Ricerca personaggi"
 
 # en-hash: 828800124a2c130cc221b4d028b781a2
 msgid "search_hint"
@@ -1187,7 +1187,7 @@ msgstr "Inserisci il nome del personaggio"
 
 # en-hash: da83080ddaefc008f3de01b20a111043
 msgid "search_term"
-msgstr "Termini di ricerca"
+msgstr "Cerca termini"
 
 # en-hash: 428da3d1fd5aaa456409aa6b30d2c4f2
 msgid "series_ask_later_msg"
@@ -1235,7 +1235,7 @@ msgstr "Chiave API %s cancellata."
 
 # en-hash: 72ef2b9b6965d078e3c7f95487a82d1c
 msgid "skip"
-msgstr "Skip"
+msgstr "Salta"
 
 # en-hash: 55da95c9d6ab32f4873d13cdba88943e
 msgid "spoiler_free_about"
@@ -1259,7 +1259,7 @@ msgstr "Preferenza spoiler"
 
 # en-hash: 11a755d598c0c417f9a36758c3da7481
 msgid "stop"
-msgstr "Stop"
+msgstr "Interrompi"
 
 # en-hash: d725036d492c380f06f4eb32f5704bc9
 msgid "term_not_found"
@@ -1275,19 +1275,19 @@ msgstr "Questo capitolo"
 
 # en-hash: d2c24d59e0baff4d0155fbdf62590867
 msgid "this_page"
-msgstr "Questa pagina"
+msgstr "Sezione"
 
 # en-hash: f61824b403008733ff955da48052ee04
 msgid "unit_action_configure"
-msgstr "Configure Settings..."
+msgstr "Configura impostazioni..."
 
 # en-hash: 6ee50812725a7a053ed2c5742c6ebfef
 msgid "unit_action_disable"
-msgstr "Disable Feature"
+msgstr "Disabilita funzionalità"
 
 # en-hash: 074331092c85358cfa576b7c8424a94e
 msgid "unit_action_keep"
-msgstr "Keep Enabled (Default)"
+msgstr "Mantieni abilitata (predefinito)"
 
 # en-hash: fd380cdfeb02e89fd87e81a03440d1a4
 msgid "unit_auto_scan_about"
@@ -1299,11 +1299,11 @@ msgstr "Scansiona automaticamente i libri alla ricerca di unità:"
 
 # en-hash: b9f5c797ebbf55adccdd8539a65a0241
 msgid "unit_auto_scan_disabled"
-msgstr "Disattivato"
+msgstr "Disabilitato"
 
 # en-hash: 00d23a76e43b46dae9ec7aa9dcbebb32
 msgid "unit_auto_scan_enabled"
-msgstr "Attivato"
+msgstr "Abilitato"
 
 # en-hash: b1c61b015abaa0f358173ae8aaf8d96e
 msgid "unit_auto_scan_settings"
@@ -1327,11 +1327,11 @@ msgstr "Tipo di libro rilevato"
 
 # en-hash: b6cf4509f11628ed741ca36a32f81381
 msgid "unit_book_type_filter"
-msgstr "Filtro tipo di libro"
+msgstr "Filtro per tipo di libro"
 
 # en-hash: c026a5df7244b6080df8cfecb130356b
 msgid "unit_book_type_graphic_novel"
-msgstr "Romanzi grafici e fumetti"
+msgstr "Graphic novel e fumetti"
 
 # en-hash: f6dba9e25fa714cf3cef54d4de318165
 msgid "unit_book_type_manage"
@@ -1347,7 +1347,7 @@ msgstr "Manga"
 
 # en-hash: 88546cdcbcd8400f1ee2846852ae2e1f
 msgid "unit_book_type_override"
-msgstr "Forza per questo libro"
+msgstr "Sovrascrivi per questo libro"
 
 # en-hash: ff928a73d5b2ff2a461db998958a1282
 msgid "unit_book_type_poetry"
@@ -1355,15 +1355,15 @@ msgstr "Poesia e versi"
 
 # en-hash: 4d8ba3523f4ad502d6dddee9f0d10d20
 msgid "unit_book_type_prose_fiction"
-msgstr "Narrativa (Romanzi, Storie)"
+msgstr "Narrativa (romanzi, racconti)"
 
 # en-hash: 99ded02c970ab5538b35f9aa0cd27079
 msgid "unit_book_type_prose_nonfiction"
-msgstr "Saggistica (Storia, Scienza, ecc.)"
+msgstr "Saggistica (storia, scienze, ecc.)"
 
 # en-hash: 888a79cbd69091bfa3d5fc5365b73cdb
 msgid "unit_book_type_textbook"
-msgstr "Libri di testo e accademici"
+msgstr "Libri di testo e testi accademici"
 
 # en-hash: 90b9a0ebb86893e6d002055d6d8045f9
 msgid "unit_book_type_travel"
@@ -1371,11 +1371,11 @@ msgstr "Guide di viaggio"
 
 # en-hash: ccc1d907334fda22583f0023f90d05d5
 msgid "unit_book_type_unknown"
-msgstr "Sconosciuto / Altro"
+msgstr "Sconosciuto/Altro"
 
 # en-hash: 5b2e3a633a4d820d64aa4356495ab188
 msgid "unit_conv_direction"
-msgstr "Direzione conversione"
+msgstr "Direzione di conversione"
 
 # en-hash: 0352baf577c778cf15e49c40b1126bc3
 msgid "unit_conv_direction_about"
@@ -1383,27 +1383,27 @@ msgstr "La direzione di conversione delle unità determina come vengono converti
 
 # en-hash: 78b12f9283363cc04ec6a9f2f8fb18c4
 msgid "unit_conv_direction_auto"
-msgstr "Auto (impostazioni dispositivo)"
+msgstr "Automatico (segui dispositivo)"
 
 # en-hash: 926a5778ac523de44a7059268db8eb90
 msgid "unit_conv_direction_desc"
-msgstr "Seleziona la direzione di conversione delle unità:"
+msgstr "Seleziona la direzione di destinazione per le conversioni delle unità:"
 
 # en-hash: 16fb229accd0e21e3b01de25113a5092
 msgid "unit_conv_direction_imperial"
-msgstr "Converti sempre in imperiale"
+msgstr "Verso il sistema imperiale"
 
 # en-hash: eb80006cda3aa58a5be2dbc9f535dc06
 msgid "unit_conv_direction_metric"
-msgstr "Converti sempre in metrico"
+msgstr "Verso il sistema metrico"
 
 # en-hash: 9039461fb813111bf38dc683527be31d
 msgid "unit_conv_enabled"
-msgstr "Abilita convertitore unità"
+msgstr "Abilita convertitore di unità"
 
 # en-hash: 01eb258da99de69aab015959dfc528d9
 msgid "unit_conv_headline"
-msgstr "📏 Unit Converter"
+msgstr "Convertitore di unità"
 
 # en-hash: 63d401a64c232b43a1335ae7e02fb607
 msgid "unit_conv_new_feature_desc"
@@ -1415,15 +1415,15 @@ msgstr "Impostazioni di stile e sottolineatura"
 
 # en-hash: a18366b217ebf811ad1886e4f4f865b2
 msgid "unit_intensity_dark"
-msgstr "Scuro"
+msgstr "Scura"
 
 # en-hash: 9914a0ce04a7b7b6a8e39bec55064b82
 msgid "unit_intensity_light"
-msgstr "Chiaro"
+msgstr "Chiara"
 
 # en-hash: 87f8a6ab85c9ced3702b4ea641ad4bb5
 msgid "unit_intensity_medium"
-msgstr "Medio"
+msgstr "Media"
 
 # en-hash: 2e507ae5d58861d457e684dfe05b9593
 msgid "unit_manual_scan_button"
@@ -1451,11 +1451,11 @@ msgstr "Scansiona per numeri scritti (es. 'cinque miglia'):"
 
 # en-hash: 41e615cb7654281a8e431c371a92311e
 msgid "unit_scan_written_numbers_title"
-msgstr "Scansiona numeri scritti"
+msgstr "Scansione dei numeri scritti in lettere"
 
 # en-hash: 59655846df0abfca05d478f9c0a18eb4
 msgid "unit_scanning_book"
-msgstr "Scansione del libro per le unità..."
+msgstr "Scansione del libro alla ricerca di unità..."
 
 # en-hash: 2c8c1e763a8b739446b8dcd7908f318f
 msgid "unit_scanning_title"
@@ -1463,7 +1463,7 @@ msgstr "X-Ray: Convertitore di unità"
 
 # en-hash: 2f59140753baa1e1e8193111db3ed7e1
 msgid "unit_style_preview_title"
-msgstr "ANTEPRIMA STILE"
+msgstr "ANTEPRIMA DELLO STILE"
 
 # en-hash: 6e7b34fa59e1bd229b207892956dc41c
 msgid "unit_timeout_never"
@@ -1471,15 +1471,15 @@ msgstr "Mai"
 
 # en-hash: efb97de9aae997a3dde262761bed835d
 msgid "unit_tooltip_timeout_label"
-msgstr "Timeout info"
+msgstr "Durata del tooltip"
 
 # en-hash: eb656e41b6da91494775ecf47a51da91
 msgid "unit_underline_dashed"
-msgstr "Tratteggiato"
+msgstr "Tratteggiata"
 
 # en-hash: 90c09393a4c0970bc9a6703ad527781c
 msgid "unit_underline_dotted"
-msgstr "Puntinato"
+msgstr "Punteggiata"
 
 # en-hash: d909d38d705ce75386dd86e611a82f5b
 msgid "unit_underline_double"
@@ -1487,7 +1487,7 @@ msgstr "Doppia"
 
 # en-hash: 04cc5cd272ac4f83c184b294e7f38b1f
 msgid "unit_underline_intensity_label"
-msgstr "Intensità sottolineatura"
+msgstr "Intensità della sottolineatura"
 
 # en-hash: 8bcda43732b0928d269955e0f09ff76f
 msgid "unit_underline_invisible"
@@ -1495,19 +1495,19 @@ msgstr "Invisibile"
 
 # en-hash: e41480b6bbfbf7407974a88d3d34f4fa
 msgid "unit_underline_solid"
-msgstr "Solido"
+msgstr "Continua"
 
 # en-hash: 9a66725ea21264441ab1682f4739fbc2
 msgid "unit_underline_style_label"
-msgstr "Stile sottolineatura"
+msgstr "Stile della sottolineatura"
 
 # en-hash: 5cc1d76d86c562d334e35e4ef262ba5c
 msgid "unit_underline_thickness_label"
-msgstr "Spessore sottolineatura"
+msgstr "Spessore della sottolineatura"
 
 # en-hash: 0e9498bd18e441969b23cb70819abc3c
 msgid "unit_underline_wavy"
-msgstr "Ondulato"
+msgstr "Ondulata"
 
 # en-hash: 3f50e96b2eef687f766dc7651a55ad0a
 msgid "updater_available_header"
@@ -1515,7 +1515,7 @@ msgstr "La radiografia %s è disponibile!\nHai %s."
 
 # en-hash: ea4788705e6873b424c65e91c2846b19
 msgid "updater_btn_cancel"
-msgstr "Cancellare"
+msgstr "Annulla"
 
 # en-hash: 326737de1766f7c8b80a5acde0f18651
 msgid "updater_btn_download"
@@ -1531,7 +1531,7 @@ msgstr "Apri nel browser"
 
 # en-hash: 51cfbcff36da74a9fc47f3a5140f99f2
 msgid "updater_btn_restart"
-msgstr "Ricomincia"
+msgstr "Riavvia"
 
 # en-hash: 092dc0fe2a1709895d0ffb03306ab644
 msgid "updater_cancelled_check"
@@ -1543,11 +1543,11 @@ msgstr "Aggiornamento annullato."
 
 # en-hash: f77f38f684c8b974dd4a56bb321cfd5f
 msgid "updater_check"
-msgstr "Controlla gli aggiornamenti"
+msgstr "Controlla aggiornamenti"
 
 # en-hash: a07813cc05571f23ce8dd7039583d7da
 msgid "updater_checking"
-msgstr "Controllo aggiornamenti..."
+msgstr "Controllo degli aggiornamenti..."
 
 # en-hash: 3e6aed71a195328451956394c1ba0e70
 msgid "updater_download_prompt"
@@ -1555,7 +1555,7 @@ msgstr "\n\nScaricare e installare adesso?"
 
 # en-hash: 4d7dcb1c7639337d915a10ffc18f0c5d
 msgid "updater_downloading"
-msgstr "Download della radiografia %s..."
+msgstr "Download di X-Ray %s..."
 
 # en-hash: 3ee3d18e96340272001439279cf33314
 msgid "updater_err_download"
@@ -1591,7 +1591,7 @@ msgstr "Cosa c'è di nuovo:"
 
 # en-hash: 46667b51ced49ca8828f897cf83e89b8
 msgid "updating_ai"
-msgstr "Aggiornamento dei dati radiografici..."
+msgstr "Aggiornamento di X-Ray..."
 
 # en-hash: 0d1b08c34858921bc7c662b228acb7ba
 msgid "val"
@@ -1599,7 +1599,7 @@ msgstr "???"
 
 # en-hash: 1739e3ae6d734407aef8af879665b8ee
 msgid "validate_keys_title"
-msgstr "Stato e convalida chiavi API"
+msgstr "Stato e convalida delle chiavi API"
 
 # en-hash: df59c9aeac50ab85bc1945555592cf8a
 msgid "web_setup_local_unsupported"
@@ -1631,7 +1631,7 @@ msgstr "Continua"
 
 # en-hash: 10577dd8e9aef1c7097268c665a5f46e
 msgid "welcome_action_dont_ask"
-msgstr "Non chiedere più"
+msgstr "Non chiedermelo più"
 
 # en-hash: b9709e1b50c06ed39df03fa0b90d40ab
 msgid "welcome_btn_import_now"
@@ -1655,7 +1655,7 @@ msgstr "Configurazione via file di testo"
 
 # en-hash: 7e19e3d6ef015d76a93fc39fa78555a2
 msgid "welcome_headline"
-msgstr "Configura provider IA"
+msgstr "Configura provider AI"
 
 # en-hash: f307ec8cddbe39ac8784564076e583ae
 msgid "welcome_no_file_found"
@@ -1703,7 +1703,7 @@ msgstr "Ignora per ora (solo funzionalità offline)"
 
 # en-hash: 741987eccc2e46095fdd70cf9377e31e
 msgid "welcome_select_provider"
-msgstr "Seleziona Provider IA"
+msgstr "Seleziona provider AI"
 
 # en-hash: b88c7d8b4f064676524e945ceb6fc35c
 msgid "welcome_tag"
@@ -1719,9 +1719,8 @@ msgstr "Abilitato"
 
 # en-hash: aa3045baed0aad489f96655b14b671ac
 msgid "xray_mode_desc"
-msgstr "Aggiunge un pulsante \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"X-Ray\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\" al dizionario e ai menu di selezione per ricerche istantanee."
+msgstr "Aggiunge un pulsante 'X-Ray' ai menu del dizionario e di selezione per consultazioni immediate."
 
 # en-hash: 93cba07454f06a4a960172bbd6e2a435
 msgid "yes"
 msgstr "SÌ"
-
