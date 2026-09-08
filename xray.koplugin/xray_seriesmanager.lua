@@ -447,6 +447,226 @@ function SeriesManager:removeSeriesImage(slug, image_id)
     return false
 end
 
+local function filterCurrentOnly(tbl)
+    local res = {}
+    for _, item in ipairs(tbl or {}) do
+        if item and item.source ~= "series_prior" then
+            table.insert(res, item)
+        end
+    end
+    return res
+end
+
+-- Synchronize clean book data into SeriesCache for a specific book index
+function SeriesManager:syncBookToSeriesCache(slug, index, book_data, book_path)
+    if not slug or slug == "" or slug == "series" or not index or not book_data then
+        return false
+    end
+    index = tonumber(index)
+    if not index then return false end
+
+    local cache_data = self:loadSeriesCache(slug) or {
+        series_slug = slug,
+        books = {},
+        book_paths = {},
+    }
+    cache_data.books = cache_data.books or {}
+    cache_data.book_paths = cache_data.book_paths or {}
+
+    local title = book_data.title or book_data.book_title
+    local author = book_data.author or book_data.book_author or book_data.authors
+
+    cache_data.books[index] = {
+        title = title,
+        author = author,
+        characters = filterCurrentOnly(book_data.characters),
+        locations = filterCurrentOnly(book_data.locations),
+        terms = filterCurrentOnly(book_data.terms),
+        timeline = filterCurrentOnly(book_data.timeline),
+        source = "local_xray",
+    }
+    if book_path and book_path ~= "" then
+        cache_data.book_paths[index] = book_path
+    end
+
+    logger.info("SeriesManager: Synced Book " .. tostring(index) .. " to series cache for slug '" .. tostring(slug) .. "'")
+    return self:saveSeriesCache(slug, cache_data)
+end
+
+-- Safely read a Lua cache file returning a table or nil
+local function safeLoadCacheFile(file_path)
+    if not file_path then return nil end
+    local f = io.open(file_path, "r")
+    if not f then return nil end
+    f:close()
+    local success, data = pcall(dofile, file_path)
+    if success and type(data) == "table" then
+        return data
+    end
+    return nil
+end
+
+-- Search local device storage for previous book X-Ray data
+function SeriesManager:findLocalBookXRay(series_info, target_index, current_book_path, target_title, cache_manager)
+    if not series_info or not series_info.slug or not target_index then
+        return nil
+    end
+    target_index = tonumber(target_index)
+    if not target_index then return nil end
+
+    local slug = series_info.slug
+
+    -- Priority 1: Check existing SeriesCache for an entry marked as local_xray
+    local cache_data = self:loadSeriesCache(slug)
+    if cache_data and cache_data.books and cache_data.books[target_index] then
+        local entry = cache_data.books[target_index]
+        if entry.source == "local_xray" then
+            logger.info("SeriesManager: Found local_xray entry in SeriesCache for book index " .. tostring(target_index))
+            return entry
+        end
+    end
+
+    -- Priority 2: Check tracked book paths from prior sessions
+    if cache_data and cache_data.book_paths and cache_data.book_paths[target_index] then
+        local tracked_path = cache_data.book_paths[target_index]
+        local loaded = nil
+        if cache_manager and cache_manager.loadCache then
+            loaded = cache_manager:loadCache(tracked_path)
+        end
+        if not loaded then
+            local sdr_file = tracked_path:gsub("[/\\][^/\\]+$", "") .. "/" .. tracked_path:match("([^/\\]+)$") .. ".sdr/xray_cache.lua"
+            loaded = safeLoadCacheFile(sdr_file)
+        end
+        if loaded and (loaded.characters or loaded.timeline) then
+            self:syncBookToSeriesCache(slug, target_index, loaded, tracked_path)
+            local updated = self:loadSeriesCache(slug)
+            return updated and updated.books and updated.books[target_index]
+        end
+    end
+
+    if not current_book_path or current_book_path == "" then
+        return nil
+    end
+
+    local sep = current_book_path:find("\\") and "\\" or "/"
+    local current_dir = current_book_path:match("^(.*)[/\\][^/\\]+$")
+    if not current_dir then return nil end
+
+    local function checkCandidateData(loaded, candidate_name, candidate_file)
+        if not loaded or type(loaded) ~= "table" then return false end
+        -- Verify series slug
+        local c_slug = loaded.series_slug
+        local c_name = loaded.series or loaded.series_name or (loaded.props and (loaded.props.series or loaded.props.Series))
+        local slug_matches = false
+        if c_slug and c_slug ~= "" and c_slug == slug then
+            slug_matches = true
+        elseif c_name and c_name ~= "" and makeSlug(c_name) == slug then
+            slug_matches = true
+        end
+        if not slug_matches then return false end
+
+        -- Verify book index
+        local c_idx = tonumber(loaded.series_index or (loaded.props and (loaded.props.series_index or loaded.props.seriesindex or loaded.props.SeriesIndex)))
+        if not c_idx and (loaded.title or loaded.book_title) then
+            c_idx = self:extractIndexFromTitle(loaded.title or loaded.book_title, series_info.name)
+        end
+        if not c_idx and candidate_name then
+            c_idx = self:extractIndexFromTitle(candidate_name, series_info.name)
+        end
+
+        local index_matches = (c_idx == target_index)
+        if not index_matches and target_title and target_title ~= "" then
+            local t = loaded.title or loaded.book_title
+            if t and t:lower():find(target_title:lower(), 1, true) then
+                index_matches = true
+            end
+        end
+
+        if index_matches and ((loaded.characters and #loaded.characters > 0) or (loaded.timeline and #loaded.timeline > 0)) then
+            logger.info("SeriesManager: Discovered local X-Ray cache for Book " .. tostring(target_index) .. " at: " .. tostring(candidate_file))
+            self:syncBookToSeriesCache(slug, target_index, loaded, candidate_file)
+            local updated = self:loadSeriesCache(slug)
+            return updated and updated.books and updated.books[target_index]
+        end
+        return nil
+    end
+
+    -- Priority 3: Scan current_dir for matching .sdr directories and ebook sidecars
+    if lfs and lfs.dir then
+        local pcall_ok = pcall(function()
+            for entry in lfs.dir(current_dir) do
+                if entry ~= "." and entry ~= ".." then
+                    local entry_path = current_dir .. sep .. entry
+                    local matched = nil
+                    if entry:match("%.sdr$") then
+                        local cache_file = entry_path .. sep .. "xray_cache.lua"
+                        local loaded = safeLoadCacheFile(cache_file)
+                        matched = checkCandidateData(loaded, entry, entry_path:gsub("%.sdr$", ""))
+                    elseif entry:match("%.epub$") or entry:match("%.kepub%.epub$") or entry:match("%.mobi$") or entry:match("%.azw3$") or entry:match("%.fb2$") or entry:match("%.pdf$") then
+                        if entry_path ~= current_book_path then
+                            local cache_file = entry_path .. ".sdr" .. sep .. "xray_cache.lua"
+                            local loaded = safeLoadCacheFile(cache_file)
+                            matched = checkCandidateData(loaded, entry, entry_path)
+                        end
+                    end
+                    if matched then
+                        return matched
+                    end
+                end
+            end
+        end)
+        -- Reload series cache in case matched in loop
+        local refreshed = self:loadSeriesCache(slug)
+        if refreshed and refreshed.books and refreshed.books[target_index] and refreshed.books[target_index].source == "local_xray" then
+            return refreshed.books[target_index]
+        end
+
+        -- Priority 4: Scan sibling directories in parent directory (Calibre author folder structure)
+        local parent_dir = current_dir:match("^(.*)[/\\][^/\\]+$")
+        if parent_dir and parent_dir ~= "" then
+            pcall(function()
+                local dir_count = 0
+                for sub in lfs.dir(parent_dir) do
+                    if sub ~= "." and sub ~= ".." then
+                        dir_count = dir_count + 1
+                        if dir_count > 50 then break end -- Limit scan to keep fast
+                        local sub_path = parent_dir .. sep .. sub
+                        if sub_path ~= current_dir then
+                            local attr = lfs.attributes and lfs.attributes(sub_path)
+                            if attr and attr.mode == "directory" then
+                                for sub_entry in lfs.dir(sub_path) do
+                                    if sub_entry ~= "." and sub_entry ~= ".." then
+                                        local sub_entry_path = sub_path .. sep .. sub_entry
+                                        local matched = nil
+                                        if sub_entry:match("%.sdr$") then
+                                            local cache_file = sub_entry_path .. sep .. "xray_cache.lua"
+                                            local loaded = safeLoadCacheFile(cache_file)
+                                            matched = checkCandidateData(loaded, sub_entry, sub_entry_path:gsub("%.sdr$", ""))
+                                        elseif sub_entry:match("%.epub$") or sub_entry:match("%.kepub%.epub$") or sub_entry:match("%.mobi$") or sub_entry:match("%.azw3$") or sub_entry:match("%.fb2$") or sub_entry:match("%.pdf$") then
+                                            local cache_file = sub_entry_path .. ".sdr" .. sep .. "xray_cache.lua"
+                                            local loaded = safeLoadCacheFile(cache_file)
+                                            matched = checkCandidateData(loaded, sub_entry, sub_entry_path)
+                                        end
+                                        if matched then
+                                            return matched
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+            local refreshed_p = self:loadSeriesCache(slug)
+            if refreshed_p and refreshed_p.books and refreshed_p.books[target_index] and refreshed_p.books[target_index].source == "local_xray" then
+                return refreshed_p.books[target_index]
+            end
+        end
+    end
+
+    return nil
+end
+
 -- Stream-serialize to file
 function SeriesManager:serializeToFile(f, obj, indent, seen)
     seen = seen or {}

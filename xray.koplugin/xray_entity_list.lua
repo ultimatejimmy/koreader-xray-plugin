@@ -458,6 +458,8 @@ function EntityListOverlay:onOpenFocused()
                 self.current_page = 1
                 self:buildUI()
                 UIManager:setDirty(self, "ui")
+            elseif item.is_current_header then
+                -- Static section header, no action
             else
                 self:onItemSelect(item)
             end
@@ -557,6 +559,8 @@ function EntityListOverlay:handleEvent(ev)
                         self.current_page = 1
                         self:buildUI()
                         UIManager:setDirty(self, "ui")
+                    elseif it.is_current_header then
+                        -- Static section header, no action
                     else
                         self:onItemSelect(it)
                     end
@@ -751,12 +755,157 @@ function EntityListOverlay:renderRow(item, content_w, row_h, is_focused, idx)
     local loc = p and p.loc
     local is_timeline = (self.mode == "timeline")
     local is_mentions = (self.mode == "mentions")
+    local is_prior = (item.source == "series_prior")
+
+    if is_timeline and is_prior then
+        local raw_ch = item.chapter or ""
+        local num_match, name_match = raw_ch:match("^%[?Book%s+(%d+)%s*:%s*(.-)%]?$")
+        local title_str = "Prior Book"
+        if num_match and name_match and name_match ~= "" then
+            title_str = string.format("Book %s: %s", num_match, name_match)
+        else
+            local num_only = raw_ch:match("^%[?Book%s+(%d+)%]?$")
+            if num_only then
+                title_str = "Book " .. num_only
+            elseif item.source_book then
+                title_str = string.format("Book %d: %s", item.source_book, raw_ch:gsub("^%[", ""):gsub("%]$", ""))
+            else
+                title_str = (raw_ch ~= "") and raw_ch:gsub("^%[", ""):gsub("%]$", "") or "Prior Book"
+            end
+        end
+
+        local pad_left = sc(28)
+        local pad_right = sc(16)
+        local inner_w = content_w - pad_left - pad_right
+
+        local recap_pill = FrameContainer:new{
+            padding = 0,
+            padding_left = sc(6),
+            padding_right = sc(6),
+            padding_top = sc(1),
+            padding_bottom = sc(1),
+            bordersize = 0,
+            radius = sc(3),
+            background = Blitbuffer.Color8(220),
+            TextWidget:new{
+                text = "Recap",
+                face = Font:getFace("cfont", 11),
+                bold = true,
+                fgcolor = Blitbuffer.Color8(60),
+            },
+        }
+
+        local title_widget = TextWidget:new{
+            text = title_str,
+            face = Font:getFace("cfont", 18),
+            bold = true,
+            fgcolor = Blitbuffer.COLOR_BLACK,
+            max_width = inner_w - sc(70),
+        }
+
+        local title_row = HorizontalGroup:new{
+            align = "center",
+            title_widget,
+            HorizontalSpan:new{ width = sc(8) },
+            recap_pill,
+        }
+
+        local desc_str = item.event or ""
+        desc_str = desc_str:gsub("%s+", " "):match("^%s*(.-)%s*$") or ""
+        if #desc_str > 185 then
+            desc_str = desc_str:sub(1, 180) .. "..."
+        end
+
+        local desc_widget = nil
+        if desc_str ~= "" and desc_str ~= "---" then
+            desc_widget = TextWidget:new{
+                text = desc_str,
+                face = Font:getFace("cfont", 14),
+                fgcolor = Blitbuffer.Color8(50),
+                max_width = inner_w,
+            }
+        end
+
+        local card_items = {
+            VerticalSpan:new{ width = sc(3) },
+            title_row,
+        }
+        if desc_widget then
+            table.insert(card_items, VerticalSpan:new{ width = sc(1) })
+            table.insert(card_items, desc_widget)
+        end
+        table.insert(card_items, VerticalSpan:new{ width = sc(3) })
+
+        local main_vg = VerticalGroup:new(card_items)
+        main_vg.align = "left"
+
+        local is_card_focused = is_focused and (self.focus_zone == "cards")
+        local main_vg_h = (main_vg.getSize and main_vg:getSize().h) or math.max(sc(24), row_h - sc(14))
+
+        local row_frame = FrameContainer:new{
+            padding = 0,
+            bordersize = is_card_focused and sc(2) or 0,
+            color = Blitbuffer.COLOR_BLACK,
+            background = is_card_focused and Blitbuffer.Color8(220) or Blitbuffer.Color8(246),
+            width = content_w,
+            height = row_h,
+            CenterContainer:new{
+                dimen = Geom:new{ w = content_w, h = row_h },
+                LeftContainer:new{
+                    dimen = Geom:new{ w = inner_w, h = main_vg_h },
+                    main_vg,
+                },
+            },
+        }
+
+        local row_item = InputContainer:new{
+            dimen = Geom:new{ w = content_w, h = row_h },
+            row_frame,
+        }
+        row_item.overlay = self
+
+        function row_item:getSize()
+            return self.dimen
+        end
+
+        function row_item:paintTo(bb, x, y)
+            self.dimen = Geom:new{ x = x, y = y, w = content_w, h = row_h }
+            local ov = self.overlay
+            local focused = (ov and ov.focus_zone == "cards" and ov.focused_index == idx)
+            row_frame.bordersize = focused and sc(2) or 0
+            row_frame.color = Blitbuffer.COLOR_BLACK
+            row_frame.background = focused and Blitbuffer.Color8(220) or Blitbuffer.Color8(246)
+            if self[1] then self[1]:paintTo(bb, x, y) end
+        end
+
+        row_item.ges_events = {
+            Tap = {
+                GestureRange:new{
+                    ges = "tap",
+                    range = function() return row_item.dimen end,
+                }
+            }
+        }
+
+        row_item.onTap = function()
+            local ov = self
+            ov.focus_zone = nil
+            ov.focused_index = nil
+            if ov.onItemSelect then
+                ov:onItemSelect(item)
+            end
+            return true
+        end
+
+        return row_item
+    end
+
     local pad_h = sc(16)
     local inner_w = content_w - (pad_h * 2)
 
     -- 1. Primary line (Bold Name/Title, mimicking the Dialog title)
     local title_str = ""
-    local is_prior = (item.source == "series_prior")
+    local prior_pill = nil
     if is_timeline then
         title_str = item.chapter or "Event"
         if item.page and tonumber(item.page) then
@@ -770,8 +919,27 @@ function EntityListOverlay:renderRow(item, content_w, row_h, is_focused, idx)
     else
         title_str = item.name or "???"
         if is_prior then
-            local prior_lbl = (loc and loc:t("series_prior_label")) or "[Prior]"
-            title_str = title_str .. " " .. prior_lbl
+            local prior_lbl = (loc and loc:t("series_prior_label")) or "Series"
+            prior_lbl = prior_lbl:gsub("^%[", ""):gsub("%]$", "")
+            if prior_lbl == "" or prior_lbl:lower() == "prior" then
+                prior_lbl = "Series"
+            end
+            prior_pill = FrameContainer:new{
+                background = Blitbuffer.Color8(230),
+                bordersize = sc(1),
+                color = Blitbuffer.Color8(180),
+                radius = sc(3),
+                padding_top = sc(1),
+                padding_bottom = sc(1),
+                padding_left = sc(6),
+                padding_right = sc(6),
+                TextWidget:new{
+                    text = prior_lbl,
+                    face = Font:getFace("cfont", 11),
+                    bold = true,
+                    fgcolor = Blitbuffer.Color8(60),
+                },
+            }
         end
     end
 
@@ -780,8 +948,20 @@ function EntityListOverlay:renderRow(item, content_w, row_h, is_focused, idx)
         face = Font:getFace("cfont", 22),
         bold = true,
         fgcolor = Blitbuffer.COLOR_BLACK,
-        max_width = inner_w,
+        max_width = prior_pill and (inner_w - (prior_pill.getSize and prior_pill:getSize().w or sc(50)) - sc(10)) or inner_w,
     }
+
+    local title_row_widget
+    if prior_pill then
+        title_row_widget = HorizontalGroup:new{
+            align = "center",
+            title_widget,
+            HorizontalSpan:new{ width = sc(6) },
+            prior_pill,
+        }
+    else
+        title_row_widget = title_widget
+    end
 
     -- 2. Description (Dark, readable single-line text)
     local desc_str = ""
@@ -815,7 +995,7 @@ function EntityListOverlay:renderRow(item, content_w, row_h, is_focused, idx)
 
     local text_items = {
         VerticalSpan:new{ width = sc(3) },
-        title_widget,
+        title_row_widget,
     }
     if desc_widget then
         table.insert(text_items, VerticalSpan:new{ width = sc(1) })
@@ -1109,13 +1289,18 @@ function EntityListOverlay:buildUI()
     local display_items = {}
     if is_timeline then
         local has_prior = false
+        local prior_count = 0
         for _, it in ipairs(self.items or {}) do
-            if it.source == "series_prior" then has_prior = true; break end
+            if it.source == "series_prior" then
+                has_prior = true
+                prior_count = prior_count + 1
+            end
         end
         if has_prior then
             table.insert(display_items, {
                 is_prior_header = true,
                 collapsed = self.prior_collapsed,
+                count = prior_count,
             })
         end
         for _, it in ipairs(self.items or {}) do
@@ -1123,7 +1308,30 @@ function EntityListOverlay:buildUI()
                 if not self.prior_collapsed then
                     table.insert(display_items, it)
                 end
-            else
+            end
+        end
+        if has_prior and not self.prior_collapsed then
+            local has_current = false
+            for _, it in ipairs(self.items or {}) do
+                if it.source ~= "series_prior" then
+                    has_current = true
+                    break
+                end
+            end
+            if has_current then
+                local doc_props = (self.ui and self.ui.document and self.ui.document.getProps and self.ui.document:getProps())
+                    or (self.plugin and self.plugin.ui and self.plugin.ui.document and self.plugin.ui.document.getProps and self.plugin.ui.document:getProps())
+                local cur_book_title = (self.plugin and self.plugin.book_data and (self.plugin.book_data.book_title or self.plugin.book_data.title))
+                    or (doc_props and doc_props.title)
+                local cur_header_title = (cur_book_title and cur_book_title ~= "") and ("Current Book: " .. cur_book_title) or "Current Book Timeline"
+                table.insert(display_items, {
+                    is_current_header = true,
+                    title = cur_header_title,
+                })
+            end
+        end
+        for _, it in ipairs(self.items or {}) do
+            if it.source ~= "series_prior" then
                 table.insert(display_items, it)
             end
         end
@@ -1189,8 +1397,14 @@ function EntityListOverlay:buildUI()
                     is_icon = true,
                     alpha = true,
                 }
+                local raw_header = (loc and loc:t("series_prior_books_header")) or "Prior Books in Series"
+                local clean_header = raw_header:gsub("^%s*[─%-–—]+%s*", ""):gsub("%s*[─%-–—]+%s*$", "")
+                if clean_header == "" or clean_header:lower() == "prior books" then
+                    clean_header = "Prior Books in Series"
+                end
+                local header_title = string.format("%s (%d)", clean_header, it.count or 0)
                 local prior_txt = TextWidget:new{
-                    text = (loc and loc:t("series_prior_books_header")) or "Prior Books in Series",
+                    text = header_title,
                     face = Font:getFace("cfont", 15),
                     bold = true,
                     fgcolor = Blitbuffer.COLOR_BLACK,
@@ -1203,16 +1417,16 @@ function EntityListOverlay:buildUI()
                 }
                 local is_sec_focused = (self.focus_zone == "cards" and idx == self.focused_index)
                 local sec_frame = FrameContainer:new{
-                    padding = sc(8),
+                    padding = 0,
                     padding_left = sc(16),
                     padding_right = sc(16),
-                    bordersize = 0,
-                    background = is_sec_focused and Blitbuffer.Color8(235) or Blitbuffer.Color8(246),
-                    radius = is_sec_focused and sc(4) or 0,
+                    bordersize = is_sec_focused and sc(2) or 0,
+                    color = Blitbuffer.COLOR_BLACK,
+                    background = is_sec_focused and Blitbuffer.Color8(220) or Blitbuffer.Color8(240),
                     width = sw,
-                    height = sc(40),
+                    height = sc(38),
                     LeftContainer:new{
-                        dimen = Geom:new{ w = sw - sc(32), h = sc(40) },
+                        dimen = Geom:new{ w = sw - sc(32), h = sc(38) },
                         sec_row,
                     },
                 }
@@ -1226,7 +1440,55 @@ function EntityListOverlay:buildUI()
                     self:buildUI()
                     UIManager:setDirty(self, "ui")
                 end)
+                sec_item.onBeforePaint = function()
+                    local focused = (self.focus_zone == "cards" and idx == self.focused_index)
+                    sec_frame.bordersize = focused and sc(2) or 0
+                    sec_frame.color = Blitbuffer.COLOR_BLACK
+                    sec_frame.background = focused and Blitbuffer.Color8(220) or Blitbuffer.Color8(240)
+                end
                 table.insert(page_content_vg, sec_item)
+                if idx < #page_items then
+                    table.insert(page_content_vg, CenterContainer:new{
+                        dimen = Geom:new{ w = sw, h = sc(1) },
+                        LineWidget:new{
+                            background = Blitbuffer.Color8(180),
+                            dimen = Geom:new{ w = sw - sc(32), h = sc(1) },
+                        },
+                    })
+                end
+            elseif it.is_current_header then
+                local cur_txt = TextWidget:new{
+                    text = it.title or "Current Book Timeline",
+                    face = Font:getFace("cfont", 15),
+                    bold = true,
+                    fgcolor = Blitbuffer.COLOR_BLACK,
+                    max_width = sw - sc(32),
+                }
+                local is_cur_focused = (self.focus_zone == "cards" and idx == self.focused_index)
+                local cur_frame = FrameContainer:new{
+                    padding = 0,
+                    padding_left = sc(16),
+                    padding_right = sc(16),
+                    bordersize = is_cur_focused and sc(2) or 0,
+                    color = Blitbuffer.COLOR_BLACK,
+                    background = is_cur_focused and Blitbuffer.Color8(220) or Blitbuffer.Color8(240),
+                    width = sw,
+                    height = sc(36),
+                    LeftContainer:new{
+                        dimen = Geom:new{ w = sw - sc(32), h = sc(36) },
+                        cur_txt,
+                    },
+                }
+                local cur_item = makeTapItem(cur_frame, function()
+                    -- Static transition header
+                end)
+                cur_item.onBeforePaint = function()
+                    local focused = (self.focus_zone == "cards" and idx == self.focused_index)
+                    cur_frame.bordersize = focused and sc(2) or 0
+                    cur_frame.color = Blitbuffer.COLOR_BLACK
+                    cur_frame.background = focused and Blitbuffer.Color8(220) or Blitbuffer.Color8(240)
+                end
+                table.insert(page_content_vg, cur_item)
                 if idx < #page_items then
                     table.insert(page_content_vg, CenterContainer:new{
                         dimen = Geom:new{ w = sw, h = sc(1) },

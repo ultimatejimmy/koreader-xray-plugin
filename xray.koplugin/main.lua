@@ -942,6 +942,24 @@ function XRayPlugin:autoLoadCache()
         end
         if #self.characters > 0 then self.xray_mode_enabled = true end
 
+        -- Synchronize loaded book data to SeriesCache if part of a series
+        if self.series_manager and (cached_data.series_slug or cached_data.series or cached_data.series_name or (self.ui and self.ui.document)) then
+            pcall(function()
+                local props = self.ui and self.ui.document and self.ui.document.getProps and self.ui.document:getProps() or {}
+                local function sanitizeMetadata(val)
+                    if type(val) == "string" then return val
+                    elseif type(val) == "table" then return table.concat(val, ", ")
+                    else return "Unknown" end
+                end
+                local title = sanitizeMetadata(props.title or cached_data.title or cached_data.book_title)
+                local author = sanitizeMetadata(props.authors or cached_data.author or cached_data.book_author)
+                local series_info = self.series_manager:getSeriesInfo(cached_data, props, title, author)
+                if series_info and series_info.slug and series_info.index then
+                    self.series_manager:syncBookToSeriesCache(series_info.slug, series_info.index, cached_data, book_path)
+                end
+            end)
+        end
+
         -- Stage 2: Restore Sort Order (Deferred 500ms)
         UIManager:scheduleIn(0.5, function()
             if self.destroyed or not self.ui or not self.ui.document then return end

@@ -304,20 +304,42 @@ Return ONLY valid JSON:
   ]
 }]],
 
-    series_book_summary = [[Book: %s
-Author: %s
-This is book %d in the series "%s".
+    series_book_summary = [[TARGET BOOK: %s
+AUTHOR: %s
+TARGET BOOK INDEX: %d
+SERIES: %s
 
-TASK: Provide a COMPLETE recap of this entire book for a reader
-who is ABOUT TO START the NEXT book in the series.
-Include: key characters (name, role, final status at book end), major locations,
-critical plot events, and important world-building terms introduced.
-NO SPOILERS for books BEYOND this one.
+TASK:
+Provide a COMPLETE recap of TARGET BOOK only, for a reader who has finished
+TARGET BOOK and is about to start the next book in the series.
+
+ABSOLUTE SPOILER BOUNDARY:
+Knowledge cutoff is strictly the FINAL PAGE of TARGET BOOK (Book Index %d).
+You may include facts established in TARGET BOOK or earlier books in this series.
+You MUST NOT include, imply, hint at, foreshadow, or select details using knowledge from any later book.
+
+FORBIDDEN LATER-BOOK INFORMATION:
+- Later events, future fates, deaths, survivals, destinations, romances, alliances, conflicts, or betrayals.
+- Later-book identities, true origins, secret parentage, aliases, alter egos, reincarnations, transformations, titles, or power advancements (e.g., do NOT mention if an essence joins another or is reborn in a future book).
+- Revelations, confirmations, reinterpretations, twists, or world-building terminology introduced in later books.
+- Retrospective foreshadowing or phrases such as "later", "eventually", "will become", "in subsequent books", or equivalent.
+- Mentioning characters, concepts, organizations, or chronology from later books.
+
+CHARACTER CUTOFF:
+Describe every character strictly as known at the final page of TARGET BOOK.
+Do NOT use aliases, roles, relationships, true identities, or statuses revealed in later books.
+
+UNCERTAINTY RULE:
+If you cannot confidently determine whether a fact or alias was established by the end of TARGET BOOK, OMIT IT.
+Missing detail is far preferable to a future book spoiler.
+
+FINAL AUDIT:
+Before returning JSON, inspect every field (especially character descriptions and aliases) and purge anything dependent on knowledge from books after TARGET BOOK.
 
 REQUIRED JSON FORMAT:
 {
   "characters": [
-    { "name": "Full Name", "aliases": [], "role": "...", "description": "Status at end of this book (max 300 chars)" }
+    { "name": "Full Name", "aliases": [], "role": "...", "description": "Status at end of this book (max {MAX_CHAR_DESC} chars)" }
   ],
   "locations": [
     { "name": "...", "description": "..." }
@@ -327,6 +349,29 @@ REQUIRED JSON FORMAT:
   ],
   "timeline": [
     { "chapter": "Book Summary", "event": "A single, highly detailed, comprehensive recap of the entire book's plot, main events, and resolution (max 2000 characters). You MUST format this recap using multiple distinct paragraphs separated by double newlines (\\n\\n) for readability instead of a single wall of text." }
+  ]
+}]] ,
+
+    local_timeline_summary = [[TARGET BOOK: %s
+AUTHOR: %s
+TARGET BOOK INDEX: %d
+SERIES: %s
+
+TASK:
+Using ONLY the verified chapter-by-chapter events provided below from TARGET BOOK, write a cohesive, comprehensive recap of the entire book's plot, key developments, and resolution.
+
+STRICT GROUNDING CONSTRAINT:
+- Ground your summary EXCLUSIVELY on the provided chapter events.
+- Do NOT introduce facts, characters, events, or outcomes not described in these chapter events.
+- NEVER mention or foreshadow events, deaths, or developments from later books in the series.
+
+CHAPTER EVENTS:
+%s
+
+REQUIRED JSON FORMAT:
+{
+  "timeline": [
+    { "chapter": "Book Summary", "event": "A single, highly detailed, comprehensive recap of the entire book's plot and resolution (max 2000 characters). You MUST format this recap using multiple distinct paragraphs separated by double newlines (\\n\\n) for readability instead of a single wall of text." }
   ]
 }]],
 

@@ -805,9 +805,19 @@ function AIHelper:makeRequestAsync(request_params, result_file)
                                     end
                                 end
                             end
-                        -- ChatGPT wraps content in choices[].message.content
+                        -- ChatGPT wraps content in choices[].message.content (or delta/text)
                         elseif parsed.choices and parsed.choices[1] then
-                            local content = parsed.choices[1].message and parsed.choices[1].message.content
+                            local choice = parsed.choices[1]
+                            local content
+                            if type(choice) == "table" then
+                                if type(choice.message) == "table" and type(choice.message.content) == "string" then
+                                    content = choice.message.content
+                                elseif type(choice.delta) == "table" and type(choice.delta.content) == "string" then
+                                    content = choice.delta.content
+                                elseif type(choice.text) == "string" then
+                                    content = choice.text
+                                end
+                            end
                             if content then
                                 local inner_ok, inner = pcall(json_req.decode, content)
                                 valid_json = inner_ok and inner ~= nil
@@ -1066,21 +1076,21 @@ function AIHelper:checkAsyncResult(result_file, expected_pid)
 
     -- Parse the response based on provider
     local success, data = pcall(json.decode, response_text)
-    if not success then return false, "error_parse", "JSON decode failed" end
+    if not success or type(data) ~= "table" then return false, "error_parse", "JSON decode failed" end
 
     local ai_text = ""
     if provider == "gemini" then
-        if data.candidates and data.candidates[1] and
-           data.candidates[1].content and data.candidates[1].content.parts then
+        if type(data.candidates) == "table" and type(data.candidates[1]) == "table" and
+           type(data.candidates[1].content) == "table" and type(data.candidates[1].content.parts) == "table" then
             local parts = data.candidates[1].content.parts
             for _, p in ipairs(parts) do
-                if p.text and not p.thought then
-                    ai_text = ai_text .. p.text
+                if type(p) == "table" and p.text and not p.thought then
+                    ai_text = ai_text .. tostring(p.text)
                 end
             end
         end
     elseif provider == "claude" or self:isAnthropic(provider, self.providers[provider] and self.providers[provider].endpoint) then
-        if data.content and data.content[1] and data.content[1].text then
+        if type(data.content) == "table" and type(data.content[1]) == "table" and type(data.content[1].text) == "string" then
             local content_text = data.content[1].text
             if content_text:find("^%s*{") then
                 ai_text = content_text
@@ -1089,15 +1099,41 @@ function AIHelper:checkAsyncResult(result_file, expected_pid)
             end
         end
     else
-        if data.choices and data.choices[1] then
-            ai_text = data.choices[1].message.content
+        local choice = type(data.choices) == "table" and data.choices[1]
+        if type(choice) == "table" then
+            if type(choice.message) == "table" then
+                if type(choice.message.content) == "string" then
+                    ai_text = choice.message.content
+                elseif type(choice.message.content) == "table" then
+                    local parts = {}
+                    for _, part in ipairs(choice.message.content) do
+                        if type(part) == "table" and type(part.text) == "string" then
+                            table.insert(parts, part.text)
+                        elseif type(part) == "string" then
+                            table.insert(parts, part)
+                        end
+                    end
+                    ai_text = table.concat(parts, "")
+                end
+            elseif type(choice.delta) == "table" and type(choice.delta.content) == "string" then
+                ai_text = choice.delta.content
+            elseif type(choice.text) == "string" then
+                ai_text = choice.text
+            end
         end
     end
 
     if not ai_text or #ai_text == 0 then
-        local finish_reason = (data.candidates and data.candidates[1] and data.candidates[1].finishReason) or "unknown"
-        self:log("AIHelper: Gemini ai_text empty. finishReason=" .. finish_reason)
-        return false, "error_parse", "No text in AI response (finishReason=" .. finish_reason .. ")"
+        local finish_reason = "unknown"
+        if type(data.candidates) == "table" and type(data.candidates[1]) == "table" and data.candidates[1].finishReason then
+            finish_reason = data.candidates[1].finishReason
+        elseif type(data.choices) == "table" and type(data.choices[1]) == "table" and data.choices[1].finish_reason then
+            finish_reason = data.choices[1].finish_reason
+        elseif data.stop_reason then
+            finish_reason = data.stop_reason
+        end
+        self:log(string.format("AIHelper: %s ai_text empty. finishReason=%s", tostring(provider or "AI"), tostring(finish_reason)))
+        return false, "error_parse", "No text in AI response (finishReason=" .. tostring(finish_reason) .. ")"
     end
 
     local parsed_data, parse_err = self:parseAIResponse(ai_text)
@@ -1923,13 +1959,20 @@ function AIHelper:createPrompt(title, author, context, section_name, targeted_wo
         success, final_prompt = pcall(string.format, template, context.series_name or "Unknown", idx, enhanced_title, enhanced_author, idx - 1)
     elseif section_name == "series_book_summary" then
         local idx = context and context.index or 1
-        success, final_prompt = pcall(string.format, template, enhanced_title, enhanced_author, idx, context.series_name or "Unknown")
+        success, final_prompt = pcall(string.format, template, enhanced_title, enhanced_author, idx, context.series_name or "Unknown", idx)
+    elseif section_name == "local_timeline_summary" then
+        local idx = context and context.index or 1
+        local events_text = context and context.events_text or ""
+        success, final_prompt = pcall(string.format, template, enhanced_title, enhanced_author, idx, context.series_name or "Unknown", events_text)
     else
         success, final_prompt = pcall(string.format, template, enhanced_title, enhanced_author, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p, p)
     end
 
     if section_name == "comprehensive_xray" or section_name == "more_terms" then
         extra_context = extra_context .. "\n- For each term, provide up to 3 alternative names, acronyms, or synonyms in an 'aliases' array. CRITICAL: These aliases MUST be variations or names that actually appear in the provided book text; do not hallucinate external synonyms."
+    elseif section_name == "series_book_summary" then
+        local idx = context and context.index or 1
+        extra_context = extra_context .. "\n\nCRITICAL ANTI-SPOILER SAFEGUARD:\n- Your knowledge cutoff is strictly the FINAL PAGE of Book Index " .. tostring(idx) .. ".\n- NEVER reveal, hint at, foreshadow, or reference events, deaths, survival, true identities, alter egos, secret parentage, reborn forms, or transformations from subsequent books in this series."
     end
     if not success then final_prompt = string.format("Extract %s data.", section_name) end
     if #extra_context > 0 then final_prompt = final_prompt .. extra_context end
@@ -2333,19 +2376,34 @@ function AIHelper:callChatGPT(prompt, config, current_model)
     
     if code_num == 200 and response_text then 
         local success, data = pcall(json.decode, response_text)
-        if success and data.choices and data.choices[1] then
-            local message = data.choices[1].message
-            local content = message.content
-            local reasoning = message.reasoning_content
-            
-            local parsed_data, err = self:parseAIResponse(content)
-            if parsed_data then 
-                if reasoning then
-                    parsed_data.ai_reasoning = reasoning
+        if success and type(data) == "table" and type(data.choices) == "table" and data.choices[1] then
+            local choice = data.choices[1]
+            local message = type(choice) == "table" and choice.message
+            local content
+            local reasoning
+            if type(message) == "table" then
+                content = type(message.content) == "string" and message.content
+                reasoning = message.reasoning_content
+            elseif type(choice) == "table" then
+                if type(choice.delta) == "table" and type(choice.delta.content) == "string" then
+                    content = choice.delta.content
+                elseif type(choice.text) == "string" then
+                    content = choice.text
                 end
-                return parsed_data 
             end
-            self:log("AIHelper: ChatGPT parse failed: " .. tostring(err))
+            
+            if content then
+                local parsed_data, err = self:parseAIResponse(content)
+                if parsed_data then 
+                    if reasoning then
+                        parsed_data.ai_reasoning = reasoning
+                    end
+                    return parsed_data 
+                end
+                self:log("AIHelper: ChatGPT parse failed: " .. tostring(err))
+            else
+                self:log("AIHelper: ChatGPT response has no content")
+            end
         end
     else
         local error_detail = "HTTP " .. tostring(code_num or code or "Unknown")

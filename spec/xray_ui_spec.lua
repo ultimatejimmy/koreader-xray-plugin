@@ -236,12 +236,40 @@ describe("xray_ui", function()
     end)
 
     describe("showMergeFlow", function()
-        it("should show primary picker dialog", function()
+        it("should show primary picker dialog with modal = true and support back navigation", function()
             plugin.characters = { { name = "A" }, { name = "B" } }
             plugin:showMergeFlow(plugin.characters, "characters")
-            local last = _G.ui_tracker.last_shown
-            assert.are.equal("ButtonDialog", last.type)
-            assert.are.equal("merge_pick_primary", last.args.title)
+            local primary = _G.ui_tracker.last_shown
+            assert.are.equal("ButtonDialog", primary.type)
+            assert.are.equal("merge_pick_primary", primary.args.title)
+            assert.is_true(primary.args.modal)
+            assert.are.equal("left", primary.buttons[1][1].align)
+
+            -- Pick primary item 'A' -> should show secondary dialog with modal = true
+            local a_callback = primary.buttons[1][1].callback
+            a_callback()
+            local secondary = _G.ui_tracker.last_shown
+            assert.are.equal("ButtonDialog", secondary.type)
+            assert.are.equal("merge_pick_secondary", secondary.args.title)
+            assert.is_true(secondary.args.modal)
+            assert.are.equal("left", secondary.buttons[1][1].align)
+
+            -- Click Back button in secondary dialog -> should re-show primary dialog with modal = true
+            local back_callback = secondary.buttons[#secondary.buttons][1].callback
+            back_callback()
+            local re_primary = _G.ui_tracker.last_shown
+            assert.are.equal("ButtonDialog", re_primary.type)
+            assert.are.equal("merge_pick_primary", re_primary.args.title)
+            assert.is_true(re_primary.args.modal)
+
+            -- Pick 'A' again, then pick 'B' -> should show confirmation dialog with modal = true
+            re_primary.buttons[1][1].callback()
+            local secondary2 = _G.ui_tracker.last_shown
+            local b_callback = secondary2.buttons[1][1].callback
+            b_callback()
+            local confirm = _G.ui_tracker.last_shown
+            assert.are.equal("ButtonDialog", confirm.type)
+            assert.is_true(confirm.args.modal)
         end)
     end)
 
@@ -284,6 +312,7 @@ describe("xray_ui", function()
             plugin:showAIFindDuplicatesFlow(plugin.characters, "characters", "characters")
             local last = _G.ui_tracker.last_shown
             assert.are.equal("ButtonDialog", last.type)
+            assert.is_true(last.args.modal)
             
             -- Verify buttons: Merge, Skip, Reject, Stop
             local buttons = last.args.buttons[1]
@@ -1693,6 +1722,161 @@ describe("xray_ui", function()
             assert.are.equal("left", btns[3][1].align)
             -- Cancel button has default center alignment (nil)
             assert.is_nil(btns[4][1].align)
+        end)
+    end)
+
+    describe("EntityListOverlay prior books styling and timeline distinction", function()
+        local EntityListOverlay = require("xray_entity_list")
+
+        it("renders prior books as inset cards without negative page numbers in timeline", function()
+            local mock_plugin = {
+                loc = { t = function(self, k) return nil end },
+                book_data = { book_title = "Lethal White" },
+            }
+            local overlay = EntityListOverlay:new{
+                plugin = mock_plugin,
+                mode = "timeline",
+                raw_items = {
+                    { chapter = "[Book 1: The Cuckoo's Calling]", event = "Strike takes a case", page = -999, source = "series_prior", source_book = 1 },
+                    { chapter = "[Book 2: The Silkworm]", event = "Quine disappears", page = -998, source = "series_prior", source_book = 2 },
+                    { chapter = "Prologue", event = "Opening scene", page = 11 },
+                },
+                prior_collapsed = false,
+                is_touch_device = false,
+            }
+
+            -- Check display items structure
+            assert.is_true(overlay.current_page_items[1].is_prior_header)
+            assert.are.equal(2, overlay.current_page_items[1].count)
+            assert.are.equal("series_prior", overlay.current_page_items[2].source)
+            assert.are.equal("series_prior", overlay.current_page_items[3].source)
+            assert.is_true(overlay.current_page_items[4].is_current_header)
+            assert.is_true(overlay.current_page_items[4].title:find("Lethal White") ~= nil)
+            assert.are.equal("Prologue", overlay.current_page_items[5].chapter)
+
+            -- Render prior book row and verify no negative page number is included
+            local prior_widget = overlay:renderRow(overlay.current_page_items[2], 600, 64, false, 2)
+            assert.is_not_nil(prior_widget)
+            local function collectTexts(w, out, visited)
+                out = out or {}
+                visited = visited or {}
+                if not w or type(w) ~= "table" or visited[w] then return out end
+                visited[w] = true
+                if w.text and type(w.text) == "string" then
+                    table.insert(out, w.text)
+                end
+                if w.args and type(w.args) == "table" then
+                    if w.args.text and type(w.args.text) == "string" then
+                        table.insert(out, w.args.text)
+                    end
+                    collectTexts(w.args, out, visited)
+                end
+                for k, v in pairs(w) do
+                    if k ~= "overlay" and k ~= "parent" and type(v) == "table" then
+                        collectTexts(v, out, visited)
+                    end
+                end
+                return out
+            end
+
+            local prior_texts = collectTexts(prior_widget)
+            for _, txt in ipairs(prior_texts) do
+                assert.is_nil(txt:match("%-999"))
+                assert.is_nil(txt:match("%-998"))
+            end
+            local found_b1 = false
+            local found_recap = false
+            for _, txt in ipairs(prior_texts) do
+                if txt:find("Book 1") then found_b1 = true end
+                if txt == "Recap" then found_recap = true end
+            end
+            assert.is_true(found_b1)
+            assert.is_true(found_recap)
+
+            -- Render current book row and verify normal page is present
+            local current_widget = overlay:renderRow(overlay.current_page_items[5], 600, 64, false, 5)
+            assert.is_not_nil(current_widget)
+            local current_texts = collectTexts(current_widget)
+            local has_p11 = false
+            for _, txt in ipairs(current_texts) do
+                if txt:find("%(p%. 11%)") then has_p11 = true end
+            end
+            assert.is_true(has_p11)
+        end)
+
+        it("hides prior book cards and current book header when collapsed", function()
+            local mock_plugin = {
+                loc = { t = function(self, k) return nil end },
+                book_data = { book_title = "Lethal White" },
+            }
+            local overlay = EntityListOverlay:new{
+                plugin = mock_plugin,
+                mode = "timeline",
+                raw_items = {
+                    { chapter = "[Book 1: The Cuckoo's Calling]", event = "Strike takes a case", page = -999, source = "series_prior", source_book = 1 },
+                    { chapter = "Prologue", event = "Opening scene", page = 11 },
+                },
+                prior_collapsed = true,
+                is_touch_device = false,
+            }
+
+            -- Page items should only have prior header and prologue (no current header, no prior books)
+            assert.are.equal(2, #overlay.current_page_items)
+            assert.is_true(overlay.current_page_items[1].is_prior_header)
+            assert.are.equal("Prologue", overlay.current_page_items[2].chapter)
+        end)
+
+        it("renders series pill badge for prior characters in characters mode", function()
+            local mock_plugin = {
+                loc = { t = function(self, k) return nil end },
+            }
+            local overlay = EntityListOverlay:new{
+                plugin = mock_plugin,
+                mode = "characters",
+                raw_items = {
+                    { name = "Kelsier", description = "Survivor of Hathsin", source = "series_prior" },
+                },
+                is_touch_device = false,
+            }
+
+            local row_widget = overlay:renderRow(overlay.current_page_items[1], 600, 64, false, 1)
+            assert.is_not_nil(row_widget)
+
+            local function collectTexts(w, out, visited)
+                out = out or {}
+                visited = visited or {}
+                if not w or type(w) ~= "table" or visited[w] then return out end
+                visited[w] = true
+                if w.text and type(w.text) == "string" then
+                    table.insert(out, w.text)
+                end
+                if w.args and type(w.args) == "table" then
+                    if w.args.text and type(w.args.text) == "string" then
+                        table.insert(out, w.args.text)
+                    end
+                    collectTexts(w.args, out, visited)
+                end
+                for k, v in pairs(w) do
+                    if k ~= "overlay" and k ~= "parent" and type(v) == "table" then
+                        collectTexts(v, out, visited)
+                    end
+                end
+                return out
+            end
+
+            local texts = collectTexts(row_widget)
+            local found_raw_prior_in_title = false
+            local found_series_pill = false
+            for _, txt in ipairs(texts) do
+                if txt == "Kelsier [Prior]" then
+                    found_raw_prior_in_title = true
+                end
+                if txt == "Series" then
+                    found_series_pill = true
+                end
+            end
+            assert.is_false(found_raw_prior_in_title)
+            assert.is_true(found_series_pill)
         end)
     end)
 end)

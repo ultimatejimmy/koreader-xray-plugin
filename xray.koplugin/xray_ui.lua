@@ -1280,6 +1280,7 @@ function M:showCharacters()
                 local ButtonDialog = require("ui/widget/buttondialog")
                 local prompt_dlg
                 prompt_dlg = ButtonDialog:new{
+                    modal = true,
                     title = string.format(
                         self.loc:t("pending_duplicates_prompt") or
                         "AI found %d possible duplicate character(s) from the last fetch. Review now?",
@@ -2453,6 +2454,7 @@ function M:walkDuplicatePairs(list, list_name, pairs_found)
 
         local confirm_dialog
         confirm_dialog = ButtonDialog:new{
+            modal = true,
             title = confirm_text,
             buttons = {{
                 {
@@ -2599,19 +2601,24 @@ function M:showMergeFlow(list, list_name)
     local InfoMessage = require("ui/widget/infomessage")
     
     local primary_dialog, secondary_dialog
+    local showPrimaryPicker, pickSecondary
     
-    local function pickSecondary(primary_item)
+    pickSecondary = function(primary_item)
         local buttons = {}
         for _, item in ipairs(list) do
             if item.name ~= primary_item.name then
                 local secondary_name = item.name
                 table.insert(buttons, {{
                     text = secondary_name,
+                    align = "left",
                     callback = function()
-                        UIManager:close(secondary_dialog)
-                        secondary_dialog = nil
+                        if secondary_dialog then
+                            UIManager:close(secondary_dialog)
+                            secondary_dialog = nil
+                        end
                         local confirm
                         confirm = ButtonDialog:new{
+                            modal = true,
                             title = string.format(
                                 self.loc:t("merge_confirm") or "Merge %s into %s? The secondary entry will be deleted and its aliases absorbed.",
                                 secondary_name, primary_item.name
@@ -2705,45 +2712,58 @@ function M:showMergeFlow(list, list_name)
         table.insert(buttons, {{
             text = self.loc:t("merge_back") or "← Back",
             callback = function()
-                UIManager:close(secondary_dialog)
-                secondary_dialog = nil
-                UIManager:show(primary_dialog)
+                if secondary_dialog then
+                    UIManager:close(secondary_dialog)
+                    secondary_dialog = nil
+                end
+                showPrimaryPicker()
             end
         }})
         
         secondary_dialog = ButtonDialog:new{
+            modal = true,
             title = self.loc:t("merge_pick_secondary") or "Choose the entry to REMOVE",
             buttons = buttons
         }
         UIManager:show(secondary_dialog)
     end
     
-    local buttons = {}
-    for _, item in ipairs(list) do
-        local primary_item = item
+    showPrimaryPicker = function()
+        local buttons = {}
+        for _, item in ipairs(list) do
+            local primary_item = item
+            table.insert(buttons, {{
+                text = item.name,
+                align = "left",
+                callback = function()
+                    if primary_dialog then
+                        UIManager:close(primary_dialog)
+                        primary_dialog = nil
+                    end
+                    pickSecondary(primary_item)
+                end
+            }})
+        end
+        
         table.insert(buttons, {{
-            text = item.name,
+            text = self.loc:t("close") or "Close",
             callback = function()
-                UIManager:close(primary_dialog)
-                primary_dialog = nil
-                pickSecondary(primary_item)
+                if primary_dialog then
+                    UIManager:close(primary_dialog)
+                    primary_dialog = nil
+                end
             end
         }})
+        
+        primary_dialog = ButtonDialog:new{
+            modal = true,
+            title = self.loc:t("merge_pick_primary") or "Choose the entry to KEEP",
+            buttons = buttons
+        }
+        UIManager:show(primary_dialog)
     end
-    
-    table.insert(buttons, {{
-        text = self.loc:t("close") or "Close",
-        callback = function()
-            UIManager:close(primary_dialog)
-            primary_dialog = nil
-        end
-    }})
-    
-    primary_dialog = ButtonDialog:new{
-        title = self.loc:t("merge_pick_primary") or "Choose the entry to KEEP",
-        buttons = buttons
-    }
-    UIManager:show(primary_dialog)
+
+    showPrimaryPicker()
 end
 
 
@@ -2902,7 +2922,7 @@ function M:showAuthorInfo()
     if not self.author_info or not self.author_info.description or self.author_info.description == "" or self.author_info.description == (self.loc:t("msg_no_bio") or "No biography available.") then
         local ButtonDialog = require("ui/widget/buttondialog")
         local ask_dialog
-        ask_dialog = ButtonDialog:new{ title = (self.loc:t("menu_fetch_author") or "Fetch Author Info") .. "\n\n" .. (self.loc:t("no_author_data_fetch") or "No author biography available. Fetch now?"), buttons = {{{ text = self.loc:t("cancel"), callback = function() UIManager:close(ask_dialog) end }, { text = self.loc:t("fetch_button") or "Fetch", is_enter_default = true, callback = function() UIManager:close(ask_dialog); UIManager:nextTick(function() self:fetchAuthorInfo() end) end }}} }
+        ask_dialog = ButtonDialog:new{ modal = true, title = (self.loc:t("menu_fetch_author") or "Fetch Author Info") .. "\n\n" .. (self.loc:t("no_author_data_fetch") or "No author biography available. Fetch now?"), buttons = {{{ text = self.loc:t("cancel"), callback = function() UIManager:close(ask_dialog) end }, { text = self.loc:t("fetch_button") or "Fetch", is_enter_default = true, callback = function() UIManager:close(ask_dialog); UIManager:nextTick(function() self:fetchAuthorInfo() end) end }}} }
         UIManager:show(ask_dialog); return
     end
 
@@ -3038,6 +3058,7 @@ function M:showLocations()
                 local ButtonDialog = require("ui/widget/buttondialog")
                 local prompt_dlg
                 prompt_dlg = ButtonDialog:new{
+                    modal = true,
                     title = string.format(
                         self.loc:t("pending_duplicates_prompt") or
                         "AI found %d possible duplicate location(s) from the last fetch. Review now?",
@@ -3077,6 +3098,7 @@ function M:showAbout()
     local ButtonDialog = require("ui/widget/buttondialog")
     local about_dlg
     about_dlg = ButtonDialog:new{
+        modal = true,
         title = body,
         buttons = {{
             {
@@ -4535,6 +4557,7 @@ function M:showEnterKeyProviderDialog()
     })
 
     dlg = ButtonDialog:new{
+        modal = true,
         title = self.loc:t("welcome_select_provider") or "Select AI Provider",
         buttons = buttons,
     }
@@ -5031,6 +5054,7 @@ function M:getAPIKeysMenu()
                 local ButtonDialog = require("ui/widget/buttondialog")
                 local confirm_dlg
                 confirm_dlg = ButtonDialog:new{
+                    modal = true,
                     title = string.format(self.loc:t("paste_clipboard_confirm") or "Use the API key found in clipboard for %s?", prov_label) .. "\n\n" .. preview,
                     buttons = {
                         {
@@ -5109,6 +5133,7 @@ function M:getAPIKeysMenu()
             local ButtonDialog = require("ui/widget/buttondialog")
             local confirm
             confirm = ButtonDialog:new{
+                modal = true,
                 title = self.loc:t("confirm_clear_all_keys") or "Are you sure you want to clear all configured API keys and custom endpoints?\n\nThis will remove all saved keys from this device.",
                 buttons = {
                     {
@@ -6038,21 +6063,32 @@ function M:checkSeriesContext()
         if series_info.index > 1 then
             self:log("XRayPlugin: Series: Metadata/title check found series: " .. series_info.name .. ", index=" .. tostring(series_info.index))
             
-            -- Check if all prior books are already in local SeriesCache
+            -- Check if all prior books are already in local SeriesCache or on local disk
             local slug = series_info.slug or (self.series_manager and self.series_manager.makeSlug and self.series_manager:makeSlug(series_info.name))
-            local cache_data = slug and self.series_manager and self.series_manager.loadSeriesCache and self.series_manager:loadSeriesCache(slug)
-            local all_priors_cached = (cache_data and cache_data.books ~= nil)
-            if all_priors_cached then
-                for p_idx = 1, series_info.index - 1 do
-                    if not cache_data.books[p_idx] then
-                        all_priors_cached = false
-                        break
+            local cache_data = slug and self.series_manager and self.series_manager.loadSeriesCache and self.series_manager:loadSeriesCache(slug) or { series_slug = slug, books = {} }
+            cache_data.books = cache_data.books or {}
+
+            -- Try to discover any missing prior books on local disk first
+            local doc_file = self.ui and self.ui.document and self.ui.document.file
+            for p_idx = 1, series_info.index - 1 do
+                if not cache_data.books[p_idx] or cache_data.books[p_idx].source ~= "local_xray" then
+                    local local_book = self.series_manager and self.series_manager.findLocalBookXRay and self.series_manager:findLocalBookXRay(series_info, p_idx, doc_file, nil, self.cache_manager)
+                    if local_book then
+                        cache_data.books[p_idx] = local_book
                     end
                 end
             end
 
+            local all_priors_cached = true
+            for p_idx = 1, series_info.index - 1 do
+                if not cache_data.books[p_idx] then
+                    all_priors_cached = false
+                    break
+                end
+            end
+
             if all_priors_cached then
-                self:log("XRayPlugin: Series: All prior books already exist in local SeriesCache. Merging series context automatically.")
+                self:log("XRayPlugin: Series: All prior books resolved locally. Merging series context automatically.")
                 self:mergeSeriesContext(cache_data, series_info)
                 return
             end
@@ -6132,18 +6168,29 @@ function M:checkSeriesContext()
                     }
                     self:log("XRayPlugin: Series: Async check detected series=" .. tostring(name) .. ", index=" .. tostring(index))
                     if index > 1 then
-                        local cache_data = slug and self.series_manager and self.series_manager.loadSeriesCache and self.series_manager:loadSeriesCache(slug)
-                        local all_priors_cached = (cache_data and cache_data.books ~= nil)
-                        if all_priors_cached then
-                            for p_idx = 1, index - 1 do
-                                if not cache_data.books[p_idx] then
-                                    all_priors_cached = false
-                                    break
+                        local cache_data = slug and self.series_manager and self.series_manager.loadSeriesCache and self.series_manager:loadSeriesCache(slug) or { series_slug = slug, books = {} }
+                        cache_data.books = cache_data.books or {}
+
+                        local doc_file = self.ui and self.ui.document and self.ui.document.file
+                        for p_idx = 1, index - 1 do
+                            if not cache_data.books[p_idx] or cache_data.books[p_idx].source ~= "local_xray" then
+                                local local_book = self.series_manager and self.series_manager.findLocalBookXRay and self.series_manager:findLocalBookXRay(ai_series_info, p_idx, doc_file, nil, self.cache_manager)
+                                if local_book then
+                                    cache_data.books[p_idx] = local_book
                                 end
                             end
                         end
+
+                        local all_priors_cached = true
+                        for p_idx = 1, index - 1 do
+                            if not cache_data.books[p_idx] then
+                                all_priors_cached = false
+                                break
+                            end
+                        end
+
                         if all_priors_cached then
-                            self:log("XRayPlugin: Series: All prior books already exist in local SeriesCache. Merging series context automatically.")
+                            self:log("XRayPlugin: Series: All prior books resolved locally. Merging series context automatically.")
                             self:mergeSeriesContext(cache_data, ai_series_info)
                         else
                             self:showSeriesContextPrompt(ai_series_info)
