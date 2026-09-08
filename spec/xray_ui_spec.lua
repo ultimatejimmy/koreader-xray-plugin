@@ -1635,6 +1635,65 @@ describe("xray_ui", function()
             overlay:handleEvent({ type = "Key", key = "m" })
             assert.is_true(merge_called)
         end)
+
+        it("renders entity row with 22pt title and 15pt description to match native menus", function()
+            local Font = require("ui/font")
+            local old_getFace = Font.getFace
+            local font_calls = {}
+            Font.getFace = function(self, face, size)
+                table.insert(font_calls, { face = face, size = size })
+                return { face = face, size = size }
+            end
+
+            local overlay = EntityListOverlay:new{
+                plugin = plugin,
+                mode = "characters",
+                raw_items = { { name = "Hero", description = "Protagonist" } },
+                is_touch_device = false,
+            }
+
+            local row = overlay:renderRow({ name = "Hero", description = "Protagonist" }, 600, 64, false, 1)
+
+            Font.getFace = old_getFace
+
+            local has_22 = false
+            local has_15 = false
+            for _, fc in ipairs(font_calls) do
+                if fc.size == 22 then has_22 = true end
+                if fc.size == 15 then has_15 = true end
+            end
+            assert.is_true(has_22, "Expected title font size 22")
+            assert.is_true(has_15, "Expected description font size 15")
+        end)
+
+        it("creates sort dialog with left-aligned radio buttons", function()
+            local shown_dialog
+            local UIManager = require("ui/uimanager")
+            local old_show = UIManager.show
+            UIManager.show = function(self, widget)
+                shown_dialog = widget
+            end
+
+            local overlay = EntityListOverlay:new{
+                plugin = plugin,
+                mode = "characters",
+                raw_items = { { name = "Hero", description = "Protagonist" } },
+                is_touch_device = false,
+            }
+
+            overlay:showSortDialog()
+            UIManager.show = old_show
+
+            assert.is_not_nil(shown_dialog)
+            assert.are.equal("ButtonDialog", shown_dialog.type)
+            local btns = shown_dialog.args.buttons
+            -- 3 sort choices should have align = "left"
+            assert.are.equal("left", btns[1][1].align)
+            assert.are.equal("left", btns[2][1].align)
+            assert.are.equal("left", btns[3][1].align)
+            -- Cancel button has default center alignment (nil)
+            assert.is_nil(btns[4][1].align)
+        end)
     end)
 end)
 

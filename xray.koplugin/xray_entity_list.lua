@@ -119,7 +119,7 @@ local function createIconButton(opts)
         padding = 0,
         bordersize = is_focused and (theme.border_focus or sc(2)) or (opts.bordersize or 0),
         color = is_focused and (theme.color_focus_border or Blitbuffer.COLOR_BLACK) or (opts.color or Blitbuffer.COLOR_DARK_GRAY),
-        background = is_focused and (theme.color_focus_bg or Blitbuffer.Color8(215)) or (opts.background or Blitbuffer.COLOR_WHITE),
+        background = is_focused and (theme.color_focus_bg or Blitbuffer.Color8(215)) or opts.background,
         radius = opts.radius or sc(6),
         CenterContainer:new{
             dimen = Geom:new{ w = btn_w, h = btn_h },
@@ -650,6 +650,7 @@ function EntityListOverlay:showSortDialog()
             {
                 {
                     text = check_freq .. _tr("sort_frequency", "Frequency of Mentions (Default)"),
+                    align = "left",
                     callback = function()
                         UIManager:close(sort_dialog)
                         self.sort_mode = "frequency"
@@ -663,6 +664,7 @@ function EntityListOverlay:showSortDialog()
             {
                 {
                     text = check_app .. _tr("sort_appearance", "Order of Appearance"),
+                    align = "left",
                     callback = function()
                         UIManager:close(sort_dialog)
                         self.sort_mode = "appearance"
@@ -676,6 +678,7 @@ function EntityListOverlay:showSortDialog()
             {
                 {
                     text = check_az .. _tr("sort_alphabetical", "Alphabetical (A–Z)"),
+                    align = "left",
                     callback = function()
                         UIManager:close(sort_dialog)
                         self.sort_mode = "alphabetical"
@@ -774,7 +777,7 @@ function EntityListOverlay:renderRow(item, content_w, row_h, is_focused, idx)
 
     local title_widget = TextWidget:new{
         text = title_str,
-        face = Font:getFace("cfont", 17),
+        face = Font:getFace("cfont", 22),
         bold = true,
         fgcolor = Blitbuffer.COLOR_BLACK,
         max_width = inner_w,
@@ -804,7 +807,7 @@ function EntityListOverlay:renderRow(item, content_w, row_h, is_focused, idx)
     if desc_str ~= "" and desc_str ~= "---" then
         desc_widget = TextWidget:new{
             text = desc_str,
-            face = Font:getFace("cfont", 13),
+            face = Font:getFace("cfont", 15),
             fgcolor = Blitbuffer.Color8(40),
             max_width = inner_w,
         }
@@ -815,7 +818,7 @@ function EntityListOverlay:renderRow(item, content_w, row_h, is_focused, idx)
         title_widget,
     }
     if desc_widget then
-        table.insert(text_items, VerticalSpan:new{ width = sc(3) })
+        table.insert(text_items, VerticalSpan:new{ width = sc(1) })
         table.insert(text_items, desc_widget)
     end
     table.insert(text_items, VerticalSpan:new{ width = sc(3) })
@@ -922,9 +925,9 @@ function EntityListOverlay:buildUI()
     local loc = p and p.loc
 
     -- ── 1. Top Header Bar (Storefront style touch buttons) ────────────────────
-    local btn_size = sc(22)
-    local btn_w = sc(42)
-    local btn_h = sc(42)
+    local btn_size = sc(26)
+    local btn_w = sc(48)
+    local btn_h = sc(48)
     local btn_gap = sc(4)
 
     local title_text_str = "Characters"
@@ -1036,7 +1039,7 @@ function EntityListOverlay:buildUI()
 
     local title_w = TextWidget:new{
         text = header_title,
-        face = Font:getFace("cfont", is_filtered and 15 or 18),
+        face = Font:getFace("cfont", is_filtered and 18 or 24),
         bold = true,
         fgcolor = Blitbuffer.COLOR_BLACK,
         max_width = title_max_w,
@@ -1062,13 +1065,13 @@ function EntityListOverlay:buildUI()
     end
 
     local header_row = OverlapGroup:new{
-        dimen = Geom:new{ w = row_w, h = sc(48) },
+        dimen = Geom:new{ w = row_w, h = sc(52) },
         LeftContainer:new{
-            dimen = Geom:new{ w = title_container_w, h = sc(48) },
+            dimen = Geom:new{ w = title_container_w, h = sc(52) },
             title_left_widget,
         },
         RightContainer:new{
-            dimen = Geom:new{ w = row_w, h = sc(48) },
+            dimen = Geom:new{ w = row_w, h = sc(52) },
             header_actions_group,
         },
     }
@@ -1076,8 +1079,8 @@ function EntityListOverlay:buildUI()
     local header_frame = FrameContainer:new{
         padding_left = sc(16),
         padding_right = sc(16),
-        padding_top = sc(10),
-        padding_bottom = sc(4),
+        padding_top = sc(12),
+        padding_bottom = sc(6),
         bordersize = 0,
         width = sw,
         VerticalGroup:new{
@@ -1093,12 +1096,12 @@ function EntityListOverlay:buildUI()
 
     -- ── 2. Content Height Budgeting & Pagination ──────────────────────────────
     local header_h = header_frame:getSize().h
-    local footer_h = sc(44)
+    local footer_h = sc(48)
     local avail_content_h = sh - header_h - footer_h
 
     local is_timeline = (self.mode == "timeline")
     local is_mentions = (self.mode == "mentions")
-    local row_h = (is_timeline or is_mentions) and sc(60) or sc(58)
+    local row_h = sc(64)
     local divider_h = sc(1)
     local items_per_page = math.max(1, math.floor(avail_content_h / (row_h + divider_h)))
 
@@ -1258,8 +1261,9 @@ function EntityListOverlay:buildUI()
     }
 
     -- ── 3. Footer Bar with Storefront Pagination ──────────────────────────────
-    local nav_btn_size = sc(20)
-    local nav_btn_w = sc(38)
+    local nav_btn_size = sc(22)
+    local nav_btn_w = sc(40)
+    local nav_btn_h = sc(38)
 
     local is_prev_focused = (self.focus_zone == "footer" and self.footer_focus_idx == 1)
     local is_page_focused = (self.focus_zone == "footer" and self.footer_focus_idx == 2)
@@ -1269,7 +1273,7 @@ function EntityListOverlay:buildUI()
         icon = "chevron-left.svg",
         size = nav_btn_size,
         width = nav_btn_w,
-        height = nav_btn_w,
+        height = nav_btn_h,
         is_focused = is_prev_focused,
         allow_flash = false,
         callback = function()
@@ -1305,7 +1309,7 @@ function EntityListOverlay:buildUI()
         icon = "chevron-right.svg",
         size = nav_btn_size,
         width = nav_btn_w,
-        height = nav_btn_w,
+        height = nav_btn_h,
         is_focused = is_next_focused,
         allow_flash = false,
         callback = function()

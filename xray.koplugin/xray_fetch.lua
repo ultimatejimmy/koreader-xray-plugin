@@ -528,6 +528,7 @@ function M:continueWithFetch(reading_percent, is_update, last_fetch_page, is_sil
             and (self.loc:t("updating_ai", self.ai_provider or "AI") or "Updating X-Ray...")
             or  (self.loc:t("fetching_ai",  self.ai_provider or "AI") or "Fetching X-Ray...")
         wait_msg = ButtonDialog:new{
+            modal = true,
             title = fetch_text,
             text  = title .. "\n\n" .. (self.loc:t("fetching_wait") or "This may take a moment.\nTap Cancel to stop."),
             tap_close_callback = function()
@@ -728,6 +729,7 @@ function M:continueWithFetch(reading_percent, is_update, last_fetch_page, is_sil
                             local title, text = utils:getFriendlyError("error_timeout", nil, self.loc)
                             local err_box
                             err_box = ButtonDialog:new{
+                                modal = true,
                                 title = title,
                                 text = text,
                                 buttons = {{{ text = self.loc:t("ok") or "OK", callback = function() if err_box then UIManager:close(err_box) end end }}}
@@ -744,6 +746,7 @@ function M:continueWithFetch(reading_percent, is_update, last_fetch_page, is_sil
                         local title, text = utils:getFriendlyError(p_err_code, p_err_msg, self.loc)
                         local err_box
                         err_box = ButtonDialog:new{
+                            modal = true,
                             title = title,
                             text = text,
                             buttons = {{{ text = self.loc:t("ok") or "OK", callback = function() if err_box then UIManager:close(err_box) end end }}}
@@ -1359,6 +1362,7 @@ function M:fetchMoreEntities(entity_type)
             local ButtonDialog = require("ui/widget/buttondialog")
             local key_dlg
             key_dlg = ButtonDialog:new{
+                modal = true,
                 title = self.loc:t("error_no_api_key") or "API Key Required",
                 buttons = {{{ text = self.loc:t("ok") or "OK", callback = function() if key_dlg then UIManager:close(key_dlg) end end }}}
             }
@@ -1384,7 +1388,6 @@ function M:fetchMoreEntities(entity_type)
             or  (self.loc:t("extracting_more_characters") or "Extracting additional characters...")
 
         local menu_to_close = is_terms and self.terms_menu or self.char_menu
-        if is_terms then self.terms_menu = nil else self.char_menu = nil end
 
         local wait_msg
         local request_pid
@@ -1413,6 +1416,7 @@ function M:fetchMoreEntities(entity_type)
         end
 
         wait_msg = ButtonDialog:new{
+            modal = true,
             title = dialog_title_text .. "\n\n" .. title,
             tap_close_callback = function()
                 cancelActiveRequest("Fetch cancelled by user")
@@ -1508,6 +1512,7 @@ function M:fetchMoreEntities(entity_type)
                 if self._active_ai_cancel == cancelActiveRequest then self._active_ai_cancel = nil end
                 local err_dlg
                 err_dlg = ButtonDialog:new{
+                    modal = true,
                     title = self.loc:t("error") or "Error",
                     text = res_file or (self.loc:t("error_api") or "API Error"),
                     buttons = {{{ text = self.loc:t("ok") or "OK", callback = function() if err_dlg then UIManager:close(err_dlg) end end }}}
@@ -1530,6 +1535,7 @@ function M:fetchMoreEntities(entity_type)
                     cancelActiveRequest("Fetch timed out")
                     local to_dlg
                     to_dlg = ButtonDialog:new{
+                        modal = true,
                         title = self.loc:t("error") or "Error",
                         text = self.loc:t("error_timeout") or "Request timed out",
                         buttons = {{{ text = self.loc:t("ok") or "OK", callback = function() if to_dlg then UIManager:close(to_dlg) end end }}}
@@ -1565,6 +1571,7 @@ function M:fetchMoreEntities(entity_type)
                         end
                         local err_box
                         err_box = ButtonDialog:new{
+                            modal = true,
                             title = display_msg,
                             buttons = {{{ text = self.loc:t("ok") or "OK", callback = function() if err_box then UIManager:close(err_box) end end }}}
                         }
@@ -1583,6 +1590,7 @@ function M:fetchMoreEntities(entity_type)
                         end
                         local err_box
                         err_box = ButtonDialog:new{
+                            modal = true,
                             title = display_msg,
                             buttons = {{{ text = self.loc:t("ok") or "OK", callback = function() if err_box then UIManager:close(err_box) end end }}}
                         }
@@ -1662,8 +1670,10 @@ function M:fetchMoreEntities(entity_type)
                         UIManager:close(menu_to_close)
                     end
                     if is_terms then
+                        self.terms_menu = nil
                         self:showTerms()
                     else
+                        self.char_menu = nil
                         self:showCharacters()
                     end
                 end
@@ -1695,6 +1705,7 @@ function M:fetchAuthorInfo()
         local ButtonDialog = require("ui/widget/buttondialog")
         local key_dlg
         key_dlg = ButtonDialog:new{
+            modal = true,
             title = self.loc:t("error_no_api_key") or "API Key Required",
             buttons = {{{ text = self.loc:t("ok") or "OK", callback = function() if key_dlg then UIManager:close(key_dlg) end end }}}
         }
@@ -1732,6 +1743,7 @@ function M:fetchAuthorInfo()
     end
 
     wait_msg = ButtonDialog:new{
+        modal = true,
         title = (self.loc:t("fetching_author", "AI") or "Fetching Author...") .. "\n\n" .. title .. " - " .. author,
         tap_close_callback = function()
             cancelActiveRequest("Author fetch cancelled by user")
@@ -1773,6 +1785,7 @@ function M:fetchAuthorInfo()
             if self._active_ai_cancel == cancelActiveRequest then self._active_ai_cancel = nil end
             local err_dlg
             err_dlg = ButtonDialog:new{
+                modal = true,
                 title = self.loc:t("error") or "Error",
                 text = res_file or (self.loc:t("error_api") or "API Error"),
                 buttons = {{{ text = self.loc:t("ok") or "OK", callback = function() if err_dlg then UIManager:close(err_dlg) end end }}}
@@ -1795,6 +1808,7 @@ function M:fetchAuthorInfo()
                 cancelActiveRequest("Author fetch timed out")
                 local to_dlg
                 to_dlg = ButtonDialog:new{
+                    modal = true,
                     title = self.loc:t("error") or "Error",
                     text = self.loc:t("error_timeout") or "Request timed out",
                     buttons = {{{ text = self.loc:t("ok") or "OK", callback = function() if to_dlg then UIManager:close(to_dlg) end end }}}
@@ -1831,6 +1845,7 @@ function M:fetchAuthorInfo()
                     end
                     local err_box
                     err_box = ButtonDialog:new{
+                        modal = true,
                         title = display_msg,
                         buttons = {{{ text = self.loc:t("ok") or "OK", callback = function() if err_box then UIManager:close(err_box) end end }}}
                     }
